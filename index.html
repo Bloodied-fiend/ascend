@@ -104,6 +104,8 @@ button{font:inherit;color:inherit}
 .psheet p{margin:0;font-size:12px;color:var(--muted);line-height:1.4}
 .psheet .row{display:flex;gap:8px}
 .psheet .btn{flex:1;justify-content:center;text-decoration:none}
+.ptoggle{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--fg);cursor:pointer}
+.ptoggle input{width:18px;height:18px;accent-color:var(--hl)}
 
 /* shared parts */
 .hex{width:var(--s,26px);height:var(--s,26px);flex:none;color:var(--c);filter:drop-shadow(0 0 calc(5px*var(--glow)) var(--c))}
@@ -404,7 +406,7 @@ html.app .player{top:calc(18px + env(safe-area-inset-top,0px))}
 <div class="stage">
   <section class="pitch">
     <div class="brand"><svg class="appicon" viewBox="0 0 1024 1024" role="img" aria-label="Ascend app icon"><defs><radialGradient id="aig" cx="50%" cy="0%" r="100%"><stop offset="0" stop-color="#27303a"/><stop offset="1" stop-color="#0c1015"/></radialGradient></defs><rect width="1024" height="1024" rx="224" fill="url(#aig)"/><path d="M512 150 826 331v362L512 874 198 693V331z" fill="none" stroke="#62d8e6" stroke-opacity=".25" stroke-width="28"/><path d="M332 760 L512 260 L692 760" fill="none" stroke="#e8eef3" stroke-width="90" stroke-linejoin="miter"/><path d="M512 470 l58 76 -58 76 -58 -76z" fill="#62d8e6" style="filter:drop-shadow(0 0 40px #62d8e6)"/><path d="M120 220V120H220M804 120H904V220M904 804V904H804M220 904H120V804" fill="none" stroke="#62d8e6" stroke-width="18"/></svg><svg class="wordmark" viewBox="0 0 220 52" role="img" aria-label="Ascend"><path d="M3 46 L17 4 L31 46" fill="none" stroke="var(--fg)" stroke-width="6" stroke-linejoin="miter"/><path d="M17 24 l4.5 6 -4.5 6 -4.5 -6z" fill="#62d8e6" style="filter:drop-shadow(0 0 4px rgba(98,216,230,.6))"/><text x="38" y="46" font-family="Barlow Condensed,Arial Narrow,sans-serif" font-weight="700" font-size="50" letter-spacing="2" fill="var(--fg)">SCEND</text><path d="M38 50.5H118M122 50.5H216" stroke="#62d8e6"/></svg></div>
-    <span class="lbl">App prototype · v2.0</span>
+    <span class="lbl">App prototype · v2.1</span>
     <h1>Ascend. Level up your <em>actual</em> life.</h1>
     <p>A habit tracker run by the System. Daily quests raise five Hunter stats, level-ups give you points to spend, and a missed day assigns a Penalty Quest instead of wiping your progress. You never lose stats or levels.</p>
     <div class="skins" role="group" aria-label="Visual direction">
@@ -433,6 +435,7 @@ html.app .player{top:calc(18px + env(safe-area-inset-top,0px))}
         <div class="np"><button class="pbtn" id="pplay" aria-label="Play soundtrack">&#9654;</button><div class="pmeta"><b id="ptitle">Untitled</b> · <span id="psub">by Jaime</span></div></div>
         <p>Built in: Untitled, by Jaime. Or load any track you own. It loops, stays saved on this device, and is never uploaded.</p>
         <div class="row"><label class="btn chamf sysbtn" for="pfile" tabindex="0">Load file</label></div>
+        <label class="ptoggle"><input type="checkbox" id="pauto" checked> Play music on open</label>
       </div>
       <input type="file" id="pfile" accept="audio/*" hidden>
       <input type="file" id="rfile" accept="application/json,.json,.txt" hidden>
@@ -821,7 +824,19 @@ $("#pfile").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return
 // built-in theme (Jaime's own track); a file the user loads replaces it
 const THEME={src:"soundtrack.mp3",title:"Untitled",by:"by Jaime"};
 function useTheme(){if(aud.src)return;aud.src=THEME.src;$("#ptitle").textContent=THEME.title;$("#psub").textContent=THEME.by}
-try{idb(s=>s.get("track")).then(t=>{if(t&&t.blob&&!aud.src)useTrack(t.blob,t.name,false);else useTheme()}).catch(useTheme)}catch(e){useTheme()}
+let autoMusic=true,userPaused=false,resumeOnShow=false;
+try{autoMusic=localStorage.getItem("ascend-automusic")!=="0"}catch(e){}
+// browsers refuse sound before the first interaction; if refused, start on the first tap anywhere
+function tryPlay(){if(!autoMusic||userPaused||!aud.src||document.hidden)return;aud.play().catch(()=>{
+  const go=()=>{document.removeEventListener("pointerdown",go,true);document.removeEventListener("keydown",go,true);tryPlay()};
+  document.addEventListener("pointerdown",go,true);document.addEventListener("keydown",go,true)})}
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden){if(!aud.paused){resumeOnShow=true;aud.pause()}}
+  else if(resumeOnShow){resumeOnShow=false;if(!userPaused)tryPlay()}});
+const startMusic=()=>tryPlay();
+$("#pauto").checked=autoMusic;
+$("#pauto").addEventListener("change",e=>{autoMusic=e.target.checked;try{localStorage.setItem("ascend-automusic",autoMusic?"1":"0")}catch(err){}if(autoMusic){userPaused=false;tryPlay()}});
+try{idb(s=>s.get("track")).then(t=>{if(t&&t.blob&&!aud.src)useTrack(t.blob,t.name,false);else useTheme();startMusic()}).catch(()=>{useTheme();startMusic()})}catch(e){useTheme();startMusic()}
 aud.addEventListener("play",()=>{pplay.textContent="❚❚";pplay.setAttribute("aria-label","Pause soundtrack");$("#player").classList.add("playing")});
 aud.addEventListener("pause",()=>{pplay.textContent="▶";pplay.setAttribute("aria-label","Play soundtrack");$("#player").classList.remove("playing")});
 $("#psheet label").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();$("#pfile").click()}});
@@ -888,7 +903,7 @@ document.addEventListener("click",e=>{
   if(!sheet.hidden&&!e.target.closest(".player"))toggleSheet(false);
   const b=e.target.closest("button");if(!b||b.disabled)return;const d=b.dataset;
   if(d.act){closeNote(+d.act);return}
-  if(b.id==="pplay"){if(!aud.src){$("#pfile").click();return}aud.paused?aud.play().catch(()=>{}):aud.pause();return}
+  if(b.id==="pplay"){if(!aud.src){$("#pfile").click();return}if(aud.paused){userPaused=false;aud.play().catch(()=>{})}else{userPaused=true;aud.pause()}return}
   if(b.id==="pmore"){toggleSheet(sheet.hidden);return}
   if(d.t||d.go){S.tab=d.t||d.go;render();return}
   if(d.s){document.documentElement.dataset.skin=d.s;try{localStorage.setItem("ascend-skin",d.s)}catch(e){}document.querySelectorAll(".skin").forEach(x=>x.setAttribute("aria-pressed",x===b));return}
