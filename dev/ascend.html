@@ -532,6 +532,8 @@ function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typ
   S.penalty=sv.penalty?PENALTY:null;S.bossDown=sv.bossDown===true;S.bossStat=STATS[sv.bossStat]?sv.bossStat:null}
 let storageOK=true;
 try{load(JSON.parse(localStorage.getItem("ascend-v4")));localStorage.setItem("ascend-probe","1");storageOK=localStorage.getItem("ascend-probe")==="1"}catch(e){storageOK=false}
+// another open copy of the app saved: take its data instead of later overwriting it with this copy's stale snapshot
+addEventListener("storage",e=>{if(e.key!=="ascend-v4"||!e.newValue)return;try{const ui={tab:S.tab,test:S.test,qseg:S.qseg};S=fresh();load(JSON.parse(e.newValue));Object.assign(S,ui);render()}catch(err){}});
 const save=()=>{try{localStorage.setItem("ascend-v4",JSON.stringify(Object.fromEntries(KEEP.map(k=>[k,S[k]]))))}catch(e){storageOK=false}};
 function rollover(){const n=now(),t=dkey(n),wk=mondayKey(n);
   if(!S.bossStat)S.bossStat=weakest();
