@@ -208,16 +208,39 @@ button{font:inherit;color:inherit}
 /* quests + guild */
 .seg{display:flex;gap:4px;margin-bottom:4px}
 .seg .btn[aria-pressed="true"]{background:var(--hl);color:#0c1218}
-.arcstats{display:grid;grid-template-columns:repeat(3,1fr);margin:12px 0}
-.arcstats b{font-family:var(--f-display);font-size:28px;font-variant-numeric:tabular-nums}
-.arcstats small{display:block;font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
-.carousel{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 56px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 56px),transparent);display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 18px 10px;margin:0 -18px;scrollbar-width:none;scroll-padding:0 18px}
-.dcard{flex:0 0 80%;scroll-snap-align:start;min-height:170px;display:flex;flex-direction:column;justify-content:space-between;gap:12px;padding:16px;border-top:2px solid var(--c)!important}
-.dcard h4{font-family:var(--f-display);font-weight:600;font-size:30px;margin:0;line-height:1}
-.dcard .row{display:flex;justify-content:space-between;align-items:center}
 .tag{display:flex;gap:6px;align-items:center;font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;color:var(--c)}
-.btn.join{border:1px solid var(--hl);background:transparent;color:var(--hl)}
-.btn.join[aria-pressed="true"]{background:var(--hl);color:#0c1218}
+.gmap{position:relative;height:340px;margin:0 -6px 12px;overflow:hidden;border:1px solid var(--line);background:radial-gradient(120% 90% at 50% 70%,#0f2230,#070b12 70%);isolation:isolate}
+.gplane{position:absolute;inset:-24% -16% -4%;transform:perspective(520px) rotateX(42deg);transform-origin:50% 80%;z-index:-1;
+  background:repeating-linear-gradient(0deg,rgba(98,216,230,.13) 0 1px,transparent 1px 24px),repeating-linear-gradient(90deg,rgba(98,216,230,.13) 0 1px,transparent 1px 24px)}
+.gplane svg{position:absolute;inset:0;width:100%;height:100%}
+.gplane path{fill:rgba(150,200,220,.10);stroke:rgba(120,230,255,.45);stroke-width:1.2;vector-effect:non-scaling-stroke}
+.gplane path.gin{fill:rgba(150,200,220,.07);stroke-dasharray:3 4}
+.ghud{position:absolute;left:10px;bottom:8px;font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;color:var(--muted)}
+.ghud b{color:var(--fg);font-size:13px;margin-left:4px}
+.gpin{--gk:#4fb8ff;position:absolute;width:64px;height:24px;margin:-12px 0 0 -32px;padding:0;border:0;background:none;cursor:pointer;color:var(--gk);-webkit-tap-highlight-color:transparent}
+.gpin.active{--gk:#ff4fd8}.gpin.lock{--gk:#6b7785;opacity:.55}
+.gpin .ring{position:absolute;inset:0;border-radius:50%;border:2px solid var(--gk);box-shadow:0 0 12px var(--gk),inset 0 0 10px color-mix(in srgb,var(--gk) 60%,transparent)}
+.gpin .ring::after{content:"";position:absolute;inset:5px 12px;border-radius:50%;border:1px solid color-mix(in srgb,var(--gk) 70%,transparent)}
+.gpin .beam{position:absolute;left:50%;bottom:50%;width:22px;height:96px;margin-left:-11px;border-radius:50% 50% 0 0/20% 20% 0 0;background:linear-gradient(to top,var(--gk),color-mix(in srgb,var(--gk) 40%,transparent) 55%,transparent);filter:blur(5px);opacity:.85;transform-origin:50% 100%;animation:gbeam 2.6s ease-in-out var(--d) infinite}
+.gpin .core{position:absolute;left:50%;bottom:50%;width:4px;height:78px;margin-left:-2px;background:linear-gradient(to top,#fff,color-mix(in srgb,var(--gk) 50%,#fff) 40%,transparent);border-radius:2px;opacity:.9}
+.gpin.lock .beam{height:44px;animation:none;opacity:.5}.gpin.lock .core{height:30px;opacity:.4}
+.gpin.sel .ring{border-width:3px;animation:gsel 1.4s ease-out infinite}
+.gtag{position:absolute;left:44px;bottom:58px;display:flex;align-items:stretch;gap:0;white-space:nowrap;font-family:var(--f-mono);pointer-events:none}
+.gtag.l{left:auto;right:44px;flex-direction:row-reverse}
+.gtag::before{content:"";position:absolute;left:-14px;bottom:-10px;width:16px;height:1px;background:color-mix(in srgb,var(--gk) 70%,#fff);transform:rotate(-38deg);transform-origin:left}
+.gtag.l::before{left:auto;right:-14px;transform:rotate(38deg);transform-origin:right}
+.glv{align-self:flex-end;font-size:10px;letter-spacing:.08em;color:#e8f4ff;border-bottom:1px solid #e8f4ff;padding:0 5px 1px;text-shadow:0 0 6px #000}
+.grk{display:grid;place-items:center;min-width:28px;padding:2px 4px;border:1.5px solid #e8f4ff;background:rgba(5,8,14,.85);color:#e8f4ff;font-size:7px;letter-spacing:.06em;line-height:1;clip-path:polygon(0 0,100% 0,100% 78%,82% 100%,0 100%)}
+.grk b{font-family:var(--f-display);font-size:17px;font-weight:700;line-height:1;margin-bottom:1px}
+.gpin.lock .grk,.gpin.lock .glv{opacity:.7}
+.gbrk{position:absolute;left:50%;top:26px;transform:translateX(-50%);font-family:var(--f-mono);font-size:9px;letter-spacing:.1em;color:#ffd6f4;white-space:nowrap;border-left:2px solid #ff4fd8;padding-left:4px;text-shadow:0 0 6px #ff4fd8}
+.gpin:focus-visible{outline:2px solid #fff;outline-offset:4px;border-radius:50%}
+.gdet{--gk:#4fb8ff}.gdet.active{--gk:#ff4fd8}
+@keyframes gbeam{0%,100%{transform:scaleY(1);opacity:.85}50%{transform:scaleY(1.08);opacity:1}}
+@keyframes gsel{0%{box-shadow:0 0 0 0 var(--gk),0 0 12px var(--gk)}100%{box-shadow:0 0 0 12px transparent,0 0 12px var(--gk)}}
+@media (prefers-reduced-motion:reduce){.gpin .beam,.gpin.sel .ring{animation:none}}
+.gobj{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin:8px 0 4px}
+.gobj b{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 .av{position:relative;display:grid;place-items:center;flex:none;width:var(--s);height:var(--s);border-radius:calc(var(--s)*.28);border:1.5px solid var(--c);background:color-mix(in srgb,var(--c) 12%,var(--sysbg));box-shadow:0 0 calc(10px*var(--glow)) color-mix(in srgb,var(--c) 40%,transparent)}
 .av span{font-family:var(--f-display);font-weight:700;font-size:calc(var(--s)*.42);color:var(--fg);text-transform:uppercase}
 
@@ -339,7 +362,7 @@ button{font:inherit;color:inherit}
 .spark{vertical-align:middle;margin-left:8px;overflow:visible}
 .sdelta{font-family:var(--f-mono);font-size:12px;color:var(--c);margin-left:4px;letter-spacing:.04em}
 /* boss */
-.boss .bossrow{display:flex;gap:14px;align-items:center}
+.boss .bossrow,.gdet .bossrow{display:flex;gap:14px;align-items:center}
 .bossmark{display:grid;place-items:center;animation:bob 3s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-3px)}}
 .bmeta{font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;color:var(--muted);margin:2px 0 8px}
@@ -483,7 +506,9 @@ function runTier(k,u,pace){const p=paces(k,u);if(!p.length)return 0;const last=p
 function addTrain(s,k){for(let i=0;i<Math.abs(k);i++)if(k>0){S.train[s]=(S.train[s]||0)+1;if(S.train[s]%TRAIN===0&&S.stats[s]<99)S.stats[s]++}
   else{if(S.train[s]>0&&S.train[s]%TRAIN===0&&S.stats[s]>1)S.stats[s]--;S.train[s]=Math.max(0,(S.train[s]||0)-1)}}
 const runXP=(q,b)=>b===2?Math.round(q.xp*.5):b?Math.round(q.xp*.25):0;
-function dropRun(q){const r=todayRun(q);if(!r)return;if(r.b){addTrain(q.s,-r.b);gainXP(-runXP(q,r.b))}S.runs=S.runs.filter(x=>x!==r)}
+const toMi=(n,u)=>u==="KM"?n*0.621371:n;
+const addMiles=x=>{S.m.miles=Math.max(0,Math.round((S.m.miles+x)*100)/100)};
+function dropRun(q){const r=todayRun(q);if(!r)return;if(r.b){addTrain(q.s,-r.b);gainXP(-runXP(q,r.b))}if(r.m)addMiles(-toMi(r.n,r.u));S.runs=S.runs.filter(x=>x!==r)}
 let tKind="run";
 const ACH=[ // [id, stat|sys, title, goal, xp]
   ["first","sys","Complete the Player Assessment",1,50],["str50","str","Finish 50 strength sessions",50,150],
@@ -491,6 +516,20 @@ const ACH=[ // [id, stat|sys, title, goal, xp]
   ["int40","int","Read 20 pages 40 times",40,120],["per100","per","Meditate 100 times",100,200],
   ["clear10","sys","Clear the Daily Quest on 10 days",10,150],["water25","vit","Hit your water goal on 25 days",25,80],
   ["lvl20","sys","Reach level 20",20,250]];
+// what a quest counts toward (trophies, Gates); set by the player in the editor, kept through renames, one quest per objective
+const OBJ=[["str50","Strength session"],["agi30","Run or ruck"],["vit30","Lights out on time"],["int40","Reading"],["per100","Meditation"],["water25","Water goal"]];
+const objName=a=>(OBJ.find(o=>o[0]===a)||[0,""])[1];
+// Gates: ranked dungeons with real-life objectives. "run" = Daily Quest clears in a row (Rest Days neutral); others count up from entry.
+const GATES=[
+  {id:"e",t:0,name:"Goblin Den",days:5,xp:60,obj:[["run",3,"Clear the Daily Quest 3 days in a row"]]},
+  {id:"d",t:1,name:"Flooded Cellar",days:7,xp:100,obj:[["miles",10,"Log 10 timed miles (run or ruck time)"]]},
+  {id:"c",t:2,name:"Iron Mines",days:10,xp:150,obj:[["str50",6,"6 strength sessions"],["agi30",3,"3 runs or rucks"]]},
+  {id:"b",t:3,name:"Wraith Halls",days:14,xp:220,obj:[["vit30",10,"Lights out on time, 10 nights"]]},
+  {id:"a",t:4,name:"Scholar's Labyrinth",days:21,xp:300,strict:true,obj:[["clear10",14,"Clear the Daily Quest 14 days"]]},
+  {id:"s",t:5,name:"Monarch's Gate",days:35,xp:500,obj:[["run",30,"Clear the Daily Quest 30 days in a row"]]}];
+const GBASE=["str50","agi30","vit30","clear10","miles"];
+const GPOS={e:[14,76],d:[30,48],c:[44,76],b:[70,46],a:[86,80],s:[54,30]}; // pillar base on the dispatch map, % of map box
+let selGate=null;
 const RANKS=[["E-Rank"],["D-Rank"],["C-Rank"],["B-Rank"],["A-Rank"],["S-Rank"],["National Level"],["Monarch"]];
 const RANK_AT=[1,9,17,25,33,41,51,61]; // first level of each rank
 const PENALTY="Penalty Quest: 50 push-ups, 2-mile walk. Before 12:00.";
@@ -508,7 +547,7 @@ function fresh(){const t=now();
   quests:DEFAULT_QUESTS.map(q=>({...q})),questsNext:null,cnt:{},onboarded:false,statHist:{},
   done:{},day:dkey(t),hist:{},seen:null,penalty:null,boss:100,bossDown:false,bossStat:null,wk:mondayKey(t),prog:dkey(t),
   ap:{first:0,str50:0,vit30:0,agi30:0,int40:0,per100:0,clear10:0,water25:0,lvl20:1},claimed:{},
-  debt:0,rev:"",tab:"home",cat:"all",joined:{}}}
+  debt:0,rev:"",m:{miles:0},gate:null,gateCd:null,gateClears:{},tab:"home",cat:"all"}}
 // demo data: mid-program hunter, used by "Load sample data"
 function sample(){const t=now(),h={};for(let i=1;i<=17;i++){const d=new Date(t);d.setDate(t.getDate()-i);h[dkey(d)]=1}for(const i of[wd(t)-3,9]){const d=new Date(t);d.setDate(t.getDate()-i);if(i>0)h[dkey(d)]=0}
   const pr=new Date(t);pr.setDate(pr.getDate()-17);
@@ -517,7 +556,7 @@ function sample(){const t=now(),h={};for(let i=1;i<=17;i++){const d=new Date(t);
   return {...fresh(),name:S.name,onboarded:true,statHist:sh,lvl:14,xp:62,rest:2,train:{str:2,vit:1,agi:3,int:0,per:2},base:"Sep 23",baseKey:dkey(pr),stats:{str:60,vit:69,agi:70,int:60,per:80},done:{sleep:2},cnt:{sleep:1},hist:h,boss:62,bossStat:"str",prog:dkey(pr),
   ap:{first:0,str50:26,vit30:29,agi30:12,int40:39,per100:64,clear10:15,water25:25,lvl20:14}}}
 let S=fresh();
-const KEEP=["runs","lvl","xp","rest","restDay","base","baseKey","stats","train","qlog","adj","adjNotes","done","day","hist","seen","penalty","ap","claimed","boss","bossDown","bossStat","wk","prog","quests","questsNext","cnt","onboarded","statHist","name","debt","rev"];
+const KEEP=["runs","lvl","xp","rest","restDay","base","baseKey","stats","train","qlog","adj","adjNotes","done","day","hist","seen","penalty","ap","claimed","boss","bossDown","bossStat","wk","prog","quests","questsNext","cnt","onboarded","statHist","name","debt","rev","m","gate","gateCd","gateClears"];
 function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typeof v==="number"&&Number.isFinite(v),key=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v);
   for(const k of ["lvl","xp","rest","boss","debt"])if(num(sv[k]))S[k]=sv[k];
   S.rest=Math.max(0,Math.min(3,Math.round(S.rest)));S.debt=Math.max(0,Math.round(S.debt));S.rev=typeof sv.rev==="string"&&sv.rev.length<=40?sv.rev:"";
@@ -530,7 +569,7 @@ function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typ
   S.adjNotes=Array.isArray(sv.adjNotes)?sv.adjNotes.filter(n=>n&&typeof n.q==="string"&&num(n.from)&&num(n.to)).slice(0,8).map(n=>({q:n.q.slice(0,40),from:n.from,to:n.to,u:UNITS.includes(n.u)?n.u:""})):[];
   if(typeof sv.base==="string"&&sv.base.length<16&&/^[\w ,]+$/.test(sv.base))S.base=sv.base;
   if(S.base&&!S.baseKey)S.baseKey=dkey(now()); // older saves: start the monthly clock now
-  const vq=a=>Array.isArray(a)&&a.length>=1&&a.length<=MAXQ?a.filter(q=>q&&/^[a-z0-9]{1,12}$/.test(q.id)&&typeof q.q==="string"&&q.q.length<=40&&STATS[q.s]&&Number.isInteger(q.n)&&q.n>=1&&q.n<=999&&UNITS.includes(q.u)&&XPS.includes(q.xp)).map(q=>({id:q.id,q:q.q,s:q.s,n:q.n,u:q.u,xp:q.xp,ach:ACH.some(a=>a[0]===q.ach)?q.ach:null})):null;
+  const vq=a=>Array.isArray(a)&&a.length>=1&&a.length<=MAXQ?a.filter(q=>q&&/^[a-z0-9]{1,12}$/.test(q.id)&&typeof q.q==="string"&&q.q.length<=40&&STATS[q.s]&&Number.isInteger(q.n)&&q.n>=1&&q.n<=999&&UNITS.includes(q.u)&&XPS.includes(q.xp)).map(q=>({id:q.id,q:q.q,s:q.s,n:q.n,u:q.u,xp:q.xp,ach:OBJ.some(o=>o[0]===q.ach)?q.ach:null})).map((q,i,L)=>q.ach&&L.findIndex(x=>x.ach===q.ach)<i?{...q,ach:null}:q):null;
   const qs=vq(sv.quests);if(qs&&qs.length&&new Set(qs.map(q=>q.id)).size===qs.length)S.quests=qs;
   const qn=vq(sv.questsNext);S.questsNext=qn&&qn.length?qn:null;
   const ids=new Set(S.quests.map(q=>q.id));
@@ -538,14 +577,20 @@ function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typ
   S.cnt={};if(sv.cnt&&typeof sv.cnt==="object")for(const q of S.quests){const v=sv.cnt[q.id];if(num(v))S.cnt[q.id]=Math.max(0,Math.min(q.n,Math.round(v)))}
   for(const q of S.quests)if(S.done[q.id])S.cnt[q.id]=q.n; // legacy saves: done implies full progress
   S.name=cleanPlayer(sv.name);
-  S.runs=Array.isArray(sv.runs)?sv.runs.filter(r=>r&&key(r.d)&&/^[a-z0-9]{1,12}$/.test(r.q)&&(r.k==="run"||r.k==="ruck")&&num(r.n)&&r.n>0&&r.n<=999&&(r.u==="MI"||r.u==="KM")&&Number.isInteger(r.t)&&r.t>0&&r.t<86400&&[0,1,2].includes(r.b)).slice(-500).map(r=>({d:r.d,q:r.q,k:r.k,n:r.n,u:r.u,t:r.t,b:r.b})):[];
+  S.runs=Array.isArray(sv.runs)?sv.runs.filter(r=>r&&key(r.d)&&/^[a-z0-9]{1,12}$/.test(r.q)&&(r.k==="run"||r.k==="ruck")&&num(r.n)&&r.n>0&&r.n<=999&&(r.u==="MI"||r.u==="KM")&&Number.isInteger(r.t)&&r.t>0&&r.t<86400&&[0,1,2].includes(r.b)).slice(-500).map(r=>({d:r.d,q:r.q,k:r.k,n:r.n,u:r.u,t:r.t,b:r.b,...(r.m===1?{m:1}:{})})):[];
   S.onboarded=sv.onboarded===true||(sv.onboarded===undefined&&!!sv.base); // older saves with a baseline skip onboarding
   S.statHist={};if(sv.statHist&&typeof sv.statHist==="object")for(const[k,v]of Object.entries(sv.statHist).slice(-90))
     if(key(k)&&v&&typeof v==="object"&&Object.keys(STATS).every(x=>num(v[x])))S.statHist[k]=Object.fromEntries(Object.keys(STATS).map(x=>[x,v[x]]));
-  S.penalty=sv.penalty?PENALTY:null;S.bossDown=sv.bossDown===true;S.bossStat=STATS[sv.bossStat]?sv.bossStat:null}
+  S.penalty=sv.penalty?PENALTY:null;S.bossDown=sv.bossDown===true;S.bossStat=STATS[sv.bossStat]?sv.bossStat:null;
+  if(sv.m&&num(sv.m.miles)&&sv.m.miles>=0)S.m.miles=sv.m.miles;
+  if(key(sv.gateCd))S.gateCd=sv.gateCd;
+  if(sv.gateClears&&typeof sv.gateClears==="object")for(const g of GATES){const v=sv.gateClears[g.id];if(Number.isInteger(v)&&v>0)S.gateClears[g.id]=v}
+  const g=sv.gate; // a damaged active gate is dropped on its own; the rest of the save still loads
+  if(g&&typeof g==="object"&&GATES.some(x=>x.id===g.id)&&key(g.start)&&key(g.until)&&g.start<=g.until&&Number.isInteger(g.run)&&g.run>=0&&typeof g.failed==="boolean"&&g.base&&GBASE.every(k=>num(g.base[k])&&g.base[k]>=0))
+    S.gate={id:g.id,start:g.start,until:g.until,run:g.run,failed:g.failed,base:Object.fromEntries(GBASE.map(k=>[k,g.base[k]]))}}
 let storageOK=true,saveBlocked=false;
 // accept stored/restored data only if it has the basic Ascend shape; never fill a blank profile from junk
-const VER=6,STORE="ascend-v6",OLD=["ascend-v5","ascend-v4"];
+const VER=7,STORE="ascend-v7",OLD=["ascend-v6","ascend-v5","ascend-v4"];
 const isSave=sv=>!!sv&&typeof sv==="object"&&!(sv.ver>VER)&&Number.isFinite(sv.lvl)&&sv.stats&&typeof sv.stats==="object"&&Object.keys(STATS).every(k=>Number.isFinite(sv.stats[k]))&&Array.isArray(sv.quests)&&sv.quests.length>0;
 // build the new state aside and only swap it in if it loads cleanly
 function adopt(sv){if(!isSave(sv))return false;const prev=S;try{S=fresh();load(sv);return true}catch(e){S=prev;return false}}
@@ -562,22 +607,46 @@ function pull(){let sv=null;try{const raw=localStorage.getItem(STORE);if(raw===n
   if(!sv||sv.rev===S.rev)return;const ui={tab:S.tab,test:S.test,cat:S.cat};if(adopt(sv)){saveBlocked=false;Object.assign(S,ui)}}
 // every change runs read-latest -> change -> save under one cross-tab lock, so two open copies can't overwrite each other
 const LOCKS=!!(navigator.locks&&navigator.locks.request);
-function act(fn){let ran=false;const run=()=>{ran=true;pull();fn()};if(!LOCKS||!storageOK)return run();
+function act(fn){let ran=false;const run=()=>{ran=true;pull();fn();if(settleGate()){save();render(true)}};if(!LOCKS||!storageOK)return run();
   navigator.locks.request("ascend-state",run).catch(e=>{if(!ran)run();else console.error(e)})} // locks refused (sandboxed frame): run unlocked
 function rollover(){const n=now(),t=dkey(n),wk=mondayKey(n);
   if(!S.bossStat)S.bossStat=weakest();
   if(S.wk!==wk){S.wk=wk;S.boss=100;S.bossDown=false;S.bossStat=weakest()}
   if(S.day===t){save();return}
   if(!S.restDay||S.restDay!==S.day){const lg={};for(const q of Q())lg[q.id]=S.done[q.id]?1:0;S.qlog[S.day]=lg} // rest days don't count against a quest
-  const rested=S.restDay===S.day,missed=!rested&&!Q().every(q=>S.done[q.id]);S.hist[S.day]=rested?2:missed?0:1;S.restDay=null;
+  const rested=S.restDay===S.day,missed=!rested&&!Q().every(q=>S.done[q.id]);S.hist[S.day]=rested?2:missed?0:1;S.restDay=null;gateDay(S.day,S.hist[S.day]);
   S.statHist[S.day]=Object.fromEntries(Object.keys(STATS).map(k=>[k,eff(k)]));{const ks=Object.keys(S.statHist).sort();for(const k of ks.slice(0,-90))delete S.statHist[k]}S.done={};S.cnt={};if(S.questsNext){S.quests=S.questsNext;S.questsNext=null}
   // days the app was never opened are missed days too, each finalized once (a day already logged is never rewritten)
-  let gap=0;if(S.day<t)for(const d=new Date(S.day+"T12:00");d.setDate(d.getDate()+1),dkey(d)<t&&gap<400;){const k=dkey(d);if(k in S.hist)continue;S.hist[k]=0;S.qlog[k]=Object.fromEntries(Q().map(q=>[q.id,0]));gap++}
+  let gap=0;if(S.day<t)for(const d=new Date(S.day+"T12:00");d.setDate(d.getDate()+1),dkey(d)<t&&gap<400;){const k=dkey(d);if(k in S.hist)continue;S.hist[k]=0;gateDay(k,0);S.qlog[k]=Object.fromEntries(Q().map(q=>[q.id,0]));gap++}
   {const ks=Object.keys(S.qlog).sort();for(const k of ks.slice(0,-30))delete S.qlog[k]}
   const nMiss=(missed?1:0)+gap;if(nMiss)S.penalty=PENALTY;
   S.day=t;S.adjNotes=adapt();save();
   if(nMiss)notify({chip:"[ WARNING ]",tone:"danger",title:"Daily Quest failed.",body:(nMiss===1&&missed?"Yesterday's Daily Quest was not completed.":nMiss===1?"1 Daily Quest was not completed.":`${nMiss} Daily Quests were not completed.`)+"\nPenalty Quest assigned."})}
 
+const addDays=(k,n)=>{const d=new Date(k+"T12:00");d.setDate(d.getDate()+n);return dkey(d)};
+const gateDef=id=>GATES.find(g=>g.id===id);
+const clearedToday=()=>allDone()&&!restToday();
+// progress on one objective of the active gate
+function gProg(k){const G=S.gate;if(k==="run")return G.run+(clearedToday()&&S.day>=G.start&&S.day<=G.until?1:0);
+  return Math.max(0,Math.round(((k==="miles"?S.m.miles:S.ap[k])-G.base[k])*10)/10)}
+const gMet=()=>!!S.gate&&!S.gate.failed&&gateDef(S.gate.id).obj.every(([k,n])=>gProg(k)>=n);
+const canEnter=g=>!S.gate&&g.t<=tierOf(S.lvl)&&!(S.gateCd&&S.day<S.gateCd);
+function enterGate(id){const g=gateDef(id);if(!g||!canEnter(g))return;
+  S.gate={id,start:S.day,until:addDays(S.day,g.days-1),run:0,failed:false,base:Object.fromEntries(GBASE.map(k=>[k,k==="miles"?S.m.miles:S.ap[k]]))};
+  save();render(true);toast(`ENTERED ${g.name.toUpperCase()}`)}
+// a finalized day inside the gate's window: clears extend the chain, a missed day breaks it (and fails a strict gate), Rest Days are neutral
+function gateDay(k,h){const G=S.gate;if(!G||k<G.start||k>G.until)return;
+  if(h===1)G.run++;else if(h===0){G.run=0;if(gateDef(G.id).strict)G.failed=true}}
+function closeGate(why){const g=gateDef(S.gate.id);S.gate=null;S.gateCd=addDays(S.day,1);
+  notify({chip:"[ GATE CLOSED ]",title:g.name,body:why+"\nNothing is lost. You can enter a Gate again tomorrow."})}
+// one check after every change: clear (reward once, gate gone before XP is paid) or close an expired/failed gate
+function settleGate(){if(!S.gate)return false;const g=gateDef(S.gate.id);
+  if(gMet()){S.gate=null;S.gateCd=addDays(S.day,1);S.gateClears[g.id]=(S.gateClears[g.id]||0)+1;burst("var(--accent)");
+    notify({chip:"[ GATE CLEARED ]",title:g.name.toUpperCase(),hero:true,center:true,extra:`<div style="display:grid;place-items:center;margin:6px 0">${badge(g.t,72)}</div><span class="ptchip">+${g.xp} XP</span>`,body:"The dungeon has been cleared.",actions:[{label:"Collect"}]});
+    gainXP(g.xp);return true}
+  if(S.gate.failed){closeGate("A day was missed. This Gate allows none.");return true}
+  if(S.day>S.gate.until){closeGate("Time ran out.");return true}
+  return false}
 const PEN_MS=3*3600e3; // warn when under 3h left
 const TEST=[
   ["str","How many push-ups can you do in one set, with good form?",["0–15","16–40","41–70","71 or more"]],
@@ -733,23 +802,30 @@ ${sh("Stats",`+1 every ${TRAIN} sessions`)}
 ${sh("Assessment")}
 <div class="card glowcard" style="--c:var(--hl)"><button class="cta" data-start="1">${hex("agi",28)}<span><b>${!S.base?"Player Assessment":reDue()?"Monthly Re-Assessment due":"Monthly Re-Assessment"}</b><small>${!S.base?"15 questions · 3 min":reDue()?"Re-measure yourself. Your stats reset to the honest result.":`Next in ${30-daysSince(S.baseKey)} days · last taken ${S.base}`}</small></span><span aria-hidden="true">→</span></button></div>`},
 
-quests(){
-const head=`<h1 class="title">Guild.</h1>`;
-const dl=[["The Stoic","per","Meditate 10 min a day for 7 days","812 hunters"],["The Early Riser","vit","Up before 06:00 for 7 days","1.4K hunters"],["The Iron Path","str","100 push-ups a day for 7 days","390 hunters"]];
-return head+sh("Weekly boss")+bossCard(false)+sh("Active")+`<section class="sys" aria-label="Autumn Arc">
-  <div class="syshead"><span class="chip">[ RAID · 28 DAYS ]</span><span class="clock" id="cd">10D ${fmtLeft(left())}</span></div>
-  <h2 class="systitle">Autumn Arc</h2>
-  <div class="arcstats"><div><b>23.4</b><small>Miles run</small></div><div><b>#7</b><small>of 2.1K</small></div><div><b>+48</b><small>Agility XP</small></div></div>
-  <div class="bar" style="--c:var(--hl)"><i style="width:64%"></i></div><div class="barlbl"><span>DAY 18 / 28</span><span style="color:var(--hl)">64%</span></div>
-</section>
-${sh("This week",now().toLocaleDateString("en-US",{month:"short",day:"numeric"}).toUpperCase())}
-<div class="carousel">${dl.map(([n,c,d,j],i)=>`<div class="card dcard glowcard" style="--c:var(--${c})"><div><div class="tag">${hex(c,18)}${STATS[c].toUpperCase()}</div><h4 style="margin-top:8px">${n}</h4></div>
-<div class="stack" style="gap:6px"><span>${d}</span><div class="row"><span style="color:var(--muted);font-size:13px">${j}</span>
-<button class="btn chamf join" data-j="${i}" aria-pressed="${!!S.joined[i]}">${S.joined[i]?'Joined':'Join'}</button></div></div></div>`).join("")}</div>
-${sh("Cleared","last 90 days")}
-<section class="sys"><div class="syshead"><span class="chip">[ COMPLETED ]</span><span class="clock">3 RAIDS</span></div>
-${[["Summer Shred","30 days · rank #41 of 1.6K","str","+120 XP"],["September Reading Raid","4 books","int","+90 XP"],["Cold Shower Week","7 of 7 days","per","+40 XP"]].map(([n,m,c,x])=>`<div class="res" style="border-top:1px solid var(--line);grid-template-columns:auto 1fr auto">${hex(c,22)}<span><b style="font-family:var(--f-body);font-size:15px;font-weight:600">${n}</b><small style="display:block;color:var(--muted);font-size:12px">${m}</small></span><span class="xpv mono" style="font-family:var(--f-mono);font-size:13px">${x}</span></div>`).join("")}</section>`},
-
+quests(){const T=tierOf(S.lvl),G=S.gate;
+if(!gateDef(selGate))selGate=G?G.id:([...GATES].reverse().find(g=>g.t<=T)||GATES[0]).id;
+const st=g=>G&&G.id===g.id?"active":g.t>T?"lock":"open";
+// Gate Dispatch: a tilted holo map with one light pillar per Gate; the active Gate burns pink, like a dungeon break
+const pins=GATES.map(g=>{const[x,y]=GPOS[g.id],k=st(g),n=S.gateClears[g.id]||0;
+  return `<button class="gpin ${k} ${selGate===g.id?"sel":""}" style="left:${x}%;top:${y}%;--d:${(g.t*.37)%1.3}s" data-gsel="${g.id}" aria-pressed="${selGate===g.id}" aria-label="${g.name}, ${RANKS[g.t][0]}${k==="lock"?", locked":k==="active"?", active":""}${n?`, cleared ${n} times`:""}">
+  <i class="beam"></i><i class="core"></i><i class="ring"></i>
+  <span class="gtag ${x>70?"l":""}"><span class="glv">${k==="active"?"ACTIVE":k==="lock"?"LOCKED":n?`×${n}`:g.days+"D"}</span><span class="grk"><b>${"EDCBAS"[g.t]}</b>RANK</span></span>
+  ${k==="active"?`<span class="gbrk">DUNGEON BREAK</span>`:""}</button>`}).join("");
+const g=gateDef(selGate),k=st(g),cd=!G&&k==="open"&&S.gateCd&&S.day<S.gateCd,n=S.gateClears[g.id]||0;
+const left=G&&G.id===g.id?(()=>{const d=1-daysSince(G.until);return d===1?"LAST DAY":d+" DAYS LEFT"})():`${g.days} DAYS`;
+const detail=`<section class="sys gdet ${k}" aria-label="${g.name}">
+  <div class="syshead"><span class="chip">[ GATE · ${RANKS[g.t][0].toUpperCase()} ]</span><span class="clock">${left}</span></div>
+  <div class="bossrow"><div class="bossmark">${badge(g.t,56)}</div><div style="flex:1;min-width:0"><h2 class="systitle">${g.name}</h2>
+  ${g.obj.map(([o,goal,t])=>{if(k!=="active")return `<div class="gobj"><span>${t}</span></div>`;const p=Math.min(goal,gProg(o));return `<div class="gobj"><span>${t}</span><b>${p} / ${goal}</b></div><div class="bar" style="--c:var(--gk)"><i style="width:${p/goal*100}%"></i></div>`}).join("")}</div></div>
+  <p class="bnote">Reward +${g.xp} XP.${g.strict?" No missed days allowed.":" Rest Days don't break a chain."}${n?` Cleared ${n}×.`:""}</p>
+  ${k==="active"?`<button class="btn chamf ghost" data-gleave="1" style="margin-top:10px">Retreat</button>`
+   :k==="lock"?`<p class="warn">Reach ${RANKS[g.t][0]} to enter.</p>`
+   :G?`<p class="warn">Clear or leave ${gateDef(G.id).name} first. One Gate at a time.</p>`
+   :cd?`<p class="warn">The System is rescanning. Enter a Gate again tomorrow.</p>`
+   :`<button class="btn chamf sysbtn" data-gate="${g.id}" style="margin-top:10px">Enter Gate</button>`}</section>`;
+return `<h1 class="title">Guild.</h1>`+sh("Weekly boss")+bossCard(false)+sh("Gate Dispatch",G?"1 / 1 ACTIVE":"SELECT A GATE")+
+`<div class="gmap" role="group" aria-label="Gate map"><div class="gplane" aria-hidden="true"><svg viewBox="0 0 400 300" preserveAspectRatio="none"><path d="M18 120 72 84 128 98 168 62 238 70 262 40 330 58 384 104 360 150 382 196 326 236 262 222 214 262 150 240 92 256 40 214 54 172z"/><path d="M226 120 262 108 296 132 278 168 240 162z" class="gin"/><path d="M96 150 132 138 150 170 118 190 88 178z" class="gin"/></svg></div>
+<span class="ghud">GATES CLEARED <b>${Object.values(S.gateClears).reduce((a,b)=>a+b,0)}</b></span>${pins}</div>`+detail},
 trophies(){const done=ACH.filter(a=>S.claimed[a[0]]).length,nReady=ACH.filter(ready).length;
 const list=ACH.filter(a=>S.cat==="all"||a[1]===S.cat).sort((a,b)=>(!!S.claimed[a[0]])-(!!S.claimed[b[0]])||ready(b)-ready(a));
 return `<h1 class="title">Trophies.</h1>
@@ -853,8 +929,8 @@ function gainXP(n){if(n<0){S.xp+=n;if(S.xp<0){S.debt+=-S.xp;S.xp=0}return} // le
     body:t1===LAST?"Your power exceeds every measured rank.\nThe System recognizes a Monarch.":t1===6?"Your readings exceed S-Rank.\nYou are now a National Level Hunter.":"Requirements met.\nYour rank has been re-assessed.",actions:[{label:"Accept"}]});}
 let rolling=false;
 function tick(){if(dkey(now())!==S.day&&!rolling){rolling=true;act(()=>{rolling=false;if(dkey(now())!==S.day){rollover();render(true);arrival()}else render(true)})}
-  const el=$("#qclock"),cd=$("#cd"),l=left();
-  if(el)el.textContent=fmtLeft(l)+" LEFT";if(cd)cd.textContent="10D "+fmtLeft(l);
+  const el=$("#qclock"),l=left();
+  if(el)el.textContent=fmtLeft(l)+" LEFT";
   const late=l<PEN_MS&&!allDone()&&!restToday();phone.classList.toggle("pz",late&&S.tab==="home");
   const p=$("#qpanel");if(p&&p.classList.contains("danger")!==late)render(true)}
 
@@ -918,16 +994,17 @@ const started=()=>Q().some(q=>S.done[q.id]||S.cnt[q.id]);
 const workList=()=>S.questsNext||Q();
 let qeEdit=null; // id being edited, "new", or null
 function editorHTML(){const L=workList(),staged=started();
-  if(qeEdit){const q=qeEdit==="new"?{q:"",s:"str",n:10,u:"MIN",xp:15}:L.find(x=>x.id===qeEdit);
+  if(qeEdit){const q=qeEdit==="new"?{q:"",s:"str",n:10,u:"MIN",xp:15,ach:null}:L.find(x=>x.id===qeEdit);
     return `<form class="qe"><label>Quest<input id="qe-q" maxlength="40" required></label>
     <div class="qe2"><label>Stat<select id="qe-s">${Object.entries(STATS).map(([k,n])=>`<option value="${k}" ${q.s===k?"selected":""}>${n}</option>`).join("")}</select></label>
     <label>Target<input id="qe-n" type="number" min="1" max="999" inputmode="numeric" value="${q.n}"></label>
     <label>Unit<select id="qe-u">${UNITS.map(u=>`<option value="${u}" ${q.u===u?"selected":""}>${u||"none"}</option>`).join("")}</select></label>
     <label>XP<select id="qe-xp">${XPS.map(x=>`<option ${q.xp===x?"selected":""}>${x}</option>`).join("")}</select></label></div>
+    <label style="margin-top:10px">Counts as<select id="qe-a"><option value="">Nothing (no trophy or Gate)</option>${OBJ.map(([a,n])=>{const used=L.some(x=>x.ach===a&&x.id!==qeEdit);return `<option value="${a}" ${q.ach===a?"selected":""} ${used?"disabled":""}>${n}${used?" (used)":""}</option>`}).join("")}</select></label>
     <p class="qe-err" id="qe-err" role="alert"></p>
     <div class="acts" style="margin-top:8px"><button type="button" class="btn chamf sysbtn" data-qe="save">Save</button><button type="button" class="btn chamf ghost" data-qe="back">Back</button></div></form>`}
   return `${staged?`<p class="warn" style="color:var(--hl);border-color:var(--hl);margin:0 0 10px">Today has started. Changes apply tomorrow.</p>`:""}
-  <div class="qelist">${L.map(q=>`<div class="qeitem">${hex(q.s,20)}<span>${esc(q.q)}<small>${q.n}${q.u?" "+q.u:""} · +${q.xp} XP</small></span>
+  <div class="qelist">${L.map(q=>`<div class="qeitem">${hex(q.s,20)}<span>${esc(q.q)}<small>${q.n}${q.u?" "+q.u:""} · +${q.xp} XP${q.ach?" · "+objName(q.ach):""}</small></span>
   <button class="btn chamf ghost" data-qe="edit:${q.id}" aria-label="Edit ${esc(q.q)}">Edit</button><button class="btn chamf ghost" data-qe="del:${q.id}" aria-label="Delete ${esc(q.q)}" ${L.length<=1?"disabled":""}>✕</button></div>`).join("")}</div>
   ${L.length<MAXQ?`<button class="btn chamf sysbtn" data-qe="new" style="width:100%;justify-content:center;margin-top:10px">+ Add quest</button>`:`<small style="color:var(--muted)">Up to ${MAXQ} quests.</small>`}`}
 function openEditor(){qeEdit=null;notify({chip:"[ QUEST EDITOR ]",title:"Daily Quest",extra:'<div id="qe"></div>',actions:[{label:"Done"}],onOpen:paintEditor})}
@@ -942,9 +1019,9 @@ function editorAct(a,b){const L=workList().map(q=>({...q}));
   if(a==="save"||a==="enter"){const name=$("#qe-q").value.trim(),n=parseInt($("#qe-n").value,10),err=$("#qe-err");
     if(!name){err.textContent="Give the quest a name.";return}
     if(!(n>=1&&n<=999)){err.textContent="Target must be a whole number from 1 to 999.";return}
-    const v={q:name.slice(0,40),s:$("#qe-s").value,n,u:$("#qe-u").value,xp:+$("#qe-xp").value};
-    if(qeEdit==="new"){if(L.length>=MAXQ)return;L.push({id:"q"+Date.now().toString(36).slice(-8),ach:null,...v})}
-    else{const q=L.find(x=>x.id===qeEdit);if(!q)return;const changed=q.q!==v.q||q.s!==v.s||q.n!==v.n||q.u!==v.u;Object.assign(q,v);if(changed)q.ach=null;S.adj[q.id]=S.day} // edited quests stop feeding the default achievement
+    const a=$("#qe-a").value,v={q:name.slice(0,40),s:$("#qe-s").value,n,u:$("#qe-u").value,xp:+$("#qe-xp").value,ach:OBJ.some(o=>o[0]===a)&&!L.some(x=>x.ach===a&&x.id!==qeEdit)?a:null};
+    if(qeEdit==="new"){if(L.length>=MAXQ)return;L.push({id:"q"+Date.now().toString(36).slice(-8),...v})}
+    else{const q=L.find(x=>x.id===qeEdit);if(!q)return;Object.assign(q,v);S.adj[q.id]=S.day} // what it counts as is the player's explicit choice, kept through renames
     qeEdit=null;commit(L);toast(started()?"SAVED · APPLIES TOMORROW":"QUEST SAVED")}}
 document.addEventListener("submit",e=>e.preventDefault());
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="pname"){e.preventDefault();const b=$("#sysA [data-act='0']");if(b)b.click()}}); // Enter in the editor must not reload the page
@@ -983,7 +1060,7 @@ function onButton(b,d){
   if(d.tkind){tKind=d.tkind;render(true);return}
   if(d.tlog){const q=Q().find(x=>x.id===d.tlog),el=$("#tin-"+d.tlog);if(!q||!el)return;const t=parseT(el.value);
     if(!t){toast("ENTER TIME AS MM:SS");el.focus();return}
-    dropRun(q);const b=runTier(tKind,q.u,t/q.n);S.runs.push({d:S.day,q:q.id,k:tKind,n:q.n,u:q.u,t,b});S.runs=S.runs.slice(-500);
+    dropRun(q);const b=runTier(tKind,q.u,t/q.n);S.runs.push({d:S.day,q:q.id,k:tKind,n:q.n,u:q.u,t,b,m:1});addMiles(toMi(q.n,q.u));S.runs=S.runs.slice(-500);
     if(!S.done[q.id])setDone(q,true);
     if(b){addTrain(q.s,b);gainXP(runXP(q,b))}save();render(true);
     toast(b===2?`NEW BEST ${tKind.toUpperCase()} PACE ${mmss(t/q.n)}/${q.u} · +${runXP(q,b)} XP · +2 TRAINING`:b?`FASTER THAN YOUR AVERAGE · +${runXP(q,b)} XP · +1 TRAINING`:`${tKind.toUpperCase()} LOGGED · ${mmss(t)}`);return}
@@ -1007,7 +1084,12 @@ function onButton(b,d){
   if(d.backup){const txt=JSON.stringify(snapshot());
     navigator.clipboard.writeText(txt).then(()=>toast("BACKUP COPIED · PASTE INTO A .JSON FILE")).catch(()=>toast("COPY BLOCKED · TRY ANOTHER BROWSER"));return}
   if(d.cat){S.cat=d.cat;render(true);return}
-  if(d.j){S.joined[d.j]=!S.joined[d.j];render(true);return}
+  if(d.gsel){selGate=d.gsel;render(true);return}
+  if(d.gate){const g=gateDef(d.gate);if(!g||!canEnter(g))return;
+    notify({chip:"[ GATE ]",title:`Enter ${g.name}?`,extra:`<div style="display:grid;place-items:center;margin:6px 0">${badge(g.t,64)}</div>`,
+      body:g.obj.map(o=>"· "+o[2]).join("\n")+`\n\n${g.days} days. Reward +${g.xp} XP.\nProgress counts from the moment you enter.`,actions:[{label:"Enter",fn:()=>enterGate(g.id)},{label:"Not now"}]});return}
+  if(d.gleave){if(!S.gate)return;notify({chip:"[ GATE ]",tone:"danger",title:"Retreat?",body:"This Gate closes and its progress is lost.\nYou can enter a Gate again tomorrow.",
+      actions:[{label:"Stay"},{label:"Retreat",fn:()=>{if(!S.gate)return;S.gate=null;S.gateCd=addDays(S.day,1);save();render(true);toast("GATE CLOSED")}}]});return}
 }
 screenEl.addEventListener("scroll",()=>{const away=screenEl.scrollTop>24&&sheet.hidden;$("#player").classList.toggle("away",away)},{passive:true});
 setInterval(tick,1000);

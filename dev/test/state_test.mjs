@@ -4,7 +4,7 @@ import { spawn } from "node:child_process";
 import { setTimeout as wait } from "node:timers/promises";
 
 const CH = "C:/Program Files/Google/Chrome/Application/chrome.exe";
-const [PROF, URL_, KEY] = process.argv.slice(2);
+const [PROF, URL_, KEY, PREV] = process.argv.slice(2);
 const chrome = spawn(CH, ["--headless=new", "--disable-gpu", `--user-data-dir=${PROF}`, "--remote-debugging-port=9334", "--window-size=430,900", "about:blank"], { stdio: "ignore" });
 const res = [];
 const check = (name, ok, info = "") => res.push(`${ok ? "PASS" : "FAIL"} ${name}${info ? " (" + info + ")" : ""}`);
@@ -31,11 +31,11 @@ try {
   const click = async sel => { await ev(`document.querySelector(${JSON.stringify(sel)}).click()`); await wait(250); await ev(`(()=>{for(let i=0;i<6;i++)__ascend.closeNote()})()`); await wait(150); };
 
   // A: an older v5 save is imported; v5 itself is left as it was
-  if (KEY !== "ascend-v5") {
-    const v5 = { ...base, ver: 5, lvl: 7 };
-    await boot("ascend-v5", v5);
-    const r = await ev(`({lvl:__ascend.S.lvl,v6:!!localStorage.getItem("ascend-v6"),v5same:localStorage.getItem("ascend-v5")===${JSON.stringify(JSON.stringify(v5))}})`);
-    check("v5 save imported into v6, v5 untouched", r.lvl === 7 && r.v6 && r.v5same, JSON.stringify(r));
+  if (PREV) {
+    const v5 = { ...base, ver: +PREV.slice(-1), lvl: 7 };
+    await boot(PREV, v5);
+    const r = await ev(`({lvl:__ascend.S.lvl,v6:!!localStorage.getItem(${JSON.stringify(KEY)}),v5same:localStorage.getItem(${JSON.stringify(PREV)})===${JSON.stringify(JSON.stringify(v5))}})`);
+    check(`${PREV} save imported into ${KEY}, ${PREV} untouched`, r.lvl === 7 && r.v6 && r.v5same, JSON.stringify(r));
   }
 
   // B: complete -> undo -> complete across a level-up must end where the first complete ended
@@ -67,6 +67,7 @@ try {
     const r = await ev(`Object.keys(JSON.parse(localStorage.getItem(${JSON.stringify(KEY)})).done).sort().join()`);
     check("stale copy keeps the other copy's save", r === [qa, qb].sort().join(), "done=" + r);
   }
+  if (process.argv[6] === "gates") await (await import("./gates_cases.mjs")).run({ ev, boot, click, base, check, KEY, DK, wait });
   console.log(res.join("\n"));
   ws.close();
 } finally { chrome.kill(); }
