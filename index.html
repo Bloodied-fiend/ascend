@@ -218,20 +218,8 @@ button{font:inherit;color:inherit}
 .tag{display:flex;gap:6px;align-items:center;font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;color:var(--c)}
 .btn.join{border:1px solid var(--hl);background:transparent;color:var(--hl)}
 .btn.join[aria-pressed="true"]{background:var(--hl);color:#0c1218}
-.post{display:grid;gap:8px}
-.ph{display:flex;gap:10px;align-items:center}
-.ph .who{flex:1}.ph .who b{display:block}.ph .who small{color:var(--muted);font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
 .av{position:relative;display:grid;place-items:center;flex:none;width:var(--s);height:var(--s);border-radius:calc(var(--s)*.28);border:1.5px solid var(--c);background:color-mix(in srgb,var(--c) 12%,var(--sysbg));box-shadow:0 0 calc(10px*var(--glow)) color-mix(in srgb,var(--c) 40%,transparent)}
 .av span{font-family:var(--f-display);font-weight:700;font-size:calc(var(--s)*.42);color:var(--fg);text-transform:uppercase}
-.up{gap:6px;font-variant-numeric:tabular-nums;border:1px solid var(--line);background:transparent;padding:0 10px}
-.up[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
-.post h5{font-size:16px;margin:0}
-.post p{margin:0;line-height:1.45;color:color-mix(in srgb,var(--fg) 85%,var(--muted))}
-.thread{display:grid;gap:8px;margin-left:19px;padding-left:14px;border-left:1px solid var(--line)}
-.reply{display:flex;gap:10px;align-items:center;font-size:14px}
-.reply .card{background:transparent;border:0;padding:2px 0;line-height:1.4}
-.reply .card b{font-size:13px}
-.reply .card{flex:1;padding:10px 12px;font-size:14px}
 
 /* trophies */
 .achhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
@@ -278,7 +266,7 @@ button{font:inherit;color:inherit}
 .primary{all:unset;cursor:pointer;display:block;text-align:center;padding:14px;background:var(--accent);color:#16110a;font-family:var(--f-mono);font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-shadow:none}
 
 /* press feedback: subtle, frequent (tens/day) */
-.btn,.qmain,.qck,.plus,.cta,.pmore,.pbtn,.tab,.skin,.demo button,.up{transition:transform 160ms var(--ease-out)}
+.btn,.qmain,.qck,.plus,.cta,.pmore,.pbtn,.tab,.skin,.demo button{transition:transform 160ms var(--ease-out)}
 .opt{transition:border-color .15s,box-shadow .15s,transform 160ms var(--ease-out)}
 .btn:active,.qmain:active,.qck:active,.plus:active,.cta:active,.pmore:active,.pbtn:active,.skin:active,.demo button:active,.opt:active{transform:scale(.97)}
 .tab:active svg{transform:scale(.88)}
@@ -520,7 +508,7 @@ function fresh(){const t=now();
   quests:DEFAULT_QUESTS.map(q=>({...q})),questsNext:null,cnt:{},onboarded:false,statHist:{},
   done:{},day:dkey(t),hist:{},seen:null,penalty:null,boss:100,bossDown:false,bossStat:null,wk:mondayKey(t),prog:dkey(t),
   ap:{first:0,str50:0,vit30:0,agi30:0,int40:0,per100:0,clear10:0,water25:0,lvl20:1},claimed:{},
-  tab:"home",qseg:"quests",cat:"all",joined:{},voted:{}}}
+  tab:"home",cat:"all",joined:{}}}
 // demo data: mid-program hunter, used by "Load sample data"
 function sample(){const t=now(),h={};for(let i=1;i<=17;i++){const d=new Date(t);d.setDate(t.getDate()-i);h[dkey(d)]=1}for(const i of[wd(t)-3,9]){const d=new Date(t);d.setDate(t.getDate()-i);if(i>0)h[dkey(d)]=0}
   const pr=new Date(t);pr.setDate(pr.getDate()-17);
@@ -558,7 +546,7 @@ function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typ
 let storageOK=true;
 try{load(JSON.parse(localStorage.getItem("ascend-v4")));localStorage.setItem("ascend-probe","1");storageOK=localStorage.getItem("ascend-probe")==="1"}catch(e){storageOK=false}
 // another open copy of the app saved: take its data instead of later overwriting it with this copy's stale snapshot
-addEventListener("storage",e=>{if(e.key!=="ascend-v4"||!e.newValue)return;try{const ui={tab:S.tab,test:S.test,qseg:S.qseg};S=fresh();load(JSON.parse(e.newValue));Object.assign(S,ui);render()}catch(err){}});
+addEventListener("storage",e=>{if(e.key!=="ascend-v4"||!e.newValue)return;try{const ui={tab:S.tab,test:S.test};S=fresh();load(JSON.parse(e.newValue));Object.assign(S,ui);render()}catch(err){}});
 const save=()=>{try{localStorage.setItem("ascend-v4",JSON.stringify(Object.fromEntries(KEEP.map(k=>[k,S[k]]))))}catch(e){storageOK=false}};
 function rollover(){const n=now(),t=dkey(n),wk=mondayKey(n);
   if(!S.bossStat)S.bossStat=weakest();
@@ -663,11 +651,6 @@ function spark(k){const ks=Object.keys(S.statHist).sort().slice(-14),v=[...ks.ma
   return `<svg class="spark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${d>=0?"Up":"Down"} ${Math.abs(d)} over ${v.length} days"><polyline points="${pts}" fill="none" stroke="var(--c)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${W}" cy="${pts.split(" ").pop().split(",")[1]}" r="2" fill="var(--c)"/></svg><span class="sdelta">${d>=0?"+":""}${d}</span>`}
 const sh=(t,extra="")=>`<div class="sh">${t}${extra?` <span>${extra}</span>`:""}</div>`;
 let slamId=null,openQ=null;
-const GUILD=[
-  {u:"marcus",s:"agi",r:3,t:"14m",up:2400,h:"Finally ran a sub-25 5K",b:"Stuck at 26:40 for two months. Switched to one interval day a week and it dropped in three weeks. Small changes add up.",rp:[["dee","vit","huge, congrats!!"],["kofi","str","Reading this before my run. Let's go."]]},
-  {u:"nina",s:"per",r:2,t:"1h",up:1100,h:"How do you keep a streak through a bad week?",b:"Day 41 and work is eating me alive. Do you shrink the quests or just push through?",rp:[["sam","int","Shrink them. A 10-minute walk still counts as showing up."]]},
-];
-
 const screens={
 home(){const t=tierOf(S.lvl),[rn]=RANKS[t],td=now(),wi=wd(td),late=left()<PEN_MS&&!allDone()&&!restToday();
 const days="MTWTFSS".split("").map((d,i)=>{const x=new Date(td);x.setDate(td.getDate()+i-wi);const k=dkey(x);
@@ -731,13 +714,7 @@ ${sh("Assessment")}
 <div class="card glowcard" style="--c:var(--hl)"><button class="cta" data-start="1">${hex("agi",28)}<span><b>${!S.base?"Player Assessment":reDue()?"Monthly Re-Assessment due":"Monthly Re-Assessment"}</b><small>${!S.base?"15 questions · 3 min":reDue()?"Re-measure yourself. Your stats reset to the honest result.":`Next in ${30-daysSince(S.baseKey)} days · last taken ${S.base}`}</small></span><span aria-hidden="true">→</span></button></div>`},
 
 quests(){
-const head=`<h1 class="title">Guild.</h1><div class="seg" role="group"><button class="btn chamf" data-seg="quests" aria-pressed="${S.qseg==="quests"}">Raids</button><button class="btn chamf" data-seg="guild" aria-pressed="${S.qseg==="guild"}">Forum</button></div>`;
-if(S.qseg==="guild"){const fmt=n=>n>=1000?(n/1000).toFixed(1)+"K":n;
-return head+`<p class="warn" style="color:var(--muted);border-color:var(--line);margin:12px 0 0">[ PREVIEW ] Sample posts. The Guild opens when friends join.</p>`+sh("Forum","most upvoted")+`<div class="stack">${GUILD.map((p,i)=>`<div class="card post glowcard" style="--c:var(--${p.s})">
-<div class="ph">${av(p.s,38,p.u[0])}<span class="who"><b>${p.u}</b><small>${RANKS[p.r][0]} · ${p.t}</small></span>
-<button class="btn chamf up" data-v="${i}" aria-pressed="${!!S.voted[i]}" aria-label="Upvote, ${p.up} votes">↑ ${fmt(p.up+(S.voted[i]?1:0))}</button></div>
-<h5>${p.h}</h5><p>${p.b}</p></div>
-<div class="thread">${p.rp.map(([u,s,t])=>`<div class="reply">${av(s,28,u[0])}<div class="card"><b>${u}</b><br>${t}</div></div>`).join("")}</div>`).join("")}</div>`}
+const head=`<h1 class="title">Guild.</h1>`;
 const dl=[["The Stoic","per","Meditate 10 min a day for 7 days","812 hunters"],["The Early Riser","vit","Up before 06:00 for 7 days","1.4K hunters"],["The Iron Path","str","100 push-ups a day for 7 days","390 hunters"]];
 return head+sh("Weekly boss")+bossCard(false)+sh("Active")+`<section class="sys" aria-label="Autumn Arc">
   <div class="syshead"><span class="chip">[ RAID · 28 DAYS ]</span><span class="clock" id="cd">10D ${fmtLeft(left())}</span></div>
@@ -1005,9 +982,7 @@ document.addEventListener("click",e=>{
   if(d.backup){const txt=JSON.stringify(Object.fromEntries(KEEP.map(k=>[k,S[k]])));
     navigator.clipboard.writeText(txt).then(()=>toast("BACKUP COPIED · PASTE INTO A .JSON FILE")).catch(()=>toast("COPY BLOCKED · TRY ANOTHER BROWSER"));return}
   if(d.cat){S.cat=d.cat;render(true);return}
-  if(d.seg){S.qseg=d.seg;render();return}
   if(d.j){S.joined[d.j]=!S.joined[d.j];render(true);return}
-  if(d.v){S.voted[d.v]=!S.voted[d.v];render(true)}
 });
 screenEl.addEventListener("scroll",()=>{const away=screenEl.scrollTop>24&&sheet.hidden;$("#player").classList.toggle("away",away)},{passive:true});
 setInterval(tick,1000);
