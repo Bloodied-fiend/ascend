@@ -554,14 +554,14 @@ function rollover(){const n=now(),t=dkey(n),wk=mondayKey(n);
 
 const PEN_MS=3*3600e3; // warn when under 3h left
 const TEST=[
-  ["str","How many push-ups can you do in one set, with good form?",["0–10","11–25","26–45","46 or more"]],
-  ["str","How many pull-ups can you do?",["0","1–4","5–10","11 or more"]],
-  ["str","How many days a week do you lift?",["0","1","2–3","4 or more"]],
+  ["str","How many push-ups can you do in one set, with good form?",["0–15","16–40","41–70","71 or more"]],
+  ["str","How many strict pull-ups can you do?",["0–2","3–9","10–19","20 or more"]],
+  ["str","Heaviest deadlift, compared to your bodyweight?",["Under 1x, or never tested","1–1.5x","1.5–2.25x","2.25x or more"]],
   ["vit","How many hours do you sleep a night?",["Under 5","5–6","6–7","7 or more"]],
   ["vit","How's your energy through a normal day?",["Running on empty","Crash every afternoon","Mostly steady","Strong all day"]],
   ["vit","How many days a week do you eat real meals?",["0–2","3–4","5–6","Every day"]],
-  ["agi","How long could you run or jog without stopping?",["Under 5 min","5–15 min","15–30 min","30 min or more"]],
-  ["agi","What is your 2-mile run time? Best guess is fine.",["Over 22 min, or can't finish","18–22 min","15–18 min","Under 15 min"]],
+  ["agi","How long could you run or jog without stopping?",["Under 10 min","10–30 min","30–60 min","Over an hour"]],
+  ["agi","What is your 2-mile run time? Best guess is fine.",["Over 20 min, or can't finish","16–20 min","13–16 min","Under 13 min"]],
   ["agi","Standing, legs straight, can you touch your toes?",["Not close","Reach my shins","Fingertips to toes","Palms flat"]],
   ["int","How many books (or audiobooks) did you finish in the last 3 months?",["None","1","2–3","4 or more"]],
   ["int","How many hours a week do you spend learning on purpose?",["0","1–2","3–6","7 or more"]],
@@ -571,7 +571,8 @@ const TEST=[
   ["per","How often do you meditate, pray, journal or sit quietly on purpose?",["Never","Now and then","Weekly","Daily"]],
 ];
 // ponytail: linear map of 3–12 points onto 30–95; swap for benchmarked scoring (age/sex norms) later
-const score=pts=>Math.round(30+(pts-3)/9*65);
+// STR/AGI curve: average answers land low, all-top answers (elite) reach 99 — Monarch-level stats should mean exceptional
+const score=(pts,k)=>k==="str"||k==="agi"?Math.round(10+89*((pts-3)/9)**1.6):Math.round(30+(pts-3)/9*65);
 const tierOf=l=>RANK_AT.reduce((t,a,i)=>l>=a?i:t,0);
 const LAST=RANKS.length-1;
 // progress through the current rank, 0..1 (Monarch is open-ended)
@@ -772,7 +773,7 @@ return `<h1 class="title">Results.</h1>
 <button class="link" data-retake="1" style="display:block;margin:14px auto 0">Retake Player Assessment</button>`},
 };
 
-function results(){const r={};for(const k in STATS)r[k]=0;TEST.forEach(([k],i)=>r[k]+=S.test.a[i]);for(const k in r)r[k]=score(r[k]);return r}
+function results(){const r={};for(const k in STATS)r[k]=0;TEST.forEach(([k],i)=>r[k]+=S.test.a[i]);for(const k in r)r[k]=score(r[k],k);return r}
 const $=s=>document.querySelector(s),screenEl=$("#screen"),phone=$("#phone");
 function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("show"),1800)}
 function render(keep){const y=screenEl.scrollTop;
