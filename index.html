@@ -154,6 +154,7 @@ button{font:inherit;color:inherit}
 .dot.miss{border:1px solid color-mix(in srgb,var(--danger) 55%,transparent);color:var(--danger)}
 .dot.today{border:2px solid var(--fg);color:var(--fg)}
 .dot.fut{border:1px dashed var(--line)}
+.dot.rest{border:1px dashed var(--accent);color:var(--accent);font-family:var(--f-mono);font-size:12px}
 .dot.pre{border:1px solid color-mix(in srgb,var(--muted) 35%,transparent)}
 .day.now{color:var(--fg);font-weight:700}
 .qrow{position:relative;display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:4px;min-height:46px;padding:5px 2px;border-top:1px solid var(--line);overflow:hidden}
@@ -186,11 +187,11 @@ button{font:inherit;color:inherit}
 .prof dd{margin:0;font-weight:600}
 .pts{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
 .pts b{font-family:var(--f-display);font-size:26px;color:var(--accent)}
-.srow{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:11px 12px}
+.srow{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:11px 12px}
 .srow .nm{font-weight:600}
 .srow small{display:block;color:var(--muted);font-size:12px;margin-top:1px}
 .srow b{font-size:26px;font-family:var(--f-display);font-variant-numeric:tabular-nums;min-width:2ch;text-align:right}
-.srow .alloc{font-family:var(--f-mono);font-size:12px;color:var(--accent)}
+.srow .alloc{font-family:var(--f-mono);font-size:12px;color:var(--muted);margin-left:6px}
 .plus{all:unset;cursor:pointer;position:relative;width:30px;height:30px;display:grid;place-items:center;border:1px solid var(--accent);color:var(--accent);font-size:18px;line-height:1}
 .plus:focus-visible{outline:2px solid var(--fg)}
 .plus::after{content:"";position:absolute;inset:-7px}
@@ -335,6 +336,7 @@ button{font:inherit;color:inherit}
 /* 60-day program grid */
 .pgrid{display:grid;grid-template-columns:repeat(20,1fr);gap:3px}
 .pgrid i{height:12px;border:1px solid var(--line);background:rgba(0,0,0,.25)}
+.pgrid i.rst{border:1px dashed var(--accent)}
 .pgrid i.ok{background:color-mix(in srgb,var(--hl) 55%,transparent);border-color:var(--hl)}
 .pgrid i.no{background:color-mix(in srgb,var(--danger) 25%,transparent);border-color:color-mix(in srgb,var(--danger) 50%,transparent)}
 .pgrid i.now{outline:2px solid var(--fg);outline-offset:1px}
@@ -406,9 +408,9 @@ html.app .player{top:calc(18px + env(safe-area-inset-top,0px))}
 <div class="stage">
   <section class="pitch">
     <div class="brand"><svg class="appicon" viewBox="0 0 1024 1024" role="img" aria-label="Ascend app icon"><defs><radialGradient id="aig" cx="50%" cy="0%" r="100%"><stop offset="0" stop-color="#27303a"/><stop offset="1" stop-color="#0c1015"/></radialGradient></defs><rect width="1024" height="1024" rx="224" fill="url(#aig)"/><path d="M512 150 826 331v362L512 874 198 693V331z" fill="none" stroke="#62d8e6" stroke-opacity=".25" stroke-width="28"/><path d="M332 760 L512 260 L692 760" fill="none" stroke="#e8eef3" stroke-width="90" stroke-linejoin="miter"/><path d="M512 470 l58 76 -58 76 -58 -76z" fill="#62d8e6" style="filter:drop-shadow(0 0 40px #62d8e6)"/><path d="M120 220V120H220M804 120H904V220M904 804V904H804M220 904H120V804" fill="none" stroke="#62d8e6" stroke-width="18"/></svg><svg class="wordmark" viewBox="0 0 220 52" role="img" aria-label="Ascend"><path d="M3 46 L17 4 L31 46" fill="none" stroke="var(--fg)" stroke-width="6" stroke-linejoin="miter"/><path d="M17 24 l4.5 6 -4.5 6 -4.5 -6z" fill="#62d8e6" style="filter:drop-shadow(0 0 4px rgba(98,216,230,.6))"/><text x="38" y="46" font-family="Barlow Condensed,Arial Narrow,sans-serif" font-weight="700" font-size="50" letter-spacing="2" fill="var(--fg)">SCEND</text><path d="M38 50.5H118M122 50.5H216" stroke="#62d8e6"/></svg></div>
-    <span class="lbl">App prototype · v2.1</span>
+    <span class="lbl">App prototype · v2.2</span>
     <h1>Ascend. Level up your <em>actual</em> life.</h1>
-    <p>A habit tracker run by the System. Daily quests raise five Hunter stats, level-ups give you points to spend, and a missed day assigns a Penalty Quest instead of wiping your progress. You never lose stats or levels.</p>
+    <p>A habit tracker run by the System. Real training raises five Hunter stats, a monthly Re-Assessment keeps them honest, level-ups earn Rest Days, and a missed day assigns a Penalty Quest instead of wiping your progress. You never lose stats or levels.</p>
     <div class="skins" role="group" aria-label="Visual direction">
       <span class="lbl">Look</span>
       <button class="skin" data-s="hunter" aria-pressed="true"><span class="sw" style="background:linear-gradient(90deg,#2b333d 40%,#1a2028 40% 60%,#f6a43a 60% 80%,#62d8e6 80%)"></span><span><b>Hunter System</b><small>Styled after Solo Leveling's System windows.</small></span></button>
@@ -496,8 +498,8 @@ const wd=d=>(d.getDay()+6)%7; // Monday=0
 const pad=n=>String(n).padStart(2,"0");
 const mondayKey=d=>{const m=new Date(d);m.setDate(d.getDate()-wd(d));return dkey(m)};
 function fresh(){const t=now();
-  return {name:"",lvl:1,xp:0,pts:0,base:null,
-  stats:{str:30,vit:30,agi:30,int:30,per:30},alloc:{str:0,vit:0,agi:0,int:0,per:0},
+  return {name:"",lvl:1,xp:0,rest:1,restDay:null,base:null,baseKey:null,
+  stats:{str:30,vit:30,agi:30,int:30,per:30},train:{str:0,vit:0,agi:0,int:0,per:0},
   quests:DEFAULT_QUESTS.map(q=>({...q})),questsNext:null,cnt:{},onboarded:false,statHist:{},
   done:{},day:dkey(t),hist:{},seen:null,penalty:null,boss:100,bossDown:false,bossStat:null,wk:mondayKey(t),prog:dkey(t),
   ap:{first:0,str50:0,vit30:0,agi30:0,int40:0,per100:0,clear10:0,water25:0,lvl20:1},claimed:{},
@@ -507,16 +509,18 @@ function sample(){const t=now(),h={};for(let i=1;i<=17;i++){const d=new Date(t);
   const pr=new Date(t);pr.setDate(pr.getDate()-17);
   const sh={};for(let i=17;i>=1;i--){const d=new Date(t);d.setDate(d.getDate()-i);const f=1-i/18;
     sh[dkey(d)]={str:Math.round(44+16*f),vit:Math.round(55+14*f),agi:Math.round(58+12*f),int:Math.round(47+13*f),per:Math.round(70+10*f)}}
-  return {...fresh(),name:S.name,onboarded:true,statHist:sh,lvl:14,xp:62,pts:3,stats:{str:60,vit:69,agi:70,int:60,per:80},done:{sleep:2},cnt:{sleep:1},hist:h,boss:62,bossStat:"str",prog:dkey(pr),
+  return {...fresh(),name:S.name,onboarded:true,statHist:sh,lvl:14,xp:62,rest:2,train:{str:2,vit:1,agi:3,int:0,per:2},base:"Sep 23",baseKey:dkey(pr),stats:{str:60,vit:69,agi:70,int:60,per:80},done:{sleep:2},cnt:{sleep:1},hist:h,boss:62,bossStat:"str",prog:dkey(pr),
   ap:{first:0,str50:26,vit30:29,agi30:12,int40:39,per100:64,clear10:15,water25:25,lvl20:14}}}
 let S=fresh();
-const KEEP=["lvl","xp","pts","base","stats","alloc","done","day","hist","seen","penalty","ap","claimed","boss","bossDown","bossStat","wk","prog","quests","questsNext","cnt","onboarded","statHist","name"];
+const KEEP=["lvl","xp","rest","restDay","base","baseKey","stats","train","done","day","hist","seen","penalty","ap","claimed","boss","bossDown","bossStat","wk","prog","quests","questsNext","cnt","onboarded","statHist","name"];
 function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typeof v==="number"&&Number.isFinite(v),key=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v);
-  for(const k of ["lvl","xp","pts","boss"])if(num(sv[k]))S[k]=sv[k];
-  for(const k of ["stats","alloc","ap"])if(sv[k]&&typeof sv[k]==="object")for(const x in D[k])if(num(sv[k][x]))S[k][x]=sv[k][x];
+  for(const k of ["lvl","xp","rest","boss"])if(num(sv[k]))S[k]=sv[k];
+  S.rest=Math.max(0,Math.min(3,Math.round(S.rest)));
+  for(const k of ["stats","train","ap"])if(sv[k]&&typeof sv[k]==="object")for(const x in D[k])if(num(sv[k][x]))S[k][x]=sv[k][x];
   for(const k of ["done","hist","claimed"])if(sv[k]&&typeof sv[k]==="object")S[k]=Object.fromEntries(Object.entries(sv[k]).filter(([a,v])=>/^[\w-]{1,20}$/.test(a)&&num(v)));
-  for(const k of ["day","seen","wk","prog"])if(key(sv[k]))S[k]=sv[k];
+  for(const k of ["day","seen","wk","prog","baseKey","restDay"])if(key(sv[k]))S[k]=sv[k];
   if(typeof sv.base==="string"&&sv.base.length<16&&/^[\w ,]+$/.test(sv.base))S.base=sv.base;
+  if(S.base&&!S.baseKey)S.baseKey=dkey(now()); // older saves: start the monthly clock now
   const vq=a=>Array.isArray(a)&&a.length>=1&&a.length<=MAXQ?a.filter(q=>q&&/^[a-z0-9]{1,12}$/.test(q.id)&&typeof q.q==="string"&&q.q.length<=40&&STATS[q.s]&&Number.isInteger(q.n)&&q.n>=1&&q.n<=999&&UNITS.includes(q.u)&&XPS.includes(q.xp)).map(q=>({id:q.id,q:q.q,s:q.s,n:q.n,u:q.u,xp:q.xp,ach:ACH.some(a=>a[0]===q.ach)?q.ach:null})):null;
   const qs=vq(sv.quests);if(qs&&qs.length&&new Set(qs.map(q=>q.id)).size===qs.length)S.quests=qs;
   const qn=vq(sv.questsNext);S.questsNext=qn&&qn.length?qn:null;
@@ -536,7 +540,7 @@ function rollover(){const n=now(),t=dkey(n),wk=mondayKey(n);
   if(!S.bossStat)S.bossStat=weakest();
   if(S.wk!==wk){S.wk=wk;S.boss=100;S.bossDown=false;S.bossStat=weakest()}
   if(S.day===t){save();return}
-  const missed=!Q().every(q=>S.done[q.id]);S.hist[S.day]=missed?0:1;if(missed)S.penalty=PENALTY;
+  const rested=S.restDay===S.day,missed=!rested&&!Q().every(q=>S.done[q.id]);S.hist[S.day]=rested?2:missed?0:1;if(missed)S.penalty=PENALTY;S.restDay=null;
   S.statHist[S.day]=Object.fromEntries(Object.keys(STATS).map(k=>[k,eff(k)]));{const ks=Object.keys(S.statHist).sort();for(const k of ks.slice(0,-90))delete S.statHist[k]}S.done={};S.cnt={};if(S.questsNext){S.quests=S.questsNext;S.questsNext=null}S.day=t;save();
   if(missed)notify({chip:"[ WARNING ]",tone:"danger",title:"Daily Quest failed.",body:"Yesterday's Daily Quest was not completed.\nPenalty Quest assigned."})}
 
@@ -564,7 +568,11 @@ const tierOf=l=>RANK_AT.reduce((t,a,i)=>l>=a?i:t,0);
 const LAST=RANKS.length-1;
 // progress through the current rank, 0..1 (Monarch is open-ended)
 const rankProg=()=>{const t=tierOf(S.lvl);if(t===LAST)return 1;const a=RANK_AT[t],b=RANK_AT[t+1];return Math.min(1,(S.lvl-a+S.xp/100)/(b-a))};
-const eff=k=>Math.min(99,S.stats[k]+S.alloc[k]);
+const eff=k=>Math.min(99,S.stats[k]);
+const TRAIN=4; // quest completions per +1 stat
+const daysSince=k=>k?Math.round((new Date(dkey(now())+"T12:00")-new Date(k+"T12:00"))/864e5):0;
+const reDue=()=>!!S.baseKey&&daysSince(S.baseKey)>=30;
+const restToday=()=>S.restDay===S.day;
 const ovr=()=>Math.round(Object.keys(STATS).reduce((a,k)=>a+eff(k),0)/5);
 const allDone=()=>Q().every(q=>S.done[q.id]);
 const BOSSES={str:"Iron Warden",vit:"Sleepless Wraith",agi:"Swift Stalker",int:"Hollow Scholar",per:"Mirror Shade"};
@@ -624,10 +632,10 @@ const GUILD=[
 ];
 
 const screens={
-home(){const t=tierOf(S.lvl),[rn]=RANKS[t],td=now(),wi=wd(td),late=left()<PEN_MS&&!allDone();
+home(){const t=tierOf(S.lvl),[rn]=RANKS[t],td=now(),wi=wd(td),late=left()<PEN_MS&&!allDone()&&!restToday();
 const days="MTWTFSS".split("").map((d,i)=>{const x=new Date(td);x.setDate(td.getDate()+i-wi);const k=dkey(x);
-  const st=k<S.prog?"pre":i<wi?(S.hist[k]?"done":"miss"):i===wi?(allDone()?"done today":"today"):"fut";
-  return `<div class="day ${i===wi?'now':''}"><div class="dot ${st}" aria-label="${d}: ${st}">${st.startsWith("done")?"✓":st==="miss"?"✕":""}</div>${d}</div>`}).join("");
+  const st=k<S.prog?"pre":i<wi?(S.hist[k]===2?"rest":S.hist[k]?"done":"miss"):i===wi?(restToday()?"rest today":allDone()?"done today":"today"):"fut";
+  return `<div class="day ${i===wi?'now':''}"><div class="dot ${st}" aria-label="${d}: ${st}">${st.startsWith("done")?"✓":st.startsWith("rest")?"R":st==="miss"?"✕":""}</div>${d}</div>`}).join("");
 const rows=Q().map(q=>{const d=!!S.done[q.id],c=S.cnt[q.id]||0,open=openQ===q.id,nm=esc(q.q),u=q.u?" "+q.u:"";return `<div class="qrow ${d?'done':''}" style="--c:var(--${q.s})" data-row="${q.id}">
   <button class="qmain" data-qopen="${q.id}" aria-expanded="${open}" aria-label="${nm}, ${c} of ${q.n}${u}. Log progress">${hex(q.s,24)}<span><span class="q">${nm}</span><br><span class="x"><span class="xpv">+${q.xp} XP</span> · ${STATS[q.s].toUpperCase()}</span></span>${d?"":`<span class="goal">[${c}/${q.n}${u}]</span>`}</button>
   <button class="qck" data-q="${q.id}" aria-pressed="${d}" aria-label="${nm}: ${d?'complete, undo':'mark complete'}">${d?`<span class="stamp ${slamId===q.id?'slam':''}">DONE</span>`:'<span class="qbox"></span>'}</button>
@@ -636,17 +644,18 @@ const rows=Q().map(q=>{const d=!!S.done[q.id],c=S.cnt[q.id]||0,open=openQ===q.id
 </div>`}).join("");
 return `<h1 class="title">Home.</h1>
 <div class="herorow"><div class="halo">${badge(t,104)}</div>
-<div><div class="lvl ${lvPop?'pop':''}">Lv. ${S.lvl}</div><div class="rk">${rn.toUpperCase()}</div><div class="cls">The Awakened${S.pts?` · <b style="color:var(--accent)">${S.pts}</b> points to spend`:""}</div>
+<div><div class="lvl ${lvPop?'pop':''}">Lv. ${S.lvl}</div><div class="rk">${rn.toUpperCase()}</div><div class="cls">The Awakened${S.rest?` · <b style="color:var(--accent)">${S.rest}</b> rest day${S.rest>1?"s":""}`:""}</div>
 <div class="bar" style="--c:var(--hl)"><i id="xpbar" style="width:${S.xp}%"></i></div><div class="barlbl"><span style="color:var(--hl)">${S.xp} / 100 XP</span><span>${100-S.xp} to Lv. ${S.lvl+1}</span></div></div></div>
 <div class="week">${days}</div>
 ${sh("Today",`<button class="link" data-grid="1" style="font:inherit;letter-spacing:inherit;color:var(--hl)">DAY ${progDay()} / 60 →</button> · ${td.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}).toUpperCase()}`)}
 <section class="sys ${late?'danger':''}" id="qpanel" aria-label="Daily quest"><span class="scanwrap" aria-hidden="true"><i></i></span>
   <div class="syshead"><span class="chip">[ DAILY QUEST ]</span><span style="display:flex;gap:10px;align-items:center"><span class="clock" id="qclock">${fmtLeft(left())} LEFT</span><button class="btn chamf ghost" data-edit="1" style="min-height:30px;padding:0 10px">Edit</button></span></div>
-  <h2 class="systitle">${late?"Penalty imminent":"Hunter Conditioning"}</h2>
+  <h2 class="systitle">${restToday()?"Rest Day":late?"Penalty imminent":"Hunter Conditioning"}</h2>
   <div class="stack" style="gap:0;margin-top:6px">
   ${S.penalty?`<div class="qrow pen" style="--c:var(--danger)"><button class="qmain" data-pen="1">${hex("str",24)}<span><span class="q">${esc(S.penalty)}</span><br><span class="x">+10 XP · CLEARS PENALTY QUEST</span></span><span class="goal">[0/1]</span></button><button class="qck" data-pen="1" aria-label="Complete Penalty Quest"><span class="qbox"></span></button></div>`:""}
   ${rows}</div>
-  <p class="warn">${allDone()?"All objectives complete. Rewards granted.":"WARNING: Failure assigns a Penalty Quest."}</p>
+  <p class="warn" ${restToday()?'style="color:var(--accent);border-color:var(--accent)"':""}>${restToday()?"REST DAY: No Penalty Quest today. Training still counts.":allDone()?"All objectives complete. Rewards granted.":"WARNING: Failure assigns a Penalty Quest."}</p>
+  ${restToday()?`<button class="btn chamf ghost" data-rest="undo" style="margin-top:10px">Cancel rest day</button>`:!allDone()&&S.rest?`<button class="btn chamf ghost" data-rest="use" style="margin-top:10px">Use a Rest Day (${S.rest} left)</button>`:""}
 </section>
 <div style="margin-top:18px">${bossCard(true)}</div>
 ${S.base?"":`<div class="card glowcard" style="--c:var(--hl);margin-top:18px"><button class="cta" data-start="1">${hex("agi",28)}<span><b>Player Assessment</b><small>15 questions · 3 min</small></span><span aria-hidden="true">→</span></button></div>`}`},
@@ -668,18 +677,18 @@ return `<h1 class="title">Status.</h1>
   ${keys.map((_,i)=>`<line x1="${cx}" y1="${cy}" x2="${pt(i,R)[0]}" y2="${pt(i,R)[1]}" stroke="var(--fg)" stroke-opacity=".08"/>`).join("")}
   <polygon points="${shape}" fill="var(--hl)" fill-opacity=".2" stroke="var(--hl)" stroke-width="2" stroke-linejoin="round"/>
   ${nodes}</svg>
-  <div class="pts" style="margin-top:4px;padding-top:8px"><span class="chip" style="color:var(--accent);border-color:var(--accent)">AVAILABLE POINTS</span><b>${S.pts}</b></div>
+  <div class="pts" style="margin-top:4px;padding-top:8px"><span class="chip" style="color:var(--accent);border-color:var(--accent)">REST DAYS</span><b>${S.rest}</b></div>
 </section>
 ${sh("60-day program",`DAY ${progDay()} / 60`)}
 <div class="card" id="pgrid" style="padding:10px 12px"><div class="pgrid" role="img" aria-label="Program: ${Object.values(S.hist).filter(v=>v===1).length} days cleared">${Array.from({length:60},(_,i)=>{const d=new Date(S.prog+"T12:00");d.setDate(d.getDate()+i);const k=dkey(d),td=dkey(now());
-  return `<i class="${k===td?(allDone()?"ok now":"now"):k>td?"fut":S.hist[k]===1?"ok":S.hist[k]===0?"no":"gap"}"></i>`}).join("")}</div>
+  return `<i class="${k===td?(allDone()?"ok now":"now"):k>td?"fut":S.hist[k]===2?"rst":S.hist[k]===1?"ok":S.hist[k]===0?"no":"gap"}"></i>`}).join("")}</div>
 <div class="barlbl" style="margin-top:8px"><span>${Object.values(S.hist).filter(v=>v===1).length} CLEARED</span><span>${60-progDay()} DAYS LEFT</span></div></div>
-${sh("Stats",S.pts?"tap + to spend":"")}
+${sh("Stats",`+1 every ${TRAIN} sessions`)}
 <div class="stack">${keys.map(k=>`<div class="card glowcard srow" style="--c:var(--${k})" data-st="${k}">${hex(k,28)}
-<span><span class="nm">${STATS[k]}</span>${spark(k)}${S.alloc[k]?` <span class="alloc">+${S.alloc[k]}</span>`:""}<small>${ABOUT[k]}</small><div class="bar" style="--c:var(--${k});margin-top:6px;height:4px"><i style="width:${eff(k)}%"></i></div></span>
-<b>${eff(k)}</b><button class="plus" data-alloc="${k}" ${S.pts&&eff(k)<99?"":"disabled"} aria-label="Add a point to ${STATS[k]}">+</button></div>`).join("")}</div>
+<span><span class="nm">${STATS[k]}</span>${spark(k)} <span class="alloc">${(S.train[k]||0)%TRAIN}/${TRAIN}</span><small>${ABOUT[k]}</small><div class="bar" style="--c:var(--${k});margin-top:6px;height:4px"><i style="width:${eff(k)}%"></i></div></span>
+<b>${eff(k)}</b></div>`).join("")}</div>
 ${sh("Assessment")}
-<div class="card glowcard" style="--c:var(--hl)"><button class="cta" data-start="1">${hex("agi",28)}<span><b>${S.base?"Retake Player Assessment":"Player Assessment"}</b><small>${S.base?"Last taken "+S.base+". Spent points are kept.":"15 questions · 3 min"}</small></span><span aria-hidden="true">→</span></button></div>`},
+<div class="card glowcard" style="--c:var(--hl)"><button class="cta" data-start="1">${hex("agi",28)}<span><b>${!S.base?"Player Assessment":reDue()?"Monthly Re-Assessment due":"Monthly Re-Assessment"}</b><small>${!S.base?"15 questions · 3 min":reDue()?"Re-measure yourself. Your stats reset to the honest result.":`Next in ${30-daysSince(S.baseKey)} days · last taken ${S.base}`}</small></span><span aria-hidden="true">→</span></button></div>`},
 
 quests(){
 const head=`<h1 class="title">Guild.</h1><div class="seg" role="group"><button class="btn chamf" data-seg="quests" aria-pressed="${S.qseg==="quests"}">Raids</button><button class="btn chamf" data-seg="guild" aria-pressed="${S.qseg==="guild"}">Forum</button></div>`;
@@ -793,13 +802,13 @@ function closeNote(i=0){clearInterval(typer);$("#ov").hidden=true;screenEl.inert
   const act=noteActs[i]||{};noteActs=[];if(act.fn)act.fn();if(act.go){S.tab=act.go;render()}
   if(queue.length)return nextNote();if(lastFocus&&lastFocus.isConnected)lastFocus.focus()}
 
-function gainXP(n){const t0=tierOf(S.lvl);S.xp+=n;let lv=0;while(S.xp>=100){S.xp-=100;S.lvl++;S.pts+=3;lv++}if(S.xp<0)S.xp=0; // ponytail: no de-leveling, so points can't be farmed
+function gainXP(n){const t0=tierOf(S.lvl);S.xp+=n;let lv=0;let gotRest=0;while(S.xp>=100){S.xp-=100;S.lvl++;lv++;if(S.lvl%5===0&&S.rest<3){S.rest++;gotRest++}}if(S.xp<0)S.xp=0; // ponytail: no de-leveling, so points can't be farmed
   S.ap.lvl20=Math.max(S.ap.lvl20,S.lvl);
   if(lv){if($("#ov").hidden)burst("var(--hl)");else queueBurst=true}
   const t1=tierOf(S.lvl);
   if(lv)notify({chip:"[ SYSTEM ]",title:"LEVEL UP",hero:true,glitch:true,center:true,burst:"var(--hl)",
-    extra:`<div class="lvsub">LV. ${S.lvl-lv} → <span class="newlv">${S.lvl}</span></div><span class="ptchip">+${3*lv} STAT POINTS</span>`,
-    actions:[{label:"Allocate",go:"stats"},{label:"Later"}]})
+    extra:`<div class="lvsub">LV. ${S.lvl-lv} → <span class="newlv">${S.lvl}</span></div>${gotRest?`<span class="ptchip">+${gotRest} REST DAY</span>`:`<div class="lvsub" style="font-size:14px;color:var(--muted)">Next Rest Day at Lv. ${Math.ceil((S.lvl+1)/5)*5}</div>`}`,
+    actions:[{label:"Accept"}]})
   if(t1>t0)notify({chip:"[ RE-ASSESSMENT ]",title:RANKS[t1][0].toUpperCase(),hero:true,center:true,burst:"var(--accent)",
     extra:`<div style="display:grid;place-items:center;margin:6px 0">${badge(t1,92)}</div><div class="lvsub">${RANKS[t0][0]} → <span class="newlv">${RANKS[t1][0]}</span></div>`,
     body:t1===LAST?"Your power exceeds every measured rank.\nThe System recognizes a Monarch.":t1===6?"Your readings exceed S-Rank.\nYou are now a National Level Hunter.":"Requirements met.\nYour rank has been re-assessed.",actions:[{label:"Accept"}]});}
@@ -844,18 +853,19 @@ $("#psheet label").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" 
 function setDone(q,on){const before=allDone(),prev=S.done[q.id];if(!!prev===on)return;const n=on?1:-1;
     S.cnt[q.id]=on?q.n:Math.min(S.cnt[q.id]||0,q.n-stepOf(q));
     if(on)S.done[q.id]=1;else delete S.done[q.id];
-    if(on&&S.stats[q.s]<99){S.stats[q.s]++;S.done[q.id]=2}else if(!on&&prev===2)S.stats[q.s]--; // 2 = this check actually raised the stat
+    if(on){S.train[q.s]=(S.train[q.s]||0)+1;if(S.train[q.s]%TRAIN===0&&S.stats[q.s]<99){S.stats[q.s]++;S.done[q.id]=2}} // 2 = this check raised the stat
+    else{if(prev===2)S.stats[q.s]--;S.train[q.s]=Math.max(0,(S.train[q.s]||0)-1)}
     if(q.ach)S.ap[q.ach]=Math.max(0,S.ap[q.ach]+n);
     const after=allDone();
     if(after&&!before){S.ap.clear10++;S.hist[S.day]=1}else if(before&&!after){S.ap.clear10--;delete S.hist[S.day]}
-    if(on){slamId=q.id;toast(`+${q.xp} XP · ${STATS[q.s].toUpperCase()} +1`)}
+    if(on){slamId=q.id;toast(S.done[q.id]===2?`+${q.xp} XP · ${STATS[q.s].toUpperCase()} +1`:`+${q.xp} XP · ${STATS[q.s].toUpperCase()} TRAINING ${S.train[q.s]%TRAIN}/${TRAIN}`)}
     gainXP(q.xp*n);
     if(!S.bossDown){const dmg=(q.s===bossK()?15:5)*n;S.boss=Math.max(0,Math.min(100,S.boss-dmg))}
     if(S.boss===0&&!S.bossDown){S.bossDown=true;burst("var(--danger)");notify({chip:"[ WEEKLY BOSS ]",title:"BOSS DEFEATED",hero:true,center:true,extra:`<div class="lvsub">${BOSSES[bossK()]}</div><span class="ptchip">+150 XP</span>`,actions:[{label:"Collect"}]});gainXP(150)}
     if(after&&!before){const xp=Q().reduce((a,x)=>a+x.xp,0);
       burst("var(--hl)");notify({chip:"[ QUEST COMPLETE ]",title:"DAILY QUEST CLEARED",hero:true,center:true,
         extra:`<div class="lvsub">HUNTER CONDITIONING</div><div class="statpips">${Object.keys(STATS).map(k=>hex(k,22)).join("")}</div>
-        <div class="rlist"><div><span>Experience</span><b>+${xp} XP</b></div><div><span>Stats trained</span><b>+1 PER QUEST</b></div>
+        <div class="rlist"><div><span>Experience</span><b>+${xp} XP</b></div><div><span>Training logged</span><b>${Q().length} SESSIONS</b></div>
         <div><span>Streak</span><b>${streak()} DAYS</b></div><div><span>Program</span><b>DAY ${progDay()} / 60</b></div>
         <div><span>Daily Quest clears</span><b class="pt">${Math.min(S.ap.clear10,10)} / 10</b></div></div>`,
         actions:[{label:"Collect"}]})}
@@ -919,7 +929,7 @@ document.addEventListener("click",e=>{
   if(d.a){if(advancing)return;advancing=true;const T=S.test;T.a[T.i]=+d.a;b.setAttribute("aria-pressed","true");
     setTimeout(()=>{advancing=false;if(S.test!==T||S.tab!=="test")return;T.i++;render()},RM?0:180);return}
   if(d.back){if(S.test.i)S.test.i--;else S.tab="stats";render();return}
-  if(d.save){S.stats=results();S.base=now().toLocaleDateString("en-US",{month:"short",day:"numeric"});S.ap.first=1;
+  if(d.save){S.stats=results();S.baseKey=dkey(now());S.base=now().toLocaleDateString("en-US",{month:"short",day:"numeric"});S.ap.first=1;
     S.tab="stats";const first=!S.onboarded;S.onboarded=true;save();render();notify({chip:"[ ASSESSMENT ]",title:"Baseline recorded.",body:`Your overall rating is ${ovr()}.\nDaily quests raise your stats from here.`});
     if(first)notify({chip:"[ DAILY QUEST ]",title:"Set your Daily Quest.",body:"Six default quests are ready.\nKeep them, or shape them to your life.",
       actions:[{label:"Review quests",fn:()=>{S.tab="home";render();openEditor()}},{label:"Keep defaults",fn:()=>{S.tab="home";render();arrival()}}]});return}
@@ -936,8 +946,9 @@ document.addEventListener("click",e=>{
   if(d.edit){openEditor();return}
   if(d.qe){editorAct(d.qe,b);return}
   if(d.pen){S.penalty=null;gainXP(10);toast("PENALTY QUEST CLEARED · +10 XP");save();render(true);return}
-  if(d.alloc){if(S.pts<1)return;S.pts--;S.alloc[d.alloc]++;toast(`${STATS[d.alloc].toUpperCase()} +1`);save();render(true);
-    const nb=document.querySelector(`[data-st="${d.alloc}"] b`);if(nb&&!RM)nb.animate([{transform:"scale(1.3)",color:"var(--accent)"},{transform:"scale(1)"}],{duration:240,easing:"cubic-bezier(0.23,1,0.32,1)"});return}
+  if(d.rest==="use"){if(S.rest<1||restToday())return;S.rest--;S.restDay=S.day;save();render(true);
+    notify({chip:"[ REST DAY ]",title:"Recovery granted.",body:"No Penalty Quest today.\nYour streak is safe. Training you still log counts."});return}
+  if(d.rest==="undo"){if(!restToday())return;S.rest=Math.min(3,S.rest+1);S.restDay=null;save();render(true);toast("REST DAY CANCELLED");return}
   if(d.claim||d.claimall){const list=ACH.filter(a=>ready(a)&&(d.claimall||a[0]===d.claim));if(!list.length)return;let xp=0;
     list.forEach(a=>{S.claimed[a[0]]=1;xp+=a[4]});burst("var(--accent)");
     notify({chip:"[ REWARD ]",title:list.length>1?`${list.length} achievements claimed`:"Achievement claimed",body:list.map(a=>"· "+a[2]).join("\n")+`\n\nReward: +${xp} XP`});
@@ -958,7 +969,8 @@ function onboard(){notify({chip:"[ SYSTEM ]",title:"You have been chosen as a Pl
     body:"The System will assign you a Daily Quest each day.\nComplete it to grow. Fail it and a Penalty Quest follows.\n\nFirst, the System must measure you.",
     extra:nameField(),after:true,onOpen:focusName,
     actions:[{label:"Begin assessment",fn:()=>{setNameFromField();S.test={i:0,a:[]};S.tab="test";render()}},{label:"Later",fn:()=>{setNameFromField();S.onboarded=true;save();render();arrival()}}]})}
-function arrival(){if(!S.onboarded)return onboard();const today=dkey(now());if(S.seen===today)return;S.seen=today;save();notify({chip:"[ DAILY QUEST ]",title:"Hunter Conditioning has arrived.",
+function arrival(){if(!S.onboarded)return onboard();const today=dkey(now());if(S.seen===today)return;
+  if(reDue())setTimeout(()=>notify({chip:"[ RE-ASSESSMENT ]",title:"Monthly Re-Assessment",body:"30 days have passed.\nThe System must measure you again.",actions:[{label:"Begin",fn:()=>{S.test={i:0,a:[]};S.tab="test";render()}},{label:"Later"}]}));S.seen=today;save();notify({chip:"[ DAILY QUEST ]",title:"Hunter Conditioning has arrived.",
   extra:`<ul class="glist">${Q().map(q=>`<li><span class="gq">${hex(q.s,14)}${esc(q.q)}</span><span>[0/${q.n}${q.u?" "+q.u:""}]</span></li>`).join("")}</ul>`,
   warn:"WARNING: Failure assigns a Penalty Quest."})}
 arrival();
