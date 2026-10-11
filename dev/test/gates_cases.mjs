@@ -70,3 +70,28 @@ export async function run({ ev, boot, click, base, check, KEY, DK, wait }) {
   const a2 = await S(`S.quests.find(q=>q.id==="read").ach`);
   check("counts-as kept on rename, clearable, unique", a1 === "int40" && dis === true && a2 === null, `${a1} ${dis} ${a2}`);
 }
+
+// Red Gate cases (appended): sealed, goals x1.5 capped per day, double XP, penalty on timeout
+export async function runRed({ ev, boot, click, base, check, KEY, DK, wait }) {
+  const d = await ev(`(()=>{${DK}return [-5,-1,0,6].reduce((o,i)=>(o[i]=dk(i),o),{})})()`);
+  const zero = { str50: 0, agi30: 0, vit30: 0, clear10: 0, miles: 0 };
+  const S = expr => ev(`(()=>{const S=__ascend.S;return ${expr}})()`);
+  // 1. red D gate needs 15 miles, not 10; no retreat button; clear pays 200 XP
+  await boot(KEY, { ...base, lvl: 9, xp: 0, m: { miles: 0 }, gate: { id: "d", start: d[0], until: d[6], run: 0, failed: false, red: true, base: zero } });
+  await click(`[data-t="quests"]`);
+  const ui = await ev(`({leave:!!document.querySelector("[data-gleave]"),label:document.querySelector(".gpin.red .gbrk")?.textContent})`);
+  await ev(`__ascend.S.m.miles=12`); await click(`[data-t="quests"]`);
+  const mid = await S(`!!S.gate`);
+  await ev(`__ascend.S.m.miles=15`); await click(`[data-t="quests"]`);
+  const r = await S(`({g:S.gate,lvl:S.lvl,xp:S.xp,red:S.m.red})`);
+  check("red gate: sealed, 1.5x goal, double XP", !ui.leave && ui.label === "RED GATE" && mid && r.g === null && r.lvl === 11 && r.xp === 0 && r.red === 1, JSON.stringify({ ui, mid, r }));
+  // 2. red gate timing out assigns a Penalty Quest
+  await boot(KEY, { ...base, day: d[-1], penalty: null, done: Object.fromEntries(base.quests.map(q => [q.id, 1])), gate: { id: "e", start: d[-5], until: d[-1], run: 0, failed: false, red: true, base: zero } });
+  const r2 = await S(`({g:S.gate,pen:!!S.penalty})`);
+  check("red gate timeout -> Penalty Quest", r2.g === null && r2.pen, JSON.stringify(r2));
+  // 3. per-day goals are capped at the window: red B (10 nights in 14 days) -> 14, not 15
+  const cap = await ev(`(()=>{const S=__ascend.S;S.gate={id:"b",start:"${d[0]}",until:"${d[6]}",run:0,failed:false,red:true,base:${JSON.stringify(zero)}};__ascend.render();return 1})()`);
+  await click(`[data-t="quests"]`); await ev(`document.querySelector('[data-gsel="b"]').click()`); await wait(300);
+  const t = await ev(`document.querySelector(".gdet .gobj b")?.textContent`);
+  check("red goals capped at one per day", t === "0 / 14", t);
+}
