@@ -1,0 +1,392 @@
+<title>Shadow Army</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Noto+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one phone-width column like the app: boss window, battle stage, demo controls, rules. Single dark look (Ascend's Hunter System skin). */
+:root{
+  --bg:#10151c; --panel:#161d26; --panel2:#1e2732; --line:rgba(160,180,198,.18);
+  --fg:#f2f6fa; --muted:#9aa8b6; --hl:#62d8e6; --shadow:#9b7bff; --shadow2:#5b3fd6; --danger:#ff5a48; --gold:#f6a43a;
+  --str:#ff4d3a; --vit:#2fd39a; --agi:#3fb6ff; --int:#8b5cff; --per:#f2c230;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif; --f-body:"Noto Sans",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  background-image:radial-gradient(120% 60% at 50% -10%,rgba(98,216,230,.10),transparent 60%),radial-gradient(80% 50% at 50% 110%,rgba(155,123,255,.10),transparent 70%)}
+.wrap{max-width:460px;margin:0 auto;padding-inline:16px;padding-block:20px 40px;display:grid;gap:18px}
+.chip{display:inline-block;font-family:var(--f-mono);font-size:11px;letter-spacing:.16em;color:var(--hl);border:1px solid var(--hl);padding:3px 8px}
+.chip.sh{color:var(--shadow);border-color:var(--shadow)}
+h1{font-family:var(--f-display);font-weight:700;font-size:44px;line-height:1;margin:8px 0 4px;letter-spacing:.01em}
+.sub{color:var(--muted);margin:0;max-width:60ch}
+.demo-tag{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--gold);margin:6px 0 0}
+.win{position:relative;background:var(--panel);border:1px solid rgba(98,216,230,.35);padding:16px;box-shadow:0 0 0 1px rgba(0,0,0,.4),0 0 24px rgba(98,216,230,.08) inset}
+.win::before,.win::after{content:"";position:absolute;width:14px;height:14px;border:2px solid var(--hl)}
+.win::before{top:-6px;left:-6px;border-right:0;border-bottom:0}.win::after{bottom:-6px;right:-6px;border-left:0;border-top:0}
+.win.sh{border-color:rgba(155,123,255,.4)}.win.sh::before,.win.sh::after{border-color:var(--shadow)}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.lbl{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+.bossname{font-family:var(--f-display);font-size:30px;font-weight:700;line-height:1.05;margin:6px 0 2px}
+.hp{height:14px;background:#0b0f14;border:1px solid var(--line);margin:12px 0 6px;position:relative;overflow:hidden}
+.hp i{position:absolute;top:0;bottom:0;right:0;background:linear-gradient(90deg,#b8261a,var(--danger));transition:width .35s cubic-bezier(.3,.7,.2,1)}
+.hp .dq,.hp .ds{position:absolute;top:0;bottom:0;transition:width .35s cubic-bezier(.3,.7,.2,1),left .35s cubic-bezier(.3,.7,.2,1)}
+.hp .dq{left:0;background:repeating-linear-gradient(135deg,rgba(98,216,230,.55) 0 4px,rgba(98,216,230,.25) 4px 8px)}
+.hp .ds{background:repeating-linear-gradient(135deg,rgba(155,123,255,.7) 0 4px,rgba(155,123,255,.3) 4px 8px)}
+.nums{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;display:flex;gap:14px;flex-wrap:wrap}
+.nums b{color:var(--fg);font-weight:600}
+.k-q{color:var(--hl)}.k-s{color:var(--shadow)}
+.cap{margin-top:12px;display:grid;gap:6px}
+.capbar{height:6px;background:#0b0f14;border:1px solid var(--line);position:relative}
+.capbar i{position:absolute;left:0;top:0;bottom:0;background:var(--shadow);transition:width .35s}
+/* battle stage */
+.stage{position:relative;margin:12px -16px -16px;border-top:1px solid var(--line);
+  background:linear-gradient(180deg,#0c1017 0%,#121826 62%,#0a0d13 62.2%,#0e121a 100%)}
+.stage canvas{display:block;width:100%;height:290px;image-rendering:pixelated;cursor:pointer;touch-action:manipulation}
+.arisetext{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;font-family:var(--f-display);font-weight:700;font-size:76px;letter-spacing:.14em;color:#fff;
+  text-shadow:0 0 18px var(--shadow),0 0 42px var(--shadow2);animation:arise 1.8s ease-out forwards}
+@keyframes arise{0%{opacity:0;transform:translateY(24px) scale(.85);letter-spacing:.5em}35%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}
+.hint{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--muted);margin:0;padding:8px 16px 0;position:relative}
+.ctrl{display:grid;gap:12px}
+.field{font:inherit;font-family:var(--f-body);font-size:16px;color:var(--fg);background:var(--panel2);border:1px solid var(--line);padding:9px 10px;width:100%;max-width:260px}
+.looks{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.look{display:grid;justify-items:center;gap:2px;padding:6px 4px;min-width:0;font-size:14px}
+.look canvas{width:64px;height:64px;image-rendering:pixelated}
+.look[aria-pressed="true"]{background:var(--panel2);color:var(--fg);border-color:var(--hl);box-shadow:0 0 0 1px var(--hl) inset}
+.aura{width:42px;min-height:42px;padding:0;background:var(--c);border:2px solid transparent;border-radius:50%}
+.aura[aria-pressed="true"]{border-color:var(--fg);background:var(--c);box-shadow:0 0 12px var(--c)}
+.hunter{display:grid;gap:10px}
+.credit{font-family:var(--f-mono);font-size:11px;color:var(--muted);margin:0}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+button{font:inherit;font-family:var(--f-display);font-weight:600;font-size:16px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg);background:var(--panel2);border:1px solid var(--line);padding:9px 12px;cursor:pointer;min-height:42px}
+button:hover{border-color:var(--hl)}
+button:disabled{opacity:.45;cursor:default}
+button:focus-visible,input:focus-visible,canvas:focus-visible{outline:2px solid var(--hl);outline-offset:2px}
+button[aria-pressed="true"]{background:var(--hl);color:#0c1218;border-color:var(--hl)}
+button.away{border-color:rgba(155,123,255,.5);color:#d9ceff}
+button.away:hover{border-color:var(--shadow)}
+button.q{border-color:rgba(98,216,230,.45);color:var(--hl)}
+.slider{display:flex;align-items:center;gap:10px}
+.slider input{flex:1;accent-color:var(--hl);min-width:0}
+.slider output{font-family:var(--f-mono);font-variant-numeric:tabular-nums;min-width:5ch;text-align:right}
+.rules{margin:0;padding-left:18px;display:grid;gap:6px;color:var(--muted)}
+.rules b{color:var(--fg)}
+/* system notice */
+.veil{position:fixed;inset:0;background:rgba(4,6,10,.72);display:grid;place-items:center;padding:16px;z-index:10}
+.note{width:min(380px,100%);text-align:center;display:grid;gap:10px;animation:pop .35s ease-out;max-height:calc(100% - 32px);overflow:auto}
+@keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+.note h2{font-family:var(--f-display);font-size:30px;margin:0;line-height:1.05}
+.note .big{font-family:var(--f-display);font-size:56px;font-weight:700;line-height:1;color:var(--shadow);text-shadow:0 0 24px rgba(155,123,255,.6)}
+.note p{margin:0;color:var(--muted)}
+.note canvas{width:220px;height:220px;justify-self:center;background:radial-gradient(closest-side,rgba(255,255,255,.05),transparent)}
+.breakdown{display:grid;gap:4px;text-align:left;font-family:var(--f-mono);font-size:12px;font-variant-numeric:tabular-nums}
+.breakdown div{display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:4px}
+.sbars{display:grid;gap:6px;text-align:left}
+.sbars div{display:grid;grid-template-columns:3.5ch 1fr 3ch;gap:8px;align-items:center;font-family:var(--f-mono);font-size:12px;font-variant-numeric:tabular-nums}
+.sbars i{height:6px;background:#0b0f14;border:1px solid var(--line);position:relative}
+.sbars i b{position:absolute;left:0;top:0;bottom:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="chip sh">[ SHADOW ARMY ]</span>
+    <h1>Shadow Army</h1>
+    <p class="sub">Beat a weekly boss and extract it as a shadow. Your shadows fight the next boss while you're away, but only after a day you cleared your Daily Quest.</p>
+    <p class="demo-tag">DEMO · SAMPLE ARMY · SIMULATED TIME</p>
+  </header>
+
+  <section class="win" aria-labelledby="bossH">
+    <div class="row"><span class="chip">[ WEEKLY BOSS ]</span><span class="lbl" id="bossStat"></span></div>
+    <div class="bossname" id="bossH"></div>
+    <div class="hp" role="img" id="hpbar" aria-label="Boss health"><span class="dq" id="dq"></span><span class="ds" id="ds"></span><i id="hpi"></i></div>
+    <div class="nums"><span>HP <b id="hpv"></b>/100</span><span class="k-q">Quests <b id="qv"></b></span><span class="k-s">Shadows <b id="sv"></b></span></div>
+    <div class="cap">
+      <div class="row"><span class="lbl">Shadow damage this week</span><span class="lbl"><span id="capv"></span> / 35 cap</span></div>
+      <div class="capbar"><i id="capi"></i></div>
+    </div>
+    <p class="hint">TAP A FIGHTER TO INSPECT IT · <span id="rate"></span></p>
+    <div class="stage" id="stagebox">
+      <canvas id="stage" tabindex="0" aria-label="Battle: your Hunter and Shadow Army against the weekly boss. Press Enter to inspect your Hunter."></canvas>
+    </div>
+  </section>
+
+  <section class="win hunter" aria-labelledby="hunterH">
+    <div class="row"><span class="chip" id="hunterH">[ YOUR HUNTER ]</span><span class="lbl">Saved on this device</span></div>
+    <div><label class="lbl" for="hname">Name</label><input class="field" id="hname" maxlength="16" autocomplete="nickname"></div>
+    <div><div class="lbl" style="margin-bottom:6px">Look</div><div class="looks" id="looks" role="group" aria-label="Hunter look"></div></div>
+    <div><div class="lbl" style="margin-bottom:6px">Aura</div><div class="seg" id="auras" role="group" aria-label="Aura color"></div></div>
+  </section>
+
+  <section class="ctrl" aria-label="Demo controls">
+    <div>
+      <div class="lbl" style="margin-bottom:6px">Yesterday's Daily Quest</div>
+      <div class="seg" role="group"><button id="cleared" aria-pressed="true">Cleared</button><button id="missed" aria-pressed="false">Missed</button></div>
+    </div>
+    <div>
+      <label class="lbl" for="streak">Streak</label>
+      <div class="slider"><input type="range" id="streak" min="0" max="30" value="6"><output id="streakv" for="streak">6 days</output></div>
+    </div>
+    <div class="seg" role="group" aria-label="Meditation"><button id="med" aria-pressed="false">Meditated, no phone (+25%)</button></div>
+    <div>
+      <div class="lbl" style="margin-bottom:6px">Step away, then come back</div>
+      <div class="seg"><button class="away" data-h="1">1 hour</button><button class="away" data-h="8">Overnight · 8h</button><button class="away" data-h="24">A full day</button></div>
+    </div>
+    <div>
+      <div class="lbl" style="margin-bottom:6px">Or fight it yourself</div>
+      <div class="seg"><button class="q" id="qboss">Clear a quest on the boss stat · 15</button><button class="q" id="qother">Clear another quest · 5</button></div>
+    </div>
+    <button id="reset" style="justify-self:start">Reset demo</button>
+  </section>
+
+  <section class="win" aria-labelledby="rulesH">
+    <span class="chip" id="rulesH">[ RULES ]</span>
+    <ul class="rules" style="margin-top:10px">
+      <li><b>ARISE.</b> Every boss you defeat joins your army as a shadow.</li>
+      <li><b>Each shadow deals 0.4 damage per hour</b> while you're away. A streak adds up to +50% (full bonus at 14 days); meditating with no phone adds +25%.</li>
+      <li><b>Shadows only fight after a cleared day.</b> Miss your Daily Quest and they kneel, idle.</li>
+      <li><b>Capped at 35 damage a week.</b> The other 65 HP has to come from your quests, so the boss still pushes your weakest stat.</li>
+      <li><b>At most 16 hours count per day away,</b> so changing the phone's clock can't farm damage.</li>
+    </ul>
+  </section>
+  <p class="credit">Pixel art: LuizMelo (CC0), via itch.io.</p>
+</div>
+
+<div class="veil" id="veil" hidden><div class="win sh note" role="dialog" aria-modal="true" id="note"></div></div>
+
+<script>
+(()=>{
+const STATS={str:"Strength",vit:"Vitality",agi:"Agility",int:"Intelligence",per:"Perception"};
+const BOSSES={str:"Iron Warden",vit:"Sleepless Wraith",agi:"Swift Stalker",int:"Hollow Scholar",per:"Mirror Shade"};
+const LORE={str:"A crowned warlord. Only raw strength breaks his guard.",vit:"An eye that never closes. It feeds on the sleep you skip.",agi:"Too fast for anyone who stopped running.",int:"It knows every lesson you put off.",per:"It shows you what you keep avoiding."};
+const BOSS_SPRITE={str:"king",vit:"eye",agi:"gob",int:"wiz2",per:"wiz3"};
+const LOOKS=[["mh","Ronin"],["mh2","Shinobi"],["hun","Huntress"],["fw","Knight"]];
+const AURAS=[["#62d8e6","System cyan"],["#9b7bff","Shadow violet"],["#f6a43a","Gold"],["#ff4d3a","Crimson"],["#2fd39a","Jade"]];
+const META={"mh":{"w":127,"h":73,"feet":71,"body":52,"cx":30.5,"top":19,"n":{"idle":8,"attack":6,"hit":4,"death":6}},"mh2":{"w":116,"h":69,"feet":67,"body":56,"cx":28.5,"top":11,"n":{"idle":4,"attack":4,"hit":3,"death":7}},"hun":{"w":91,"h":69,"feet":67,"body":42,"cx":40.0,"top":25,"n":{"idle":8,"attack":5,"hit":3,"death":8}},"fw":{"w":118,"h":63,"feet":61,"body":45,"cx":69.0,"top":16,"n":{"idle":10,"attack":7,"hit":3,"death":7}},"king":{"w":148,"h":86,"feet":84,"body":81,"cx":65.5,"top":3,"n":{"idle":6,"attack":6,"hit":4,"death":11}},"eye":{"w":60,"h":45,"feet":35,"body":33,"cx":29.0,"top":2,"n":{"idle":8,"attack":8,"hit":4,"death":4}},"gob":{"w":92,"h":50,"feet":48,"body":36,"cx":45.5,"top":12,"n":{"idle":4,"attack":8,"hit":4,"death":4}},"wiz2":{"w":166,"h":145,"feet":143,"body":104,"cx":64.5,"top":39,"n":{"idle":8,"attack":8,"hit":3,"death":7}},"wiz3":{"w":92,"h":70,"feet":68,"body":53,"cx":27.5,"top":15,"n":{"idle":10,"attack":13,"hit":3,"death":18}}};
+const ROWS={idle:0,attack:1,hit:2,death:3};
+const CAP=35,RATE=.4,DAYMAX=16,ORDER=["str","agi","int","vit","per"];
+const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const $=id=>document.getElementById(id);
+let S;
+const reset=()=>{S={boss:"str",hp:100,qd:0,sd:0,army:["vit","per","agi"],cleared:true,streak:6,med:false}};
+reset();
+let HC={look:"mh",aura:AURAS[0][0],name:"Hunter"};
+try{const v=JSON.parse(localStorage.getItem("sa-hunter")||"null");if(v&&META[v.look]&&AURAS.some(a=>a[0]===v.aura))HC={look:v.look,aura:v.aura,name:String(v.name||"Hunter").slice(0,16)}}catch(e){}
+const saveHC=()=>{try{localStorage.setItem("sa-hunter",JSON.stringify(HC))}catch(e){}};
+const mult=()=>(1+Math.min(S.streak,14)/14*.5)*(S.med?1.25:1);
+const perHour=()=>S.army.length*RATE*mult();
+const r1=n=>Math.round(n*10)/10;
+const now=()=>performance.now()/1000;
+
+/* ---------- sprites: CC0 pixel art by LuizMelo, packed into one sheet per character (rows: idle, attack, hit, death) ---------- */
+const IMG={},SIL={},FLASH={};let ready=false,loadErr=false;
+function solid(im,col){const c=document.createElement("canvas");c.width=im.width;c.height=im.height;const x=c.getContext("2d");x.drawImage(im,0,0);x.globalCompositeOperation="source-in";x.fillStyle=col;x.fillRect(0,0,c.width,c.height);return c}
+function shadowOf(im){ // Solo Leveling shadow: blacked-out body, violet rim, a trace of the original detail
+  const out=document.createElement("canvas");out.width=im.width;out.height=im.height;const o=out.getContext("2d"),rim=solid(im,"#9b7bff");
+  for(const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]])o.drawImage(rim,dx,dy);
+  o.drawImage(solid(im,"#0b0716"),0,0);
+  o.globalCompositeOperation="source-atop";o.globalAlpha=.2;o.drawImage(im,0,0);return out}
+Promise.all(Object.keys(META).map(k=>new Promise((res,rej)=>{const im=new Image();im.onload=()=>{IMG[k]=im;SIL[k]=shadowOf(im);FLASH[k]=solid(im,"#ffffff");res()};im.onerror=()=>rej(k);im.src="sprites/"+k+".png"})))
+  .then(()=>{ready=true}).catch(()=>{loadErr=true});
+function drawSprite(c,k,anim,fi,x,y,s,face,o={}){
+  const m=META[k],src=o.shadow?SIL[k]:IMG[k];if(!src)return;fi=Math.max(0,Math.min(fi,m.n[anim]-1));
+  c.save();c.translate(Math.round(x),Math.round(y));c.scale(face*s,s);c.imageSmoothingEnabled=false;c.globalAlpha=o.alpha??1;
+  if(o.clipTop!=null){c.beginPath();c.rect(-m.w*2,o.clipTop,m.w*4,m.h*4);c.clip()}
+  if(o.glow){c.shadowColor=o.glow;c.shadowBlur=o.blur??14}
+  c.drawImage(src,fi*m.w,ROWS[anim]*m.h,m.w,m.h,-m.cx,-m.feet,m.w,m.h);
+  c.shadowBlur=0;
+  if(o.flash>0){c.globalAlpha=Math.min(1,o.flash)*.8;c.drawImage(FLASH[k],fi*m.w,ROWS[anim]*m.h,m.w,m.h,-m.cx,-m.feet,m.w,m.h)}
+  c.restore();
+}
+const ST={}; // per fighter: current animation
+function play(id,anim){ST[id]={anim,t0:now(),once:true}}
+function frameFor(id,k,t,frozen){
+  let s=ST[id];if(!s)s=ST[id]={anim:"idle",t0:0,once:false};
+  if(frozen&&s.anim==="idle")return["idle",0];
+  const m=META[k],fps=s.anim==="idle"?9:s.anim==="death"?11:15;let i=Math.floor((t-s.t0)*fps);
+  if(s.once&&i>=m.n[s.anim]){if(s.anim==="death")return["death",m.n.death-1];ST[id]={anim:"idle",t0:t,once:false};return["idle",0]}
+  return[s.anim,s.once?i:i%m.n[s.anim]];
+}
+
+/* ---------- stage ---------- */
+const cv=$("stage"),cx=cv.getContext("2d");let W=0,H=0,DPR=1;
+function size(){const r=cv.getBoundingClientRect();DPR=Math.min(2,window.devicePixelRatio||1);W=r.width;H=r.height;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR)}
+const FX={nums:[],slashes:[],parts:[]};
+const lunge={};
+let bossFlash=0,hunterFlash=0,busy=false,dying=null,arise=null,bossIn=0,nextAmbient=1.5,nextBoss=4,hits=[];
+const base=()=>H-22,u=()=>H/290;
+const scaleFor=(k,target)=>target/META[k].body;
+function slots(){
+  const b=base(),out=[{id:"hunter",k:HC.look,x:W*.46,y:b,s:scaleFor(HC.look,78*u()),face:1,glow:HC.aura}];
+  S.army.forEach((st,i)=>{const row=i%2,col=Math.floor(i/2),k=BOSS_SPRITE[st];
+    out.push({id:"sh"+i,k,stat:st,idx:i,x:W*.30-col*W*.11-row*W*.055,y:b-row*14-(k==="eye"?24*u():0),s:scaleFor(k,(row?48:56)*u()),face:1,shadow:true,row})});
+  return out;
+}
+function bossSlot(){const k=BOSS_SPRITE[S.boss];return{id:"boss",k,stat:S.boss,x:W*.78,y:base()-(k==="eye"?48*u():0),s:scaleFor(k,(k==="eye"?96:138)*u()),face:-1}}
+const halfW=f=>META[f.k].body*.3*f.s;
+const ease=x=>1-Math.pow(1-x,3);
+function lungeOffset(id,t){const a=lunge[id];if(!a)return 0;const p=(t-a.start)/a.dur;
+  if(p>=1){delete lunge[id];return 0}
+  if(p>=.42&&!a.hit){a.hit=true;a.onHit&&a.onHit()}
+  return a.reach*(p<.3?ease(p/.3):p<.62?1:1-ease((p-.62)/.38))}
+function attack(f,reach,onHit,dur=.7){lunge[f.id]={start:now(),dur:RM?.05:dur,reach,onHit};play(f.id,"attack")}
+function spawnNum(x,y,txt,col){FX.nums.push({x,y,txt,col,t0:now()})}
+function spawnSlash(x,y,col){FX.slashes.push({x,y,col,t0:now(),a:Math.random()*.8-.4})}
+function spawnParts(x,y,col,n,spread=30,up=40){for(let i=0;i<n;i++)FX.parts.push({x:x+(Math.random()-.5)*spread,y:y-Math.random()*up,vx:(Math.random()-.5)*14,vy:-10-Math.random()*26,col,t0:now(),life:.8+Math.random()*.8,r:1+Math.random()*2.2})}
+function groundShadow(f,alpha=.45){cx.save();cx.globalAlpha=alpha;cx.fillStyle="#000";cx.beginPath();cx.ellipse(f.x,base()+1,halfW(f)*1.2,4+f.s,0,0,7);cx.fill();cx.restore()}
+
+function frame(){
+  const t=now();cx.setTransform(DPR,0,0,DPR,0,0);cx.clearRect(0,0,W,H);
+  if(!ready){cx.fillStyle="#9aa8b6";cx.font="600 12px 'JetBrains Mono',monospace";cx.textAlign="center";cx.fillText(loadErr?"FIGHTERS FAILED TO LOAD · RELOAD THE PAGE":"SUMMONING FIGHTERS…",W/2,H/2);requestAnimationFrame(frame);return}
+  const b=base(),bs=bossSlot(),fs=slots(),idle=!S.cleared;
+  const g=cx.createRadialGradient(bs.x,b,4,bs.x,b,W*.3);g.addColorStop(0,COLOR(S.boss)+"55");g.addColorStop(1,"rgba(0,0,0,0)");cx.fillStyle=g;cx.fillRect(0,0,W,H);
+  const gs=cx.createRadialGradient(W*.25,b,4,W*.25,b,W*.32);gs.addColorStop(0,"rgba(155,123,255,.22)");gs.addColorStop(1,"rgba(0,0,0,0)");cx.fillStyle=gs;cx.fillRect(0,0,W,H);
+  hits=[];
+  if(!busy&&!dying&&!arise&&!RM){
+    if(S.cleared&&S.army.length&&t>nextAmbient){const f=fs[1+Math.floor(Math.random()*S.army.length)];if(f&&!lunge[f.id])attack(f,(bs.x-halfW(bs)-f.x)*.3,null,.8);nextAmbient=t+2.4+Math.random()*2}
+    if(t>nextBoss){const h=fs[0];if(!lunge.boss)attack(bs,-(bs.x-h.x-halfW(bs)-halfW(h)-6)*.55,()=>{hunterFlash=1;play("hunter","hit");spawnSlash(h.x+4,b-46*u(),COLOR(S.boss))},.9);nextBoss=t+5+Math.random()*3}
+  }
+  if(!RM)for(const f of fs)if(f.shadow&&Math.random()<.05)spawnParts(f.x,f.y-20*u(),"#9b7bff",1,30*u(),50*u());
+  const order=[...fs.filter(f=>f.shadow&&f.row===1),...fs.filter(f=>f.shadow&&f.row===0),fs[0]];
+  for(const f of order){
+    const dx=lungeOffset(f.id,t),[an,fi]=frameFor(f.id,f.k,t,f.shadow&&idle);
+    groundShadow({...f,x:f.x+dx},f.shadow&&idle?.2:.45);
+    drawSprite(cx,f.k,an,fi,f.x+dx,f.y,f.s,f.face,{shadow:f.shadow,alpha:f.shadow&&idle?.45:1,glow:f.shadow?(idle?null:"#7b5cff"):f.glow,blur:f.shadow?8:14,flash:f.id==="hunter"?hunterFlash:0});
+    const top=f.y-META[f.k].body*f.s-6;
+    hits.push({f,x0:f.x-halfW(f),x1:f.x+halfW(f),y0:top,y1:f.y+4});
+    if(f.id==="hunter"&&HC.name){cx.save();cx.font="600 11px 'JetBrains Mono',monospace";cx.textAlign="center";cx.fillStyle=HC.aura;cx.shadowColor="#000";cx.shadowBlur=4;cx.fillText(HC.name.toUpperCase(),f.x+dx,top-4);cx.restore()}
+  }
+  if(idle&&S.army.length){cx.save();cx.font="600 11px 'JetBrains Mono',monospace";cx.fillStyle="#9aa8b6";cx.textAlign="center";cx.fillText("IDLE · QUEST MISSED",W*.18,22);cx.restore()}
+  if(dying){const [an,fi]=frameFor("boss",bs.k,t),fade=Math.max(0,(t-dying-.9)/.5);
+    if(Math.random()<.6)spawnParts(bs.x,bs.y-META[bs.k].body*bs.s*.5,COLOR(S.boss),2,60,60);
+    drawSprite(cx,bs.k,an,fi,bs.x,bs.y,bs.s,-1,{alpha:1-Math.min(1,fade)});}
+  else if(arise){const p=Math.min(1,(t-arise.t0)/1.5),k=BOSS_SPRITE[arise.st],m=META[k],sh={x:bs.x,y:base()-(k==="eye"?48*u():0),s:scaleFor(k,(k==="eye"?96:138)*u())};
+    const pg=cx.createLinearGradient(0,0,0,b);pg.addColorStop(0,"rgba(155,123,255,0)");pg.addColorStop(1,"rgba(155,123,255,.55)");
+    cx.fillStyle=pg;cx.fillRect(bs.x-34*(1-p*.5),0,68*(1-p*.5),b);
+    if(Math.random()<.9)spawnParts(bs.x,b,"#9b7bff",2,50,10);
+    drawSprite(cx,k,"idle",Math.floor(t*9)%m.n.idle,sh.x,sh.y,sh.s,-1,{shadow:true,glow:"#7b5cff",blur:10,clipTop:-(m.feet+2)*p});}
+  else{const dx=lungeOffset("boss",t),a=bossIn?Math.min(1,(t-bossIn)/.8):1,[an,fi]=frameFor("boss",bs.k,t);
+    groundShadow({...bs,x:bs.x+dx},.5*a);
+    drawSprite(cx,bs.k,an,fi,bs.x+dx,bs.y,bs.s,-1,{alpha:a,flash:bossFlash,glow:COLOR(S.boss)+"88",blur:10});
+    hits.push({f:bs,x0:bs.x-halfW(bs)*1.3,x1:bs.x+halfW(bs)*1.3,y0:bs.y-META[bs.k].body*bs.s-6,y1:bs.y+6});}
+  for(const s of FX.slashes){const p=(t-s.t0)/.28;if(p>1){s.dead=1;continue}
+    cx.save();cx.translate(s.x,s.y);cx.rotate(s.a);cx.strokeStyle=s.col;cx.shadowColor=s.col;cx.shadowBlur=14;cx.globalAlpha=1-p;cx.lineWidth=4*(1-p)+1;
+    cx.beginPath();cx.arc(0,0,26+p*10,-1.9+p*.6,.2+p*.6);cx.stroke();cx.strokeStyle="#fff";cx.lineWidth=1.5;cx.stroke();cx.restore()}
+  for(const q of FX.parts){const p=(t-q.t0)/q.life;if(p>1){q.dead=1;continue}const dt=t-q.t0;
+    cx.globalAlpha=(1-p)*.8;cx.fillStyle=q.col;cx.fillRect(Math.round(q.x+q.vx*dt),Math.round(q.y+q.vy*dt),Math.ceil(q.r),Math.ceil(q.r))}
+  cx.globalAlpha=1;
+  for(const n of FX.nums){const p=(t-n.t0)/1.1;if(p>1){n.dead=1;continue}
+    cx.save();cx.font="700 22px 'Barlow Condensed',sans-serif";cx.textAlign="center";cx.globalAlpha=p<.7?1:1-(p-.7)/.3;cx.fillStyle=n.col;cx.shadowColor=n.col;cx.shadowBlur=10;
+    cx.lineWidth=3;cx.strokeStyle="rgba(0,0,0,.7)";const y=n.y-ease(Math.min(1,p*1.4))*34;cx.strokeText(n.txt,n.x,y);cx.fillText(n.txt,n.x,y);cx.restore()}
+  for(const k of ["nums","slashes","parts"])if(FX[k].some(x=>x.dead))FX[k]=FX[k].filter(x=>!x.dead);
+  bossFlash=Math.max(0,bossFlash-.08);hunterFlash=Math.max(0,hunterFlash-.08);
+  drawLooks(t);if(portrait)drawPortrait(t);
+  requestAnimationFrame(frame);
+}
+const COLOR=s=>({str:"#ff4d3a",vit:"#2fd39a",agi:"#3fb6ff",int:"#8b5cff",per:"#f2c230"})[s];
+
+/* ---------- your hunter: name, look, aura ---------- */
+$("hname").value=HC.name;
+$("looks").innerHTML=LOOKS.map(([k,n])=>`<button class="look" data-look="${k}" aria-pressed="${HC.look===k}"><canvas width="128" height="128" aria-hidden="true"></canvas><span>${n}</span></button>`).join("");
+$("auras").innerHTML=AURAS.map(([c,n])=>`<button class="aura" data-aura="${c}" aria-pressed="${HC.aura===c}" aria-label="${n}" title="${n}" style="--c:${c}"></button>`).join("");
+function syncHC(){document.querySelectorAll("[data-look]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.look===HC.look));document.querySelectorAll("[data-aura]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.aura===HC.aura));saveHC()}
+function drawLooks(t){if(!ready)return;document.querySelectorAll(".look canvas").forEach(c=>{const k=c.parentNode.dataset.look,x=c.getContext("2d");x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,128,128);
+  const sel=k===HC.look;drawSprite(x,k,"idle",Math.floor(t*9)%META[k].n.idle,64,116,96/META[k].body,1,{glow:sel?HC.aura:null,blur:10,alpha:sel?1:.7})})}
+$("hname").addEventListener("input",e=>{HC.name=e.target.value.slice(0,16);saveHC()});
+
+/* ---------- game ---------- */
+function render(){
+  $("bossH").textContent=BOSSES[S.boss];
+  $("bossStat").textContent="WEAKEST STAT · "+STATS[S.boss].toUpperCase();
+  const hp=Math.max(0,S.hp);
+  $("hpi").style.width=hp+"%";$("dq").style.width=S.qd+"%";$("ds").style.left=S.qd+"%";$("ds").style.width=S.sd+"%";
+  $("hpbar").setAttribute("aria-label",`Boss health ${Math.round(hp)} of 100`);
+  $("hpv").textContent=Math.round(hp);$("qv").textContent=Math.round(S.qd);$("sv").textContent=Math.round(S.sd);
+  $("capv").textContent=Math.round(S.sd);$("capi").style.width=S.sd/CAP*100+"%";
+  $("rate").textContent=S.army.length?`ARMY OF ${S.army.length} · ${r1(perHour())} DMG/HR`:"NO SHADOWS YET";
+  $("cleared").setAttribute("aria-pressed",S.cleared);$("missed").setAttribute("aria-pressed",!S.cleared);
+  $("med").setAttribute("aria-pressed",S.med);
+  $("streak").value=S.streak;$("streakv").textContent=S.streak+(S.streak===1?" day":" days");
+  document.querySelectorAll(".away,.q").forEach(b=>b.disabled=busy);
+}
+let portrait=null,pc=null;
+function show(html,actions){
+  const n=$("note");n.innerHTML=html+`<div class="seg" style="justify-content:center">${actions.map((a,i)=>`<button data-act="${i}" ${i===0?'aria-pressed="true"':''}>${a.label}</button>`).join("")}</div>`;
+  $("veil").hidden=false;
+  n.querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>{close();(actions[+b.dataset.act].fn||(()=>{}))()});
+  n.querySelector("button").focus();
+}
+function close(){$("veil").hidden=true;portrait=null;pc=null}
+function hitBoss(d,who,col){
+  const dealt=Math.min(d,S.hp);if(dealt<=0)return 0;
+  S.hp=r1(S.hp-dealt);if(who==="q")S.qd=r1(S.qd+dealt);else S.sd=r1(S.sd+dealt);
+  const bs=bossSlot();bossFlash=1;if(S.hp>0)play("boss","hit");
+  spawnSlash(bs.x+(Math.random()-.5)*20,bs.y-META[bs.k].body*bs.s*.55,col);
+  spawnNum(bs.x+(Math.random()-.5)*130,bs.y-META[bs.k].body*bs.s*(.35+Math.random()*.75),String(r1(dealt)),col);
+  render();if(S.hp<=0)die();return dealt;
+}
+function die(){busy=true;dying=now();play("boss","death");render();setTimeout(()=>{dying=null;defeated()},1500)}
+function defeated(){
+  const k=S.boss;
+  show(`<span class="chip sh">[ BOSS DEFEATED ]</span><h2>${BOSSES[k]}</h2><p>Its shadow lingers. Command it to rise.</p>`,
+    [{label:"Extract",fn:()=>{
+      arise={st:k,t0:now()};
+      const a=document.createElement("div");a.className="arisetext";a.textContent="ARISE";$("stagebox").appendChild(a);
+      setTimeout(()=>{a.remove();arise=null;S.army.push(k);
+        const next=ORDER[(ORDER.indexOf(k)+1)%ORDER.length];S.boss=next;S.hp=100;S.qd=0;S.sd=0;bossIn=now();delete ST.boss;busy=false;render();
+        show(`<span class="chip sh">[ NEW SHADOW ]</span><h2>${BOSSES[k]} joins your army.</h2><p>A new week begins. Next boss: ${BOSSES[next]}, weak to ${STATS[next]}.</p>`,[{label:"Continue"}]);
+      },RM?200:1900);
+    }}]);
+}
+function hunterStrike(d){
+  if(busy||!ready)return;const h=slots()[0],bs=bossSlot();
+  attack(h,bs.x-halfW(bs)-h.x-halfW(h),()=>hitBoss(d,"q",HC.aura),.65);
+}
+function away(h){
+  if(busy||!ready)return;
+  const hrs=Math.min(h,DAYMAX);
+  if(!S.cleared){show(`<span class="chip sh">[ WHILE YOU WERE AWAY ]</span><h2>Your shadows stood idle.</h2><p>${h} hour${h>1?"s":""} passed. Shadows only fight after a day you cleared your Daily Quest.</p>`,[{label:"Understood"}]);return}
+  const room=Math.max(0,CAP-S.sd),raw=perHour()*hrs,total=Math.min(raw,room,S.hp);
+  if(total<=0){show(`<span class="chip sh">[ WHILE YOU WERE AWAY ]</span><h2>Shadow cap reached.</h2><p>Your shadows dealt their 35 for the week. Finish ${BOSSES[S.boss]} with your quests.</p>`,[{label:"Understood"}]);return}
+  const capped=raw>room+1e-9,N=Math.max(4,Math.min(14,S.army.length*3)),each=total/N,fs=slots().slice(1),bs=bossSlot(),bossName=BOSSES[S.boss];
+  busy=true;render();let done=0;
+  for(let i=0;i<N;i++)setTimeout(()=>{const f=fs[i%fs.length];
+    attack(f,bs.x-halfW(bs)-f.x-halfW(f),()=>{hitBoss(each,"s","#b9a6ff");if(++done===N&&S.hp>0)setTimeout(report,700)},.55)},RM?0:i*260);
+  function report(){busy=false;render();
+    const lines=S.army.map(k=>`<div><span>${BOSSES[k]}</span><span>${r1(total/S.army.length)}</span></div>`).join("");
+    show(`<span class="chip sh">[ WHILE YOU WERE AWAY ]</span><div class="big">${Math.round(total)}</div><p>damage dealt to ${bossName} over ${hrs} hour${hrs>1?"s":""}${h>DAYMAX?" (16 count per day)":""}.</p>
+      <div class="breakdown">${lines}<div><span>Streak ${S.streak}d${S.med?" · meditated":""}</span><span>×${mult().toFixed(2)}</span></div></div>
+      ${capped?`<p style="color:var(--gold)">Weekly shadow cap reached (35). The rest is up to you.</p>`:""}`,[{label:"Continue"}]);}
+}
+
+/* ---------- inspect a fighter ---------- */
+function drawPortrait(t){if(!pc||!ready)return;const c=pc.getContext("2d");c.setTransform(2,0,0,2,0,0);c.clearRect(0,0,220,220);
+  const f=portrait,m=META[f.k],s=Math.min(150/m.body,170/m.w*1.6),[an,fi]=[ "idle",Math.floor(t*9)%m.n.idle];
+  drawSprite(c,f.k,an,fi,110,f.k==="eye"?150:205,s,f.id==="boss"?-1:1,{shadow:f.shadow,glow:f.shadow?"#7b5cff":f.id==="hunter"?HC.aura:COLOR(S.boss)+"88",blur:14})}
+function inspect(f){
+  const hunter=f.id==="hunter",boss=f.id==="boss";let body;
+  if(hunter){const st={str:57,agi:57,vit:73,int:73,per:73},look=LOOKS.find(l=>l[0]===HC.look)[1];
+    body=`<span class="chip">[ PLAYER ]</span><canvas id="pcv" width="440" height="440"></canvas><h2>${esc(HC.name||"Hunter")}</h2><p>${look} · E-Rank · Lv. 1 · sample stats</p>
+    <div class="sbars">${Object.keys(st).map(s=>`<div><span>${s.toUpperCase()}</span><i><b style="width:${st[s]}%;background:${COLOR(s)}"></b></i><span>${st[s]}</span></div>`).join("")}</div>`}
+  else if(boss){const k=f.stat;body=`<span class="chip">[ WEEKLY BOSS ]</span><canvas id="pcv" width="440" height="440"></canvas><h2>${BOSSES[k]}</h2><p>${LORE[k]}</p>
+    <div class="breakdown"><div><span>Weak to</span><span style="color:${COLOR(k)}">${STATS[k]}</span></div><div><span>HP</span><span>${Math.round(S.hp)} / 100</span></div><div><span>Quests on ${k.toUpperCase()} hit for</span><span>15</span></div></div>`}
+  else body=`<span class="chip sh">[ SHADOW ]</span><canvas id="pcv" width="440" height="440"></canvas><h2>${BOSSES[f.stat]}</h2><p>Raised from a defeated boss. Fights while you're away.</p>
+    <div class="breakdown"><div><span>Damage per hour</span><span>${r1(RATE*mult())}</span></div><div><span>Status</span><span>${S.cleared?"Ready":"Idle · quest missed"}</span></div></div>`;
+  show(body,[{label:"Close"}]);pc=$("pcv");portrait={...f};
+}
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+cv.addEventListener("click",e=>{if(busy||dying||arise||!ready)return;const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+  const h=[...hits].reverse().find(b=>x>=b.x0-8&&x<=b.x1+8&&y>=b.y0&&y<=b.y1);if(h)inspect(h.f)});
+cv.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&ready){e.preventDefault();inspect(slots()[0])}});
+document.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.closest("#note"))return;
+  if(b.dataset.look){HC.look=b.dataset.look;delete ST.hunter;syncHC();return}
+  if(b.dataset.aura){HC.aura=b.dataset.aura;syncHC();return}
+  if(b.id==="cleared")S.cleared=true;else if(b.id==="missed")S.cleared=false;else if(b.id==="med")S.med=!S.med;
+  else if(b.dataset.h){away(+b.dataset.h);return}
+  else if(b.id==="qboss"){hunterStrike(15);return}else if(b.id==="qother"){hunterStrike(5);return}
+  else if(b.id==="reset"){if(busy)return;reset();bossIn=now();delete ST.boss}
+  render()});
+$("streak").addEventListener("input",e=>{S.streak=+e.target.value;render()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("veil").hidden)close()});
+addEventListener("resize",size);
+size();render();requestAnimationFrame(frame);
+})();
+</script>
