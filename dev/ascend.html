@@ -520,16 +520,18 @@ function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typ
   S.penalty=sv.penalty?PENALTY:null;S.bossDown=sv.bossDown===true;S.bossStat=STATS[sv.bossStat]?sv.bossStat:null}
 let storageOK=true,saveBlocked=false;
 // accept stored/restored data only if it has the basic Ascend shape; never fill a blank profile from junk
-const isSave=sv=>!!sv&&typeof sv==="object"&&Number.isFinite(sv.lvl)&&sv.stats&&typeof sv.stats==="object"&&Object.keys(STATS).every(k=>Number.isFinite(sv.stats[k]))&&Array.isArray(sv.quests)&&sv.quests.length>0;
+const VER=5,STORE="ascend-v5",LEGACY="ascend-v4";
+const isSave=sv=>!!sv&&typeof sv==="object"&&!(sv.ver>VER)&&Number.isFinite(sv.lvl)&&sv.stats&&typeof sv.stats==="object"&&Object.keys(STATS).every(k=>Number.isFinite(sv.stats[k]))&&Array.isArray(sv.quests)&&sv.quests.length>0;
 // build the new state aside and only swap it in if it loads cleanly
 function adopt(sv){if(!isSave(sv))return false;const prev=S;try{S=fresh();load(sv);return true}catch(e){S=prev;return false}}
-try{const raw=localStorage.getItem("ascend-v4");
+try{const cur=localStorage.getItem(STORE),raw=cur!==null?cur:localStorage.getItem(LEGACY); // first run after the update migrates the v4 save; v4 itself is left untouched
   if(raw!==null){let sv=null;try{sv=JSON.parse(raw)}catch(e){}
-    if(!adopt(sv)){try{localStorage.setItem("ascend-v4-unreadable-"+Date.now(),raw)}catch(e){}saveBlocked=true}}
+    if(!adopt(sv)){try{localStorage.setItem(STORE+"-unreadable-"+Date.now(),raw)}catch(e){}saveBlocked=true}}
   localStorage.setItem("ascend-probe","1");storageOK=localStorage.getItem("ascend-probe")==="1"}catch(e){storageOK=false}
 // another open copy of the app saved: take its data instead of later overwriting it with this copy's stale snapshot
-addEventListener("storage",e=>{if(e.key!=="ascend-v4"||!e.newValue)return;let sv=null;try{sv=JSON.parse(e.newValue)}catch(err){return}const ui={tab:S.tab,test:S.test};if(adopt(sv)){saveBlocked=false;Object.assign(S,ui);render()}});
-const save=()=>{if(saveBlocked)return;try{localStorage.setItem("ascend-v4",JSON.stringify(Object.fromEntries(KEEP.map(k=>[k,S[k]]))))}catch(e){storageOK=false}};
+addEventListener("storage",e=>{if(e.key!==STORE||!e.newValue)return;let sv=null;try{sv=JSON.parse(e.newValue)}catch(err){return}const ui={tab:S.tab,test:S.test};if(adopt(sv)){saveBlocked=false;Object.assign(S,ui);render()}});
+const snapshot=()=>({ver:VER,...Object.fromEntries(KEEP.map(k=>[k,S[k]]))});
+const save=()=>{if(saveBlocked)return;try{localStorage.setItem(STORE,JSON.stringify(snapshot()))}catch(e){storageOK=false}};
 function rollover(){const n=now(),t=dkey(n),wk=mondayKey(n);
   if(!S.bossStat)S.bossStat=weakest();
   if(S.wk!==wk){S.wk=wk;S.boss=100;S.bossDown=false;S.bossStat=weakest()}
@@ -961,7 +963,7 @@ document.addEventListener("click",e=>{
     list.forEach(a=>{S.claimed[a[0]]=1;xp+=a[4]});burst("var(--accent)");
     notify({chip:"[ REWARD ]",title:list.length>1?`${list.length} achievements claimed`:"Achievement claimed",body:list.map(a=>"· "+a[2]).join("\n")+`\n\nReward: +${xp} XP`});
     gainXP(xp);save();render(true);return}
-  if(d.backup){const txt=JSON.stringify(Object.fromEntries(KEEP.map(k=>[k,S[k]])));
+  if(d.backup){const txt=JSON.stringify(snapshot());
     navigator.clipboard.writeText(txt).then(()=>toast("BACKUP COPIED · PASTE INTO A .JSON FILE")).catch(()=>toast("COPY BLOCKED · TRY ANOTHER BROWSER"));return}
   if(d.cat){S.cat=d.cat;render(true);return}
   if(d.j){S.joined[d.j]=!S.joined[d.j];render(true);return}
