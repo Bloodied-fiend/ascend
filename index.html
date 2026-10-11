@@ -399,7 +399,7 @@ html.app .player{top:calc(18px + env(safe-area-inset-top,0px))}
 <div class="stage">
   <section class="pitch">
     <div class="brand"><svg class="appicon" viewBox="0 0 1024 1024" role="img" aria-label="Ascend app icon"><defs><radialGradient id="aig" cx="50%" cy="0%" r="100%"><stop offset="0" stop-color="#27303a"/><stop offset="1" stop-color="#0c1015"/></radialGradient></defs><rect width="1024" height="1024" rx="224" fill="url(#aig)"/><path d="M512 150 826 331v362L512 874 198 693V331z" fill="none" stroke="#62d8e6" stroke-opacity=".25" stroke-width="28"/><path d="M332 760 L512 260 L692 760" fill="none" stroke="#e8eef3" stroke-width="90" stroke-linejoin="miter"/><path d="M512 470 l58 76 -58 76 -58 -76z" fill="#62d8e6" style="filter:drop-shadow(0 0 40px #62d8e6)"/><path d="M120 220V120H220M804 120H904V220M904 804V904H804M220 904H120V804" fill="none" stroke="#62d8e6" stroke-width="18"/></svg><svg class="wordmark" viewBox="0 0 220 52" role="img" aria-label="Ascend"><path d="M3 46 L17 4 L31 46" fill="none" stroke="var(--fg)" stroke-width="6" stroke-linejoin="miter"/><path d="M17 24 l4.5 6 -4.5 6 -4.5 -6z" fill="#62d8e6" style="filter:drop-shadow(0 0 4px rgba(98,216,230,.6))"/><text x="38" y="46" font-family="Barlow Condensed,Arial Narrow,sans-serif" font-weight="700" font-size="50" letter-spacing="2" fill="var(--fg)">SCEND</text><path d="M38 50.5H118M122 50.5H216" stroke="#62d8e6"/></svg></div>
-    <span class="lbl">App prototype · v1.8</span>
+    <span class="lbl">App prototype · v1.9</span>
     <h1>Ascend. Level up your <em>actual</em> life.</h1>
     <p>A habit tracker run by the System. Daily quests raise five Hunter stats, level-ups give you points to spend, and a missed day assigns a Penalty Quest instead of wiping your progress. You never lose stats or levels.</p>
     <div class="skins" role="group" aria-label="Visual direction">
@@ -440,6 +440,7 @@ html.app .player{top:calc(18px + env(safe-area-inset-top,0px))}
         <h3 class="systitle" id="sysT"></h3>
         <div id="sysX"></div>
         <p class="typed" id="sysB"></p>
+        <div id="sysX2"></div>
         <p class="warn" id="sysW" hidden></p>
         <div class="acts" id="sysA"></div>
       </div>
@@ -462,6 +463,12 @@ const DEFAULT_QUESTS=[
 const UNITS=["","MIN","MI","KM","PG","L","REPS","HRS"],XPS=[10,15,20],MAXQ=8;
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const Q=()=>S.quests;
+const cleanPlayer=v=>typeof v==="string"?v.replace(/[<>\u0000-\u001f]/g,"").trim().slice(0,20):"";
+const pName=()=>S.name||"Hunter";
+const pHandle=()=>"@"+(pName().toLowerCase().replace(/[^a-z0-9]+/g,".").replace(/^\.|\.$/g,"")||"hunter");
+const nameField=v=>`<div class="qe" style="margin-top:12px;text-align:left"><label>Player name<input id="pname" maxlength="20" autocomplete="nickname" placeholder="Hunter"></label></div>`;
+function setNameFromField(){const f=$("#pname");if(f){S.name=cleanPlayer(f.value);save()}}
+function focusName(){const f=$("#pname");if(f){f.value=S.name;f.focus()}}
 const stepOf=q=>q.n>=20?5:1;
 const ACH=[ // [id, stat|sys, title, goal, xp]
   ["first","sys","Complete the Player Assessment",1,50],["str50","str","Finish 50 strength sessions",50,150],
@@ -481,7 +488,7 @@ const wd=d=>(d.getDay()+6)%7; // Monday=0
 const pad=n=>String(n).padStart(2,"0");
 const mondayKey=d=>{const m=new Date(d);m.setDate(d.getDate()-wd(d));return dkey(m)};
 function fresh(){const t=now();
-  return {name:"Jaime",handle:"@jaime.ascends",lvl:1,xp:0,pts:0,base:null,
+  return {name:"",lvl:1,xp:0,pts:0,base:null,
   stats:{str:30,vit:30,agi:30,int:30,per:30},alloc:{str:0,vit:0,agi:0,int:0,per:0},
   quests:DEFAULT_QUESTS.map(q=>({...q})),questsNext:null,cnt:{},onboarded:false,statHist:{},
   done:{},day:dkey(t),hist:{},seen:null,penalty:null,boss:100,bossDown:false,bossStat:null,wk:mondayKey(t),prog:dkey(t),
@@ -492,10 +499,10 @@ function sample(){const t=now(),h={};for(let i=1;i<=17;i++){const d=new Date(t);
   const pr=new Date(t);pr.setDate(pr.getDate()-17);
   const sh={};for(let i=17;i>=1;i--){const d=new Date(t);d.setDate(d.getDate()-i);const f=1-i/18;
     sh[dkey(d)]={str:Math.round(44+16*f),vit:Math.round(55+14*f),agi:Math.round(58+12*f),int:Math.round(47+13*f),per:Math.round(70+10*f)}}
-  return {...fresh(),onboarded:true,statHist:sh,lvl:14,xp:62,pts:3,stats:{str:60,vit:69,agi:70,int:60,per:80},done:{sleep:2},cnt:{sleep:1},hist:h,boss:62,bossStat:"str",prog:dkey(pr),
+  return {...fresh(),name:S.name,onboarded:true,statHist:sh,lvl:14,xp:62,pts:3,stats:{str:60,vit:69,agi:70,int:60,per:80},done:{sleep:2},cnt:{sleep:1},hist:h,boss:62,bossStat:"str",prog:dkey(pr),
   ap:{first:0,str50:26,vit30:29,agi30:12,int40:39,per100:64,clear10:15,water25:25,lvl20:14}}}
 let S=fresh();
-const KEEP=["lvl","xp","pts","base","stats","alloc","done","day","hist","seen","penalty","ap","claimed","boss","bossDown","bossStat","wk","prog","quests","questsNext","cnt","onboarded","statHist"];
+const KEEP=["lvl","xp","pts","base","stats","alloc","done","day","hist","seen","penalty","ap","claimed","boss","bossDown","bossStat","wk","prog","quests","questsNext","cnt","onboarded","statHist","name"];
 function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typeof v==="number"&&Number.isFinite(v),key=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v);
   for(const k of ["lvl","xp","pts","boss"])if(num(sv[k]))S[k]=sv[k];
   for(const k of ["stats","alloc","ap"])if(sv[k]&&typeof sv[k]==="object")for(const x in D[k])if(num(sv[k][x]))S[k][x]=sv[k][x];
@@ -509,6 +516,7 @@ function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typ
   S.done=Object.fromEntries(Object.entries(S.done).filter(([k,v])=>ids.has(k)&&(v===1||v===2)));
   S.cnt={};if(sv.cnt&&typeof sv.cnt==="object")for(const q of S.quests){const v=sv.cnt[q.id];if(num(v))S.cnt[q.id]=Math.max(0,Math.min(q.n,Math.round(v)))}
   for(const q of S.quests)if(S.done[q.id])S.cnt[q.id]=q.n; // legacy saves: done implies full progress
+  S.name=cleanPlayer(sv.name);
   S.onboarded=sv.onboarded===true||(sv.onboarded===undefined&&!!sv.base); // older saves with a baseline skip onboarding
   S.statHist={};if(sv.statHist&&typeof sv.statHist==="object")for(const[k,v]of Object.entries(sv.statHist).slice(-90))
     if(key(k)&&v&&typeof v==="object"&&Object.keys(STATS).every(x=>num(v[x])))S.statHist[k]=Object.fromEntries(Object.keys(STATS).map(x=>[x,v[x]]));
@@ -651,7 +659,7 @@ const nodes=keys.map((k,i)=>{const[x,y]=pt(i,R),[lx,ly]=pt(i,R+30);return `<circ
 return `<h1 class="title">Status.</h1>
 <section class="sys" aria-label="Player status">
   <div class="syshead"><span class="chip">[ STATUS ]</span><span class="clock" style="font-size:24px;font-weight:700;color:var(--fg)"><span style="font-size:13px;color:var(--hl)">OVR </span>${ovr()}</span></div>
-  <div class="prof1">${S.name} · Lv. ${S.lvl} · ${RANKS[tierOf(S.lvl)][0]} · <span style="color:var(--muted)">The Awakened</span></div>
+  <div class="prof1">${esc(pName())} · Lv. ${S.lvl} · ${RANKS[tierOf(S.lvl)][0]} · <span style="color:var(--muted)">The Awakened</span></div>
   <svg class="radar" viewBox="0 0 330 320" role="img" aria-label="Stat radar">
   <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--fg)" stroke-opacity=".3" stroke-width="1.5"/>
   <circle cx="${cx}" cy="${cy}" r="${R*.66}" fill="none" stroke="var(--fg)" stroke-opacity=".12" stroke-dasharray="2 5"/>
@@ -707,7 +715,7 @@ return `<div class="card glowcard ach ${got?'got':''} ${rd?'ready':''}" style="-
 
 me(){const t=tierOf(S.lvl),nx=RANKS[Math.min(LAST,t+1)],toGo=t<LAST?RANK_AT[t+1]-S.lvl:0;
 return `<h1 class="title">Profile.</h1>
-<div class="herorow" style="grid-template-columns:auto 1fr">${av("agi",72,S.name[0])}<div><div class="lvl" style="font-size:34px">${S.name}</div><div class="cls" style="margin:0">${S.handle} · OVR ${ovr()}</div></div></div>
+<div class="herorow" style="grid-template-columns:auto 1fr">${av("agi",72,esc(pName()[0]))}<div><div class="lvl" style="font-size:34px;display:flex;align-items:center;gap:10px">${esc(pName())}<button class="btn chamf ghost" data-rename="1" style="min-height:30px;padding:0 10px;font-size:11px">Rename</button></div><div class="cls" style="margin:0">${esc(pHandle())} · OVR ${ovr()}</div></div></div>
 ${sh("Hunter rank",t<LAST?`${toGo} level${toGo>1?"s":""} to ${nx[0]}`:"the final rank")}
 <div class="ladder">${RANKS.map(([n],i)=>{const cur=i===t,lock=i>t;return `
 ${i?`<div class="pips" aria-hidden="true">${"<i></i>".repeat(3)}</div>`:""}
@@ -767,7 +775,7 @@ function nextNote(){const n=queue.shift();if(!n)return;
   const ov=$("#ov"),sys=ov.querySelector(".sys");
   sys.className="sys"+(n.tone==="danger"?" danger":"")+(n.center?" center":"");
   const T=$("#sysT");$("#sysC").textContent=n.chip||"[ NOTIFICATION ]";T.textContent=n.title;T.className=n.hero?"lvhero":"systitle";
-  T.classList.toggle("glitch",!!n.glitch);$("#sysX").innerHTML=n.extra||"";
+  T.classList.toggle("glitch",!!n.glitch);$("#sysX").innerHTML=n.after?"":(n.extra||"");$("#sysX2").innerHTML=n.after?(n.extra||""):"";
   const w=$("#sysW");w.hidden=!n.warn;w.textContent=n.warn||"";
   const acts=n.actions||[{label:"Accept"}];
   $("#sysA").innerHTML=acts.map((a,i)=>`<button class="btn chamf ${i?'ghost':'sysbtn'}" data-act="${i}">${a.label}</button>`).join("");
@@ -874,7 +882,8 @@ function editorAct(a,b){const L=workList().map(q=>({...q}));
     if(qeEdit==="new"){if(L.length>=MAXQ)return;L.push({id:"q"+Date.now().toString(36).slice(-8),ach:null,...v})}
     else{const q=L.find(x=>x.id===qeEdit);if(!q)return;const changed=q.q!==v.q||q.s!==v.s||q.n!==v.n||q.u!==v.u;Object.assign(q,v);if(changed)q.ach=null} // edited quests stop feeding the default achievement
     qeEdit=null;commit(L);toast(started()?"SAVED · APPLIES TOMORROW":"QUEST SAVED")}}
-document.addEventListener("submit",e=>e.preventDefault()); // Enter in the editor must not reload the page
+document.addEventListener("submit",e=>e.preventDefault());
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="pname"){e.preventDefault();const b=$("#sysA [data-act='0']");if(b)b.click()}}); // Enter in the editor must not reload the page
 let advancing=false;
 document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("#ov").hidden){if(qeEdit){qeEdit=null;paintEditor()}else closeNote(noteActs.length-1)}else toggleSheet(false)});
 document.addEventListener("click",e=>{
@@ -909,6 +918,8 @@ document.addEventListener("click",e=>{
     if(nc<q.n&&S.done[id]){setDone(q,false)}
     S.cnt[id]=nc;save();render(true);return}
   if(d.grid){S.tab="stats";render();const g=$("#pgrid");if(g)g.scrollIntoView({block:"center"});return}
+  if(d.rename){notify({chip:"[ SYSTEM ]",title:"Rename Player",extra:nameField(),after:true,onOpen:focusName,
+    actions:[{label:"Save",fn:()=>{setNameFromField();render();toast("NAME UPDATED")}},{label:"Cancel"}]});return}
   if(d.edit){openEditor();return}
   if(d.qe){editorAct(d.qe,b);return}
   if(d.pen){S.penalty=null;gainXP(10);toast("PENALTY QUEST CLEARED · +10 XP");save();render(true);return}
@@ -932,7 +943,8 @@ document.documentElement.dataset.skin=skin;document.querySelectorAll(".skin").fo
 rollover();render();
 function onboard(){notify({chip:"[ SYSTEM ]",title:"You have been chosen as a Player.",center:true,
     body:"The System will assign you a Daily Quest each day.\nComplete it to grow. Fail it and a Penalty Quest follows.\n\nFirst, the System must measure you.",
-    actions:[{label:"Begin assessment",fn:()=>{S.test={i:0,a:[]};S.tab="test";render()}},{label:"Later",fn:()=>{S.onboarded=true;save();arrival()}}]})}
+    extra:nameField(),after:true,onOpen:focusName,
+    actions:[{label:"Begin assessment",fn:()=>{setNameFromField();S.test={i:0,a:[]};S.tab="test";render()}},{label:"Later",fn:()=>{setNameFromField();S.onboarded=true;save();render();arrival()}}]})}
 function arrival(){if(!S.onboarded)return onboard();const today=dkey(now());if(S.seen===today)return;S.seen=today;save();notify({chip:"[ DAILY QUEST ]",title:"Hunter Conditioning has arrived.",
   extra:`<ul class="glist">${Q().map(q=>`<li><span class="gq">${hex(q.s,14)}${esc(q.q)}</span><span>[0/${q.n}${q.u?" "+q.u:""}]</span></li>`).join("")}</ul>`,
   warn:"WARNING: Failure assigns a Penalty Quest."})}
