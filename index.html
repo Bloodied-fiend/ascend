@@ -253,12 +253,12 @@ button{font:inherit;color:inherit}
 
 /* profile */
 .ladder{display:grid;gap:2px}
-.rung{display:grid;grid-template-columns:80px 1fr;gap:14px;align-items:center}
+.rung{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:center}
 .rung .n{font-family:var(--f-display);font-size:22px;font-weight:600}
 .rung.cur .n{font-size:28px}
 .rung.lock .n,.rung.lock .b{opacity:.55}
 .rung .meta{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;color:var(--muted)}
-.pips{display:grid;justify-items:center;width:80px;gap:4px;padding:2px 0}
+.pips{display:grid;justify-items:center;width:96px;gap:4px;padding:2px 0}
 .pips i{width:6px;height:6px;transform:rotate(45deg);border:1px solid var(--muted)}
 
 /* assessment */
@@ -301,8 +301,8 @@ button{font:inherit;color:inherit}
 @keyframes sweep{0%,18%{transform:translateX(0);animation-timing-function:cubic-bezier(.45,.05,.35,1)}62%,100%{transform:translateX(520px)}}
 .rung.lock .rb{filter:grayscale(.85) brightness(.6)}
 .rung.lock .rb .sweep{display:none}
-.spulse{animation:spulse 2.4s ease-in-out infinite}
-@keyframes spulse{50%{filter:drop-shadow(0 0 14px #ff6a4d)}}
+.spulse{animation:spulse 2.4s ease-in-out infinite}.rb.t5{--gc:#ff6a4d}.rb.t6{--gc:#62d8e6}.rb.t7{--gc:#a66bff}.rung.lock .spulse{animation:none}
+@keyframes spulse{0%,100%{filter:drop-shadow(0 0 4px var(--gc))}50%{filter:drop-shadow(0 0 14px var(--gc))}}
 .lvl.pop{animation:lvpop 420ms var(--ease-out)}
 @keyframes lvpop{0%{transform:scale(.9);opacity:0;text-shadow:0 0 0 var(--hl)}55%{transform:scale(1.06);text-shadow:0 0 22px var(--hl)}100%{transform:scale(1);opacity:1}}
 /* ambient scan line on the daily quest panel */
@@ -767,7 +767,7 @@ return `<h1 class="title">Profile.</h1>
 ${sh("Hunter rank",t<LAST?`${toGo} level${toGo>1?"s":""} to ${nx[0]}`:"the final rank")}
 <div class="ladder">${RANKS.map(([n],i)=>{const cur=i===t,lock=i>t;return `
 ${i?`<div class="pips" aria-hidden="true">${"<i></i>".repeat(3)}</div>`:""}
-<div class="rung ${cur?'cur':''} ${lock?'lock':''}"><div style="display:grid;place-items:center">${badge(i,cur?92:72)}</div>
+<div class="rung ${cur?'cur':''} ${lock?'lock':''}"><div style="display:grid;place-items:center">${badge(i,56+i*5)}</div>
 <div><div class="meta" style="${cur?'color:var(--hl)':''}">${cur?'CURRENT RANK':lock?'RE-ASSESSMENT AT LV. '+RANK_AT[i]:'CLEARED'}</div>
 <div class="n">${n}</div><div class="meta">${i<LAST?`LV. ${RANK_AT[i]}–${RANK_AT[i+1]-1}`:`LV. ${RANK_AT[i]}+`}</div>${cur&&t<LAST?`<div class="bar" style="--c:var(--hl);margin-top:6px;max-width:200px"><i style="width:${rankProg()*100}%"></i></div>`:""}</div></div>`}).join("")}</div>
 ${sh("Backup")}<div class="card glowcard" style="--c:var(--hl);display:grid;gap:10px"><small style="color:var(--muted)">Progress lives in this browser. Copy a backup now and then, or after clearing site data restore it from a .json file.</small>
