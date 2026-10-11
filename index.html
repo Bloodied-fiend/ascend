@@ -508,7 +508,7 @@ function fresh(){const t=now();
   quests:DEFAULT_QUESTS.map(q=>({...q})),questsNext:null,cnt:{},onboarded:false,statHist:{},
   done:{},day:dkey(t),hist:{},seen:null,penalty:null,boss:100,bossDown:false,bossStat:null,wk:mondayKey(t),prog:dkey(t),
   ap:{first:0,str50:0,vit30:0,agi30:0,int40:0,per100:0,clear10:0,water25:0,lvl20:1},claimed:{},
-  tab:"home",cat:"all",joined:{}}}
+  debt:0,rev:"",tab:"home",cat:"all",joined:{}}}
 // demo data: mid-program hunter, used by "Load sample data"
 function sample(){const t=now(),h={};for(let i=1;i<=17;i++){const d=new Date(t);d.setDate(t.getDate()-i);h[dkey(d)]=1}for(const i of[wd(t)-3,9]){const d=new Date(t);d.setDate(t.getDate()-i);if(i>0)h[dkey(d)]=0}
   const pr=new Date(t);pr.setDate(pr.getDate()-17);
@@ -517,10 +517,10 @@ function sample(){const t=now(),h={};for(let i=1;i<=17;i++){const d=new Date(t);
   return {...fresh(),name:S.name,onboarded:true,statHist:sh,lvl:14,xp:62,rest:2,train:{str:2,vit:1,agi:3,int:0,per:2},base:"Sep 23",baseKey:dkey(pr),stats:{str:60,vit:69,agi:70,int:60,per:80},done:{sleep:2},cnt:{sleep:1},hist:h,boss:62,bossStat:"str",prog:dkey(pr),
   ap:{first:0,str50:26,vit30:29,agi30:12,int40:39,per100:64,clear10:15,water25:25,lvl20:14}}}
 let S=fresh();
-const KEEP=["runs","lvl","xp","rest","restDay","base","baseKey","stats","train","qlog","adj","adjNotes","done","day","hist","seen","penalty","ap","claimed","boss","bossDown","bossStat","wk","prog","quests","questsNext","cnt","onboarded","statHist","name"];
+const KEEP=["runs","lvl","xp","rest","restDay","base","baseKey","stats","train","qlog","adj","adjNotes","done","day","hist","seen","penalty","ap","claimed","boss","bossDown","bossStat","wk","prog","quests","questsNext","cnt","onboarded","statHist","name","debt","rev"];
 function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typeof v==="number"&&Number.isFinite(v),key=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v);
-  for(const k of ["lvl","xp","rest","boss"])if(num(sv[k]))S[k]=sv[k];
-  S.rest=Math.max(0,Math.min(3,Math.round(S.rest)));
+  for(const k of ["lvl","xp","rest","boss","debt"])if(num(sv[k]))S[k]=sv[k];
+  S.rest=Math.max(0,Math.min(3,Math.round(S.rest)));S.debt=Math.max(0,Math.round(S.debt));S.rev=typeof sv.rev==="string"&&sv.rev.length<=40?sv.rev:"";
   for(const k of ["stats","train","qlog","adj","adjNotes","ap"])if(sv[k]&&typeof sv[k]==="object")for(const x in D[k])if(num(sv[k][x]))S[k][x]=sv[k][x];
   for(const k of ["done","hist","claimed"])if(sv[k]&&typeof sv[k]==="object")S[k]=Object.fromEntries(Object.entries(sv[k]).filter(([a,v])=>/^[\w-]{1,20}$/.test(a)&&num(v)));
   for(const k of ["day","seen","wk","prog","baseKey","restDay"])if(key(sv[k]))S[k]=sv[k];
@@ -545,27 +545,38 @@ function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typ
   S.penalty=sv.penalty?PENALTY:null;S.bossDown=sv.bossDown===true;S.bossStat=STATS[sv.bossStat]?sv.bossStat:null}
 let storageOK=true,saveBlocked=false;
 // accept stored/restored data only if it has the basic Ascend shape; never fill a blank profile from junk
-const VER=5,STORE="ascend-v5",LEGACY="ascend-v4";
+const VER=6,STORE="ascend-v6",OLD=["ascend-v5","ascend-v4"];
 const isSave=sv=>!!sv&&typeof sv==="object"&&!(sv.ver>VER)&&Number.isFinite(sv.lvl)&&sv.stats&&typeof sv.stats==="object"&&Object.keys(STATS).every(k=>Number.isFinite(sv.stats[k]))&&Array.isArray(sv.quests)&&sv.quests.length>0;
 // build the new state aside and only swap it in if it loads cleanly
 function adopt(sv){if(!isSave(sv))return false;const prev=S;try{S=fresh();load(sv);return true}catch(e){S=prev;return false}}
-try{const cur=localStorage.getItem(STORE),raw=cur!==null?cur:localStorage.getItem(LEGACY); // first run after the update migrates the v4 save; v4 itself is left untouched
+try{let raw=localStorage.getItem(STORE);for(const k of OLD)if(raw===null)raw=localStorage.getItem(k); // first run after an update imports the newest older save; older keys are never written again (old open tabs keep their own)
   if(raw!==null){let sv=null;try{sv=JSON.parse(raw)}catch(e){}
     if(!adopt(sv)){try{localStorage.setItem(STORE+"-unreadable-"+Date.now(),raw)}catch(e){}saveBlocked=true}}
   localStorage.setItem("ascend-probe","1");storageOK=localStorage.getItem("ascend-probe")==="1"}catch(e){storageOK=false}
 // another open copy of the app saved: take its data instead of later overwriting it with this copy's stale snapshot
-addEventListener("storage",e=>{if(e.key!==STORE||!e.newValue)return;let sv=null;try{sv=JSON.parse(e.newValue)}catch(err){return}const ui={tab:S.tab,test:S.test};if(adopt(sv)){saveBlocked=false;Object.assign(S,ui);render()}});
+addEventListener("storage",e=>{if(e.key!==STORE||!e.newValue)return;let sv=null;try{sv=JSON.parse(e.newValue)}catch(err){return}if(sv&&sv.rev===S.rev)return;const ui={tab:S.tab,test:S.test};if(adopt(sv)){saveBlocked=false;Object.assign(S,ui);render()}});
 const snapshot=()=>({ver:VER,...Object.fromEntries(KEEP.map(k=>[k,S[k]]))});
-const save=()=>{if(saveBlocked)return;try{localStorage.setItem(STORE,JSON.stringify(snapshot()))}catch(e){storageOK=false}};
+const save=()=>{if(saveBlocked)return;S.rev=Date.now().toString(36)+Math.random().toString(36).slice(2,8);try{localStorage.setItem(STORE,JSON.stringify(snapshot()))}catch(e){storageOK=false}};
+// another open copy may have saved since this one last looked (its storage event can arrive late): start every change from the latest save
+function pull(){let sv=null;try{const raw=localStorage.getItem(STORE);if(raw===null)return;sv=JSON.parse(raw)}catch(e){return}
+  if(!sv||sv.rev===S.rev)return;const ui={tab:S.tab,test:S.test,cat:S.cat};if(adopt(sv)){saveBlocked=false;Object.assign(S,ui)}}
+// every change runs read-latest -> change -> save under one cross-tab lock, so two open copies can't overwrite each other
+const LOCKS=!!(navigator.locks&&navigator.locks.request);
+function act(fn){let ran=false;const run=()=>{ran=true;pull();fn()};if(!LOCKS||!storageOK)return run();
+  navigator.locks.request("ascend-state",run).catch(e=>{if(!ran)run();else console.error(e)})} // locks refused (sandboxed frame): run unlocked
 function rollover(){const n=now(),t=dkey(n),wk=mondayKey(n);
   if(!S.bossStat)S.bossStat=weakest();
   if(S.wk!==wk){S.wk=wk;S.boss=100;S.bossDown=false;S.bossStat=weakest()}
   if(S.day===t){save();return}
   if(!S.restDay||S.restDay!==S.day){const lg={};for(const q of Q())lg[q.id]=S.done[q.id]?1:0;S.qlog[S.day]=lg} // rest days don't count against a quest
+  const rested=S.restDay===S.day,missed=!rested&&!Q().every(q=>S.done[q.id]);S.hist[S.day]=rested?2:missed?0:1;S.restDay=null;
+  S.statHist[S.day]=Object.fromEntries(Object.keys(STATS).map(k=>[k,eff(k)]));{const ks=Object.keys(S.statHist).sort();for(const k of ks.slice(0,-90))delete S.statHist[k]}S.done={};S.cnt={};if(S.questsNext){S.quests=S.questsNext;S.questsNext=null}
+  // days the app was never opened are missed days too, each finalized once (a day already logged is never rewritten)
+  let gap=0;if(S.day<t)for(const d=new Date(S.day+"T12:00");d.setDate(d.getDate()+1),dkey(d)<t&&gap<400;){const k=dkey(d);if(k in S.hist)continue;S.hist[k]=0;S.qlog[k]=Object.fromEntries(Q().map(q=>[q.id,0]));gap++}
   {const ks=Object.keys(S.qlog).sort();for(const k of ks.slice(0,-30))delete S.qlog[k]}
-  const rested=S.restDay===S.day,missed=!rested&&!Q().every(q=>S.done[q.id]);S.hist[S.day]=rested?2:missed?0:1;if(missed)S.penalty=PENALTY;S.restDay=null;
-  S.statHist[S.day]=Object.fromEntries(Object.keys(STATS).map(k=>[k,eff(k)]));{const ks=Object.keys(S.statHist).sort();for(const k of ks.slice(0,-90))delete S.statHist[k]}S.done={};S.cnt={};if(S.questsNext){S.quests=S.questsNext;S.questsNext=null}S.day=t;S.adjNotes=adapt();save();
-  if(missed)notify({chip:"[ WARNING ]",tone:"danger",title:"Daily Quest failed.",body:"Yesterday's Daily Quest was not completed.\nPenalty Quest assigned."})}
+  const nMiss=(missed?1:0)+gap;if(nMiss)S.penalty=PENALTY;
+  S.day=t;S.adjNotes=adapt();save();
+  if(nMiss)notify({chip:"[ WARNING ]",tone:"danger",title:"Daily Quest failed.",body:(nMiss===1&&missed?"Yesterday's Daily Quest was not completed.":nMiss===1?"1 Daily Quest was not completed.":`${nMiss} Daily Quests were not completed.`)+"\nPenalty Quest assigned."})}
 
 const PEN_MS=3*3600e3; // warn when under 3h left
 const TEST=[
@@ -677,7 +688,7 @@ const rows=Q().map(q=>{const d=!!S.done[q.id],c=S.cnt[q.id]||0,open=openQ===q.id
 return `<h1 class="title">Home.</h1>
 <div class="herorow"><div class="halo">${badge(t,104)}</div>
 <div><div class="lvl ${lvPop?'pop':''}">Lv. ${S.lvl}</div><div class="rk">${rn.toUpperCase()}</div><div class="cls">The Awakened${S.rest?` · <b style="color:var(--accent)">${S.rest}</b> rest day${S.rest>1?"s":""}`:""}</div>
-<div class="bar" style="--c:var(--hl)"><i id="xpbar" style="width:${S.xp}%"></i></div><div class="barlbl"><span style="color:var(--hl)">${S.xp} / 100 XP</span><span>${100-S.xp} to Lv. ${S.lvl+1}</span></div></div></div>
+<div class="bar" style="--c:var(--hl)"><i id="xpbar" style="width:${S.xp}%"></i></div><div class="barlbl"><span style="color:var(--hl)">${S.xp} / 100 XP</span><span>${S.debt?`<b style="color:var(--danger)">OWES ${S.debt} XP</b>`:`${100-S.xp} to Lv. ${S.lvl+1}`}</span></div></div></div>
 <div class="week">${days}</div>
 ${sh("Today",`<button class="link" data-grid="1" style="font:inherit;letter-spacing:inherit;color:var(--hl)">DAY ${progDay()} / 60 →</button> · ${td.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}).toUpperCase()}`)}
 <section class="sys ${late?'danger':''}" id="qpanel" aria-label="Daily quest"><span class="scanwrap" aria-hidden="true"><i></i></span>
@@ -828,7 +839,9 @@ function closeNote(i=0){clearInterval(typer);$("#ov").hidden=true;screenEl.inert
   const act=noteActs[i]||{};noteActs=[];if(act.fn)act.fn();if(act.go){S.tab=act.go;render()}
   if(queue.length)return nextNote();if(lastFocus&&lastFocus.isConnected)lastFocus.focus()}
 
-function gainXP(n){const t0=tierOf(S.lvl);S.xp+=n;let lv=0;let gotRest=0;while(S.xp>=100){S.xp-=100;S.lvl++;lv++;if(S.lvl%5===0&&S.rest<3){S.rest++;gotRest++}}if(S.xp<0)S.xp=0; // ponytail: no de-leveling, so points can't be farmed
+function gainXP(n){if(n<0){S.xp+=n;if(S.xp<0){S.debt+=-S.xp;S.xp=0}return} // levels never drop; XP taken back below 0 is owed instead, so complete/undo can't farm levels
+  {const pay=Math.min(S.debt,n);S.debt-=pay;n-=pay}
+  const t0=tierOf(S.lvl);S.xp+=n;let lv=0;let gotRest=0;while(S.xp>=100){S.xp-=100;S.lvl++;lv++;if(S.lvl%5===0&&S.rest<3){S.rest++;gotRest++}}
   S.ap.lvl20=Math.max(S.ap.lvl20,S.lvl);
   if(lv){if($("#ov").hidden)burst("var(--hl)");else queueBurst=true}
   const t1=tierOf(S.lvl);
@@ -838,7 +851,8 @@ function gainXP(n){const t0=tierOf(S.lvl);S.xp+=n;let lv=0;let gotRest=0;while(S
   if(t1>t0)notify({chip:"[ RE-ASSESSMENT ]",title:RANKS[t1][0].toUpperCase(),hero:true,center:true,burst:"var(--accent)",
     extra:`<div style="display:grid;place-items:center;margin:6px 0">${badge(t1,92)}</div><div class="lvsub">${RANKS[t0][0]} → <span class="newlv">${RANKS[t1][0]}</span></div>`,
     body:t1===LAST?"Your power exceeds every measured rank.\nThe System recognizes a Monarch.":t1===6?"Your readings exceed S-Rank.\nYou are now a National Level Hunter.":"Requirements met.\nYour rank has been re-assessed.",actions:[{label:"Accept"}]});}
-function tick(){if(dkey(now())!==S.day){rollover();render(true);arrival()}
+let rolling=false;
+function tick(){if(dkey(now())!==S.day&&!rolling){rolling=true;act(()=>{rolling=false;if(dkey(now())!==S.day){rollover();render(true);arrival()}else render(true)})}
   const el=$("#qclock"),cd=$("#cd"),l=left();
   if(el)el.textContent=fmtLeft(l)+" LEFT";if(cd)cd.textContent="10D "+fmtLeft(l);
   const late=l<PEN_MS&&!allDone()&&!restToday();phone.classList.toggle("pz",late&&S.tab==="home");
@@ -939,11 +953,13 @@ document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("#ov").
 document.addEventListener("click",e=>{
   if(!sheet.hidden&&!e.target.closest(".player"))toggleSheet(false);
   const b=e.target.closest("button");if(!b||b.disabled)return;const d=b.dataset;
-  if(d.act){closeNote(+d.act);return}
   if(b.id==="pplay"){if(!aud.src){$("#pfile").click();return}if(aud.paused){userPaused=false;aud.play().catch(()=>{})}else{userPaused=true;aud.pause()}return}
   if(b.id==="pmore"){toggleSheet(sheet.hidden);return}
-  if(d.t||d.go){S.tab=d.t||d.go;render();return}
   if(d.s){document.documentElement.dataset.skin=d.s;try{localStorage.setItem("ascend-skin",d.s)}catch(e){}document.querySelectorAll(".skin").forEach(x=>x.setAttribute("aria-pressed",x===b));return}
+  act(()=>onButton(b,d))});
+function onButton(b,d){
+  if(d.act){closeNote(+d.act);return}
+  if(d.t||d.go){S.tab=d.t||d.go;render();return}
   if(d.demo){
     if(d.demo==="late"){const t=new Date(Date.now()-DAY_START_H*3600e3);t.setDate(t.getDate()+1);t.setHours(1,30,0,0);shift=t-Date.now();S.tab="home";render();toast("CLOCK SET TO 01:30")}
     if(d.demo==="miss"){const y=new Date(now());y.setDate(y.getDate()-1);S.day=dkey(y);S.done={};rollover();S.tab="home";render()}
@@ -992,12 +1008,12 @@ document.addEventListener("click",e=>{
     navigator.clipboard.writeText(txt).then(()=>toast("BACKUP COPIED · PASTE INTO A .JSON FILE")).catch(()=>toast("COPY BLOCKED · TRY ANOTHER BROWSER"));return}
   if(d.cat){S.cat=d.cat;render(true);return}
   if(d.j){S.joined[d.j]=!S.joined[d.j];render(true);return}
-});
+}
 screenEl.addEventListener("scroll",()=>{const away=screenEl.scrollTop>24&&sheet.hidden;$("#player").classList.toggle("away",away)},{passive:true});
 setInterval(tick,1000);
 let skin="hunter";try{skin=localStorage.getItem("ascend-skin")||"hunter"}catch(e){}
 document.documentElement.dataset.skin=skin;document.querySelectorAll(".skin").forEach(x=>x.setAttribute("aria-pressed",x.dataset.s===skin));
-rollover();render();
+act(()=>{rollover();render();arrival()});
 function onboard(){notify({chip:"[ SYSTEM ]",title:"You have been chosen as a Player.",center:true,
     body:"The System will assign you a Daily Quest each day.\nComplete it to grow. Fail it and a Penalty Quest follows.\n\nFirst, the System must measure you.",
     extra:nameField(),after:true,onOpen:focusName,
@@ -1012,9 +1028,10 @@ function arrival(){if(!S.onboarded)return onboard();const today=dkey(now());if(S
   if(reDue())setTimeout(()=>notify({chip:"[ RE-ASSESSMENT ]",title:"Monthly Re-Assessment",body:"30 days have passed.\nThe System must measure you again.",actions:[{label:"Begin",fn:()=>{S.test={i:0,a:[]};S.tab="test";render()}},{label:"Later"}]}));S.seen=today;save();notify({chip:"[ DAILY QUEST ]",title:"Hunter Conditioning has arrived.",
   extra:`<ul class="glist">${Q().map(q=>`<li><span class="gq">${hex(q.s,14)}${esc(q.q)}</span><span>[0/${q.n}${q.u?" "+q.u:""}]</span></li>`).join("")}</ul>`,
   warn:"WARNING: Failure assigns a Penalty Quest."})}
-arrival();
 $("#rfile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;
-  try{const sv=JSON.parse(await f.text());if(!adopt(sv))throw 0;saveBlocked=false;rollover();save();render();toast("BACKUP RESTORED")}catch(err){toast("THAT FILE ISN'T AN ASCEND BACKUP")}e.target.value=""});
+  let sv=null;try{sv=JSON.parse(await f.text())}catch(err){}e.target.value="";
+  if(!isSave(sv)){toast("THAT FILE ISN'T AN ASCEND BACKUP");return}
+  act(()=>{if(!adopt(sv)){toast("THAT FILE ISN'T AN ASCEND BACKUP");return}saveBlocked=false;rollover();save();render();toast("BACKUP RESTORED")})});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)tick()});
 if(!storageOK)setTimeout(()=>toast("WARNING · PROGRESS CAN'T BE SAVED HERE"),1500);
 if(saveBlocked)setTimeout(()=>notify({chip:"[ WARNING ]",tone:"danger",title:"Saved progress couldn't be read.",body:"Nothing has been overwritten. A copy was kept on this device.\nRestore a backup file from Profile, or reset to start fresh."}),1200);
