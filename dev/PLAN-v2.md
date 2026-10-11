@@ -49,3 +49,39 @@ Codex review verdict was "revise first". Safety prerequisite shipped in v18 (non
 - **Adaptive targets:** distance quests (MI/KM) are no longer treated as binary just because the number is < 5; they step by 0.5.
 - **Penalty Quest:** state its content and the rules before a miss, not only after.
 - **Title placement:** equipped title replaces the hard-coded "The Awakened" line under rank on Home; shown under the name on Profile; next to players on the party board; in the feed. New Profile "Titles" section between rank ladder and Backup: earned (lit, date, tap to equip) and locked (dimmed, rule + progress, e.g. "Road Warrior · 37 / 100 timed miles"). Unlock = "[ TITLE ACQUIRED ]" System window with Equip / Later.
+
+---
+
+## REVISION 2 (2026-10-11) — Titles + ranked Gates (replaces the fake raids). Build spec for review.
+
+**State added (in fresh(), KEEP, load() validation; ver stays 5, unknown/missing -> defaults):**
+- `m` lifetime milestone counters, all start at 0 at upgrade ("tracking starts now", nothing backdated): `miles` (timed run/ruck distance, KM converted to MI, +on log, -on dropRun of that run), `pb` (count of runs logged with bonus tier 2; -1 if that run is re-logged/unchecked), `kills:{str,vit,agi,int,per}` (+1 when bossDown flips true; never decremented, bossDown never reverts), `advArmed` (bool, set when a Penalty Quest is cleared), `advDays` (consecutive cleared/rest days after arming, reset on a missed day), `sleepRun` (consecutive days the quest with ach "vit30" was done; rest days neutral; reset on a day it existed and was not done), `gateClears:{0..7}` per rank tier.
+- `titles:{id:dateEarned}`, `title:id|null` (equipped; default "awakened").
+- `gate:{id,start,until,base:{...},run,failed}|null` (active gate), `gateCd:dateKey|null` (cooldown after a failed/expired gate, 1 day).
+
+**Fix:** quest editor keeps `q.ach` unless the quest's stat changes (was: any change to name/target/unit cleared it, silently stopping trophy and gate counting).
+
+**Titles (cosmetic):** awakened (default), adversity ("One Who Overcame Adversity": advDays>=7), unbroken (60 days since `prog` with >=50 days hist===1), roadwarrior (m.miles>=100), pacesetter (m.pb>=5), bane_<stat> x5 ("<Boss>'s Bane": m.kills[stat]>=1), earlyrise (m.sleepRun>=14), heir (tier >= S-Rank), gatebreaker (sum gateClears>=5). Checked once after each state change completes (end of setDone, run log, rollover, gate resolve), never mid-save; each unlock notifies once ("[ TITLE ACQUIRED ]", Equip/Later). Earned titles are never revoked. Equipped title replaces hard-coded "The Awakened" (Home rank line, Status header line) and shows on Profile; Profile gets a Titles section: earned (date, tap to equip) and locked (rule + progress).
+
+**Gates (one per rank for now, E..S = tiers 0..5):** enter only if tier <= current tier, no active gate, not in cooldown. Progress = counter now - counter snapshot at entry (`base`), using existing symmetric per-achievement counters `S.ap` (str50 strength sessions, agi30 run sessions, vit30 sleep nights, clear10 daily clears — all +1 on complete, -1 on undo) and `m.miles`; streak-type gates use `gate.run` updated at rollover (hist 1 -> +1, 0 -> reset to 0 and for no-penalty gates set failed, 2 rest -> neutral).
+- E Goblin Den: run>=3, 5 days, +60 XP
+- D Flooded Cellar: miles delta>=10, 7 days, +100
+- C Iron Mines: str50 delta>=6 and agi30 delta>=3, 10 days, +150
+- B Wraith Halls: vit30 delta>=10, 14 days, +220
+- A Scholar's Labyrinth: clear10 delta>=14 and no missed day, 21 days, +300
+- S Monarch's Gate: run>=30 (rest neutral), 35 days, +500
+Clear: checked after state changes; awards XP via gainXP once, increments gateClears[tier], clears `gate`, notify "[ GATE CLEARED ]". Undo after a clear does not reopen it (reward stands, same as boss). Expiry at rollover (day > until) or failed: close, notify "[ GATE CLOSED ]", cooldown 1 day, nothing lost. UI: Guild = weekly boss + Gates (active gate card with per-objective bars and days left; list E..S with rank badge, locked ones dimmed "Reach X-Rank"). Remove fake raid/challenge/cleared content, `joined` state and its handler.
+
+### Codex review of REVISION 2 (2026-10-11): PROCEED yes-with-fixes. Apply ALL before/while building:
+1. BLOCKER — old open tabs strip new fields: bump to a NEW storage key (e.g. `ascend-v6`, ver 6) with one-time import from v5; never write v5 again (same pattern as v4->v5).
+2. BLOCKER — cross-tab whole-state writes race: serialize read-latest -> rollover -> mutation -> gate/title resolution -> save across tabs (Web Locks API `navigator.locks.request` or single-writer); only the committing tab announces rewards; adopting state from storage must not replay awards.
+3. Gate replay farm (clear D, uncheck run, re-enter, re-log): after a successful clear, no new gate until the next System day (persisted), or persist which completions funded a gate.
+4. rollover() skips days: finalize EVERY elapsed date once (unattended dates = missed, hist 0); use the saved day's quests/done/rest before applying questsNext; compute sleep outcome before clearing done; resolve last eligible date before expiring a gate; gate windows inclusive (5 days = until start+4); define cooldown during catch-up.
+5. Entry baseline: allow gate entry only before today's progress begins (or track the gate's own contributions); copy baselines as scalars.
+6. Legacy runs: mark runs credited to m.miles/m.pb (preserve marker in load(), which rebuilds run records); reverse only marked runs using the removed record's n/u/b; trimming the 500-run history never subtracts milestones.
+7. One outer finalization boundary per user action: settle overdue days -> all mutations (run replace, completion, boss, bonus XP) -> resolve gate once (mark resolved before XP) -> titles after all XP -> persist -> enqueue notices -> render. Suppress nested finalization inside setDone when called from run logging/stepper. Cover penalty clear, trophy claim, startup/restore. Keep checks out of save()/render()/gainXP(). Record title acquisition before notifying.
+8. Objective identity: q.ach isn't enough (existing edited/custom quests have ach:null; renaming sleep->water would keep counting). Define explicit objective identity, keep it on name/target edits, let the user assign it (e.g. "counts as: Sleep / Strength / Cardio / none") in the editor, never infer sleep from VIT.
+9. Rest-day semantics: a fully completed rest day bumps clear10 then rollover writes hist 2 -> decide; evaluate finalized-day milestones in rollover; Unbroken = 50 clears within the 60-day window.
+10. Pre-existing XP-undo farm (complete 8x20 XP, undo, keep levels): keep an XP debt across level boundaries (display levels, owe XP) or persist reward attribution. Needed before rank-gated content.
+11. load() validation for every new nested field (finite non-negative numbers, known ids, booleans, valid dates, complete baselines); an invalid active gate is dropped alone without rejecting the save; equipped title must be earned.
+Also: S.ap `first`/`lvl20` are not symmetric (only str50/agi30/vit30/clear10 are); bossDown DOES reset weekly — increment kills only on the false->true transition.
