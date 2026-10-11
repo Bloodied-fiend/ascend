@@ -1036,7 +1036,14 @@ window.__ascend={get S(){return S},render,closeNote,sample:()=>{S=sample();rollo
 </script>
 
 <script>
-if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+if("serviceWorker" in navigator){
+  // a new version activates (skipWaiting + claim) -> reload once so the open page runs it; skip the very first install
+  const had=!!navigator.serviceWorker.controller;let reloaded=false;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!reloaded){reloaded=true;location.reload()}});
+  addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(reg=>{
+    document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")reg.update().catch(()=>{})}); // check for a new version when the app comes back to the front
+  }).catch(()=>{}));
+}
 // ask the browser not to evict saved progress
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 </script>
