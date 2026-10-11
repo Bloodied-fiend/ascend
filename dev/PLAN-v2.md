@@ -35,3 +35,17 @@ Context: single-file PWA (`dev/ascend.html`, built to repo root by `dev/build_pw
 - Bearer-secret identity vs Neon Managed Better Auth — is the simple secret acceptable for a 2–5 friend app?
 - Snapshot-of-whole-state vs event log — risks of last-writer-wins across two devices of the same player?
 - Anything in Part 1 that should wait for Part 2 or vice versa?
+
+---
+
+## REVISION 1 (2026-10-11) — supersedes the sections above where they conflict
+
+Codex review verdict was "revise first". Safety prerequisite shipped in v18 (non-destructive load / cross-tab sync / restore). Remaining Codex changes are listed in the vault note `05 - App/Ascend.md` → HANDOFF, items 1–9; apply them.
+
+### Locked by Jaime (2026-10-11)
+- **Identity:** invisible per-player key (option 1) — no login screens; key generated at join, kept on device, used only for writes; shown only when linking a new phone.
+- **Routine in the assessment:** after the 15 questions, three screens: lift days (chips, pre-filled from the lifting answer), cardio days + Run/Ruck/Both, daily habits with targets (sleep-by time, water, reading, meditation). Quests become per-weekday schedules; an unscheduled quest cannot be missed and does not break the streak. Days editable per quest in Edit; monthly Re-Assessment offers a routine check-in. Streaks, Rest Days, weekly boss and adaptive targets must treat "not scheduled today" as neutral.
+- **Do more:** stepper continues past target ("3 / 2 MI · OVERDRIVE"); each extra 50% of target = +25% XP and +1 training session, capped at 2× target; unscheduled quests appear as optional bonus quests (reward, no penalty). Title "Overachiever" for exceeding target 20 times.
+- **Adaptive targets:** distance quests (MI/KM) are no longer treated as binary just because the number is < 5; they step by 0.5.
+- **Penalty Quest:** state its content and the rules before a miss, not only after.
+- **Title placement:** equipped title replaces the hard-coded "The Awakened" line under rank on Home; shown under the name on Profile; next to players on the party board; in the feed. New Profile "Titles" section between rank ladder and Backup: earned (lit, date, tap to equip) and locked (dimmed, rule + progress, e.g. "Road Warrior · 37 / 100 timed miles"). Unlock = "[ TITLE ACQUIRED ]" System window with Equip / Later.
