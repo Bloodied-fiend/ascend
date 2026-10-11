@@ -807,7 +807,7 @@ function gainXP(n){const t0=tierOf(S.lvl);S.xp+=n;let lv=0;let gotRest=0;while(S
 function tick(){if(dkey(now())!==S.day){rollover();render(true);arrival()}
   const el=$("#qclock"),cd=$("#cd"),l=left();
   if(el)el.textContent=fmtLeft(l)+" LEFT";if(cd)cd.textContent="10D "+fmtLeft(l);
-  const late=l<PEN_MS&&!allDone();phone.classList.toggle("pz",late&&S.tab==="home");
+  const late=l<PEN_MS&&!allDone()&&!restToday();phone.classList.toggle("pz",late&&S.tab==="home");
   const p=$("#qpanel");if(p&&p.classList.contains("danger")!==late)render(true)}
 
 // Soundtrack: plays a file the viewer loads; nothing is uploaded anywhere
@@ -901,7 +901,7 @@ function editorAct(a,b){const L=workList().map(q=>({...q}));
 document.addEventListener("submit",e=>e.preventDefault());
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="pname"){e.preventDefault();const b=$("#sysA [data-act='0']");if(b)b.click()}}); // Enter in the editor must not reload the page
 let advancing=false;
-document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("#ov").hidden){if(qeEdit){qeEdit=null;paintEditor()}else closeNote(noteActs.length-1)}else toggleSheet(false)});
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("#ov").hidden){if(qeEdit){qeEdit=null;paintEditor()}else closeNote(-1)}else toggleSheet(false)});
 document.addEventListener("click",e=>{
   if(!sheet.hidden&&!e.target.closest(".player"))toggleSheet(false);
   const b=e.target.closest("button");if(!b||b.disabled)return;const d=b.dataset;
@@ -980,7 +980,7 @@ function arrival(){if(!S.onboarded)return onboard();const today=dkey(now());if(S
   warn:"WARNING: Failure assigns a Penalty Quest."})}
 arrival();
 $("#rfile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;
-  try{const sv=JSON.parse(await f.text());S=fresh();load(sv);rollover();save();render();toast("BACKUP RESTORED")}catch(err){toast("THAT FILE ISN'T AN ASCEND BACKUP")}e.target.value=""});
+  try{const sv=JSON.parse(await f.text());if(!sv||typeof sv!=="object"||!Number.isFinite(sv.lvl)||!sv.stats||typeof sv.stats!=="object"||!Array.isArray(sv.quests))throw 0;S=fresh();load(sv);rollover();save();render();toast("BACKUP RESTORED")}catch(err){toast("THAT FILE ISN'T AN ASCEND BACKUP")}e.target.value=""});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)tick()});
 if(!storageOK)setTimeout(()=>toast("WARNING · PROGRESS CAN'T BE SAVED HERE"),1500);
 window.__ascend={get S(){return S},render,closeNote,sample:()=>{S=sample();rollover();save();render()}};
