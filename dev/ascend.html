@@ -518,11 +518,18 @@ function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typ
   S.statHist={};if(sv.statHist&&typeof sv.statHist==="object")for(const[k,v]of Object.entries(sv.statHist).slice(-90))
     if(key(k)&&v&&typeof v==="object"&&Object.keys(STATS).every(x=>num(v[x])))S.statHist[k]=Object.fromEntries(Object.keys(STATS).map(x=>[x,v[x]]));
   S.penalty=sv.penalty?PENALTY:null;S.bossDown=sv.bossDown===true;S.bossStat=STATS[sv.bossStat]?sv.bossStat:null}
-let storageOK=true;
-try{load(JSON.parse(localStorage.getItem("ascend-v4")));localStorage.setItem("ascend-probe","1");storageOK=localStorage.getItem("ascend-probe")==="1"}catch(e){storageOK=false}
+let storageOK=true,saveBlocked=false;
+// accept stored/restored data only if it has the basic Ascend shape; never fill a blank profile from junk
+const isSave=sv=>!!sv&&typeof sv==="object"&&Number.isFinite(sv.lvl)&&sv.stats&&typeof sv.stats==="object"&&Object.keys(STATS).every(k=>Number.isFinite(sv.stats[k]))&&Array.isArray(sv.quests)&&sv.quests.length>0;
+// build the new state aside and only swap it in if it loads cleanly
+function adopt(sv){if(!isSave(sv))return false;const prev=S;try{S=fresh();load(sv);return true}catch(e){S=prev;return false}}
+try{const raw=localStorage.getItem("ascend-v4");
+  if(raw!==null){let sv=null;try{sv=JSON.parse(raw)}catch(e){}
+    if(!adopt(sv)){try{localStorage.setItem("ascend-v4-unreadable-"+Date.now(),raw)}catch(e){}saveBlocked=true}}
+  localStorage.setItem("ascend-probe","1");storageOK=localStorage.getItem("ascend-probe")==="1"}catch(e){storageOK=false}
 // another open copy of the app saved: take its data instead of later overwriting it with this copy's stale snapshot
-addEventListener("storage",e=>{if(e.key!=="ascend-v4"||!e.newValue)return;try{const ui={tab:S.tab,test:S.test};S=fresh();load(JSON.parse(e.newValue));Object.assign(S,ui);render()}catch(err){}});
-const save=()=>{try{localStorage.setItem("ascend-v4",JSON.stringify(Object.fromEntries(KEEP.map(k=>[k,S[k]]))))}catch(e){storageOK=false}};
+addEventListener("storage",e=>{if(e.key!=="ascend-v4"||!e.newValue)return;let sv=null;try{sv=JSON.parse(e.newValue)}catch(err){return}const ui={tab:S.tab,test:S.test};if(adopt(sv)){saveBlocked=false;Object.assign(S,ui);render()}});
+const save=()=>{if(saveBlocked)return;try{localStorage.setItem("ascend-v4",JSON.stringify(Object.fromEntries(KEEP.map(k=>[k,S[k]]))))}catch(e){storageOK=false}};
 function rollover(){const n=now(),t=dkey(n),wk=mondayKey(n);
   if(!S.bossStat)S.bossStat=weakest();
   if(S.wk!==wk){S.wk=wk;S.boss=100;S.bossDown=false;S.bossStat=weakest()}
@@ -918,7 +925,7 @@ document.addEventListener("click",e=>{
       delete S.adj[q.id];const y=new Date(now());y.setDate(y.getDate()-1);S.day=dkey(y);S.done={};for(const x of Q())S.done[x.id]=1;S.seen=null;rollover();render();arrival();toast("SIMULATED 7 STRONG DAYS")}
     if(d.demo==="rank"){const t=tierOf(S.lvl);if(t<LAST){S.lvl=RANK_AT[t+1]-1;gainXP(100-S.xp);save();render(true)}}
     if(d.demo==="sample"){S=sample();rollover();save();render();toast("SAMPLE DATA LOADED")}
-    if(d.demo==="reset")notify({chip:"[ WARNING ]",tone:"danger",title:"Erase all progress?",body:"Level, stats, history and trophies return to zero.\nThis cannot be undone.",actions:[{label:"Cancel"},{label:"Erase",fn:()=>{shift=0;S=fresh();rollover();save();render();toast("PROGRESS ERASED")}}]})
+    if(d.demo==="reset")notify({chip:"[ WARNING ]",tone:"danger",title:"Erase all progress?",body:"Level, stats, history and trophies return to zero.\nThis cannot be undone.",actions:[{label:"Cancel"},{label:"Erase",fn:()=>{shift=0;saveBlocked=false;S=fresh();rollover();save();render();toast("PROGRESS ERASED")}}]})
     return}
   if(d.start||d.retake){S.test={i:0,a:[]};advancing=false;S.tab="test";render();return}
   if(d.a){if(advancing)return;advancing=true;const T=S.test;T.a[T.i]=+d.a;b.setAttribute("aria-pressed","true");
@@ -980,9 +987,10 @@ function arrival(){if(!S.onboarded)return onboard();const today=dkey(now());if(S
   warn:"WARNING: Failure assigns a Penalty Quest."})}
 arrival();
 $("#rfile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;
-  try{const sv=JSON.parse(await f.text());if(!sv||typeof sv!=="object"||!Number.isFinite(sv.lvl)||!sv.stats||typeof sv.stats!=="object"||!Array.isArray(sv.quests))throw 0;S=fresh();load(sv);rollover();save();render();toast("BACKUP RESTORED")}catch(err){toast("THAT FILE ISN'T AN ASCEND BACKUP")}e.target.value=""});
+  try{const sv=JSON.parse(await f.text());if(!adopt(sv))throw 0;saveBlocked=false;rollover();save();render();toast("BACKUP RESTORED")}catch(err){toast("THAT FILE ISN'T AN ASCEND BACKUP")}e.target.value=""});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)tick()});
 if(!storageOK)setTimeout(()=>toast("WARNING · PROGRESS CAN'T BE SAVED HERE"),1500);
+if(saveBlocked)setTimeout(()=>notify({chip:"[ WARNING ]",tone:"danger",title:"Saved progress couldn't be read.",body:"Nothing has been overwritten. A copy was kept on this device.\nRestore a backup file from Profile, or reset to start fresh."}),1200);
 window.__ascend={get S(){return S},render,closeNote,sample:()=>{S=sample();rollover();save();render()}};
 })();
 </script>
