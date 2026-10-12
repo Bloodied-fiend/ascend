@@ -8,7 +8,11 @@ from pathlib import Path
 
 OUT = Path(__file__).resolve().parents[2] / "gates"
 OUT.mkdir(exist_ok=True)
-PINS = {f"r{y}x{x}": (x, y) for y, xs in ((40, (18, 46, 74)), (60, (32, 60, 88)), (80, (16, 46, 76)), (46, (32, 60, 88))) for x in xs}  # mirrors GROW3 + GROW2
+# every spot a Gate can occupy = the fixed per-tier layouts from gate_layout.py
+import json
+LAY = json.loads((Path(__file__).resolve().parent / "gate_layout.json").read_text())
+PINS = {f"{gid}@{tier}": tuple(xy) for tier, v in LAY.items() for gid, xy in v["gates"].items()}
+GBOX = [b for v in LAY.values() for b in v["boxes"]]   # css px rects of every ring/tag/label in every tier
 rng = np.random.default_rng(7)
 
 # ---------- camera: screen (u,v in 0..1) <-> ground plane (X,Z) ----------
@@ -55,6 +59,7 @@ def render_map(W=760, H=740, SS=2):
     hgt = hgt * .75 + cont * .55 + far * .5 - .55
     # inland sea for interest
     hgt -= .55 * np.exp(-(((X - .35) / .32) ** 2 + ((Z - 1.75) / .22) ** 2))
+    hgt += .45 * np.exp(-(((u - .5) / .42) ** 6 + ((v - .6) / .26) ** 6))   # broad lift: coast never cuts through the gate bands
     land = hgt > 0
 
     # screen-space derivatives -> constant-width lines
@@ -117,8 +122,17 @@ def render_map(W=760, H=740, SS=2):
 
     # city blocks: small extruded towers on land, away from the pins
     d = ImageDraw.Draw(im, "RGBA")
-    sites = [(.36, .78), (.64, .78), (.50, .53), (.20, .60)]
-    assert all(min(((cu - px / 100) ** 2 + (cv - py / 100) ** 2) ** .5 for px, py in PINS.values()) >= .08 for cu, cv in sites), "city site too close to a gate slot"
+    # towers only where a 30x34 css-px box clears every gate box of every tier by 12px
+    def clear(cu, cv):
+        x0, y1 = cu * 366 - 5, cv * 420
+        tb = (x0 - 12, y1 - 34 - 12, x0 + 30 + 12, y1 + 12)
+        return not any(tb[0] < g[2] and g[0] < tb[2] and tb[1] < g[3] and g[1] < tb[3] for g in GBOX)
+    cand = [(u0 / 100, v0 / 100) for v0 in range(20, 96, 2) for u0 in range(6, 95, 3)]
+    sites = []
+    for c in sorted(cand, key=lambda c: ((c[0] * 7919 + c[1] * 104729) % 1)):
+        if clear(*c) and all(abs(c[0] - s[0]) > .15 or abs(c[1] - s[1]) > .1 for s in sites): sites.append(c)
+        if len(sites) == 4: break
+    print("city sites:", sites)
     for (cu, cv) in sites:
         X0, Z0 = ground(cu, cv)
         if hgt[int(cv * h), int(cu * w)] <= 0.02:  # only on land
@@ -137,7 +151,8 @@ def render_map(W=760, H=740, SS=2):
     im = im.filter(ImageFilter.UnsharpMask(1.2, 40, 2))
     im.save(OUT / "map.webp", quality=82, method=6)
     # pin land check for the record
-    print("pins on land:", {k: bool(hgt[int(py / 100 * h), int(px / 100 * w)] > 0) for k, (px, py) in PINS.items()})
+    off = [k for k, (px, py) in PINS.items() if hgt[int(py / 100 * h), int(px / 100 * w)] <= 0]
+    print(f"pins on land: {len(PINS) - len(off)}/{len(PINS)}", off)
 
 # ---------- flame pillar sprite sheets ----------
 def render_pillar(name, c_lo, c_hi, FR=8, W=64, H=136, SS=2):

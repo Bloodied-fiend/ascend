@@ -80,12 +80,12 @@ export async function runRed({ ev, boot, click, base, check, KEY, DK, wait }) {
   // 1. red D gate needs 15 miles, not 10; no retreat button; clear pays 200 XP
   await boot(KEY, { ...base, lvl: 9, xp: 0, m: { miles: 0 }, gate: { id: "d", start: d[0], until: d[6], run: 0, failed: false, red: true, base: zero } });
   await click(`[data-t="quests"]`);
-  const ui = await ev(`({leave:!!document.querySelector("[data-gleave]"),label:document.querySelector(".gpin.red .gbrk")?.textContent})`);
+  const ui = await ev(`({leave:!!document.querySelector("[data-gleave]"),label:document.querySelector(".gpin.red .gst2")?.textContent})`);
   await ev(`__ascend.S.m.miles=12`); await click(`[data-t="quests"]`);
   const mid = await S(`!!S.gate`);
   await ev(`__ascend.S.m.miles=15`); await click(`[data-t="quests"]`);
   const r = await S(`({g:S.gate,lvl:S.lvl,xp:S.xp,red:S.m.red})`);
-  check("red gate: sealed, 1.5x goal, double XP", !ui.leave && ui.label === "RED GATE" && mid && r.g === null && r.lvl === 11 && r.xp === 0 && r.red === 1, JSON.stringify({ ui, mid, r }));
+  check("red gate: sealed, 1.5x goal, double XP", !ui.leave && ui.label === "RED" && mid && r.g === null && r.lvl === 11 && r.xp === 0 && r.red === 1, JSON.stringify({ ui, mid, r }));
   // 2. red gate timing out assigns a Penalty Quest
   await boot(KEY, { ...base, day: d[-1], penalty: null, done: Object.fromEntries(base.quests.map(q => [q.id, 1])), gate: { id: "e", start: d[-5], until: d[-1], run: 0, failed: false, red: true, base: zero } });
   const r2 = await S(`({g:S.gate,pen:!!S.penalty})`);
