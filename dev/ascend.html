@@ -48,6 +48,30 @@ button{font:inherit;color:inherit}
 .skin[aria-pressed="true"]{border-color:var(--accent)}
 .skin b{display:block;font-size:14px}.skin small{color:var(--muted);font-size:12px}
 .sw{width:44px;height:28px;border-radius:6px;border:1px solid var(--line)}
+.dchips{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.dchip{min-height:44px;padding:0;justify-content:center;font-family:var(--f-mono);font-weight:700}
+.dchip[aria-pressed="true"]{background:color-mix(in srgb,var(--hl) 22%,transparent);border-color:var(--hl);color:var(--fg)}
+.dchip[aria-pressed="false"]{color:var(--muted)}
+.qelbl{font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+.tsub{margin:0 0 16px;font-size:13px;color:var(--muted)}
+.rkind{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.rkind .btn{min-height:44px;justify-content:center}
+.rkind .btn[aria-pressed="true"]{background:color-mix(in srgb,var(--hl) 22%,transparent);border-color:var(--hl)}
+.hrow{display:grid;grid-template-columns:64px 1fr auto;gap:10px;align-items:center}
+.hrow .hon{width:64px}
+.hnum{display:flex;align-items:center;gap:6px}.hnum input{width:72px}.hnum small{font-family:var(--f-mono);color:var(--muted)}
+.hrow input[type=time]{width:148px}
+.dchip[aria-pressed="true"],.rkind .btn[aria-pressed="true"],.hon[aria-pressed="true"]{background:var(--hl);border-color:var(--hl);color:#0c1218}
+.dchip[aria-pressed="false"],.hon[aria-pressed="false"]{background:transparent;border:1px solid var(--line);color:var(--muted)}
+[data-skin="daylight"] .dchip[aria-pressed="true"],[data-skin="daylight"] .rkind .btn[aria-pressed="true"],[data-skin="daylight"] .hon[aria-pressed="true"]{color:#fff}
+.hrow{grid-template-columns:64px 1fr 148px}
+.hnum{justify-content:flex-end}.hnum input{width:96px}.hnum small{width:4ch;text-align:left}
+.rt .tq{margin:32px 0 auto}
+#ov .sys{overflow-x:hidden} /* the dialog was 6px wider than its content: a sideways scrollbar on every popup */
+.rkind .btn[aria-pressed="false"]{background:transparent;border:1px solid var(--line);color:var(--muted)}
+[data-skin="daylight"] .btn.acc,[data-skin="daylight"] .primary{color:#fff}
+.optq{margin-top:10px;opacity:.85}
+.optsh{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--muted);padding:8px 0 4px;border-top:1px dashed var(--line)}
 .themes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .themes .skin{grid-template-columns:36px 1fr;gap:10px;min-height:44px;padding:8px 10px}
 .themes .sw{width:36px;height:24px;border-radius:calc(var(--r) / 2)}
@@ -600,6 +624,14 @@ const DEFAULT_QUESTS=[
 const UNITS=["","MIN","MI","KM","PG","L","REPS","HRS"],XPS=[10,15,20],MAXQ=8;
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const Q=()=>S.quests;
+// per-weekday schedule (Mon=0). No `days` = every day. A quest not scheduled today can't be missed: it shows as optional.
+const D2=["Mo","Tu","We","Th","Fr","Sa","Su"];
+const DAYN=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const wdOf=k=>(new Date(k+"T12:00").getDay()+6)%7;
+const sched=(q,k)=>!q.days||q.days.includes(wdOf(k));
+const todayQ=()=>Q().filter(q=>sched(q,S.day));
+const offQ=()=>Q().filter(q=>!sched(q,S.day));
+const daysLabel=q=>!q.days?"Daily":q.days.length?q.days.map(i=>D2[i]).join(" "):"Optional only";
 const cleanPlayer=v=>typeof v==="string"?v.replace(/[<>\u0000-\u001f]/g,"").trim().slice(0,20):"";
 const pName=()=>S.name||"Hunter";
 const pHandle=()=>"@"+(pName().toLowerCase().replace(/[^a-z0-9]+/g,".").replace(/^\.|\.$/g,"")||"hunter");
@@ -703,7 +735,7 @@ function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typ
   S.adjNotes=Array.isArray(sv.adjNotes)?sv.adjNotes.filter(n=>n&&typeof n.q==="string"&&num(n.from)&&num(n.to)).slice(0,8).map(n=>({q:n.q.slice(0,40),from:n.from,to:n.to,u:UNITS.includes(n.u)?n.u:""})):[];
   if(typeof sv.base==="string"&&sv.base.length<16&&/^[\w ,]+$/.test(sv.base))S.base=sv.base;
   if(S.base&&!S.baseKey)S.baseKey=dkey(now()); // older saves: start the monthly clock now
-  const vq=a=>Array.isArray(a)&&a.length>=1&&a.length<=MAXQ?a.filter(q=>q&&/^[a-z0-9]{1,12}$/.test(q.id)&&typeof q.q==="string"&&q.q.length<=40&&STATS[q.s]&&Number.isInteger(q.n)&&q.n>=1&&q.n<=999&&UNITS.includes(q.u)&&XPS.includes(q.xp)).map(q=>({id:q.id,q:q.q,s:q.s,n:q.n,u:q.u,xp:q.xp,ach:OBJ.some(o=>o[0]===q.ach)?q.ach:null})).map((q,i,L)=>q.ach&&L.findIndex(x=>x.ach===q.ach)<i?{...q,ach:null}:q):null;
+  const vq=a=>Array.isArray(a)&&a.length>=1&&a.length<=MAXQ?a.filter(q=>q&&/^[a-z0-9]{1,12}$/.test(q.id)&&typeof q.q==="string"&&q.q.length<=40&&STATS[q.s]&&Number.isInteger(q.n)&&q.n>=1&&q.n<=999&&UNITS.includes(q.u)&&XPS.includes(q.xp)).map(q=>({id:q.id,q:q.q,s:q.s,n:q.n,u:q.u,xp:q.xp,ach:OBJ.some(o=>o[0]===q.ach)?q.ach:null,...(Array.isArray(q.days)&&q.days.length<7&&q.days.every(i=>Number.isInteger(i)&&i>=0&&i<=6)&&new Set(q.days).size===q.days.length?{days:[...q.days].sort()}:{})})).map((q,i,L)=>q.ach&&L.findIndex(x=>x.ach===q.ach)<i?{...q,ach:null}:q):null;
   const qs=vq(sv.quests);if(qs&&qs.length&&new Set(qs.map(q=>q.id)).size===qs.length)S.quests=qs;
   const qn=vq(sv.questsNext);S.questsNext=qn&&qn.length?qn:null;
   const ids=new Set(S.quests.map(q=>q.id));
@@ -724,7 +756,7 @@ function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typ
     S.gate={id:g.id,start:g.start,until:g.until,run:g.run,failed:g.failed,red:g.red===true,base:Object.fromEntries(GBASE.map(k=>[k,num(g.base[k])&&g.base[k]>=0?g.base[k]:S.ap[k]]))}}
 let storageOK=true,saveBlocked=false;
 // accept stored/restored data only if it has the basic Ascend shape; never fill a blank profile from junk
-const VER=7,STORE="ascend-v7",OLD=["ascend-v6","ascend-v5","ascend-v4"];
+const VER=8,STORE="ascend-v8",OLD=["ascend-v7","ascend-v6","ascend-v5","ascend-v4"];
 const isSave=sv=>!!sv&&typeof sv==="object"&&!(sv.ver>VER)&&Number.isFinite(sv.lvl)&&sv.stats&&typeof sv.stats==="object"&&Object.keys(STATS).every(k=>Number.isFinite(sv.stats[k]))&&Array.isArray(sv.quests)&&sv.quests.length>0;
 // build the new state aside and only swap it in if it loads cleanly
 function adopt(sv){if(!isSave(sv))return false;const prev=S;try{S=fresh();load(sv);return true}catch(e){S=prev;return false}}
@@ -747,11 +779,12 @@ function rollover(){const n=now(),t=dkey(n),wk=mondayKey(n);
   if(!S.bossStat)S.bossStat=weakest();
   if(S.wk!==wk){S.wk=wk;S.boss=100;S.bossDown=false;S.bossStat=weakest()}
   if(S.day===t){save();return}
-  if(!S.restDay||S.restDay!==S.day){const lg={};for(const q of Q())lg[q.id]=S.done[q.id]?1:0;S.qlog[S.day]=lg} // rest days don't count against a quest
-  const rested=S.restDay===S.day,missed=!rested&&!Q().every(q=>S.done[q.id]);S.hist[S.day]=rested?2:missed?0:1;S.restDay=null;gateDay(S.day,S.hist[S.day]);
+  const dq=todayQ();
+  if(dq.length&&(!S.restDay||S.restDay!==S.day)){const lg={};for(const q of dq)lg[q.id]=S.done[q.id]?1:0;S.qlog[S.day]=lg} // rest days and unscheduled quests don't count against a quest
+  const rested=S.restDay===S.day||!dq.length,missed=!rested&&!dq.every(q=>S.done[q.id]);S.hist[S.day]=rested?2:missed?0:1;S.restDay=null;gateDay(S.day,S.hist[S.day]);
   S.statHist[S.day]=Object.fromEntries(Object.keys(STATS).map(k=>[k,eff(k)]));{const ks=Object.keys(S.statHist).sort();for(const k of ks.slice(0,-90))delete S.statHist[k]}S.done={};S.cnt={};if(S.questsNext){S.quests=S.questsNext;S.questsNext=null}
   // days the app was never opened are missed days too, each finalized once (a day already logged is never rewritten)
-  let gap=0;if(S.day<t)for(const d=new Date(S.day+"T12:00");d.setDate(d.getDate()+1),dkey(d)<t&&gap<400;){const k=dkey(d);if(k in S.hist)continue;S.hist[k]=0;gateDay(k,0);S.qlog[k]=Object.fromEntries(Q().map(q=>[q.id,0]));gap++}
+  let gap=0;if(S.day<t)for(const d=new Date(S.day+"T12:00");d.setDate(d.getDate()+1),dkey(d)<t&&gap<400;){const k=dkey(d);if(k in S.hist)continue;const kq=Q().filter(q=>sched(q,k));if(!kq.length){S.hist[k]=2;gateDay(k,2);continue}S.hist[k]=0;gateDay(k,0);S.qlog[k]=Object.fromEntries(kq.map(q=>[q.id,0]));gap++}
   {const ks=Object.keys(S.qlog).sort();for(const k of ks.slice(0,-30))delete S.qlog[k]}
   const nMiss=(missed?1:0)+gap;if(nMiss)S.penalty=PENALTY;
   S.day=t;S.adjNotes=adapt();save();
@@ -759,7 +792,7 @@ function rollover(){const n=now(),t=dkey(n),wk=mondayKey(n);
 
 const addDays=(k,n)=>{const d=new Date(k+"T12:00");d.setDate(d.getDate()+n);return dkey(d)};
 const gateDef=id=>GATES.find(g=>g.id===id);
-const clearedToday=()=>allDone()&&!restToday();
+const clearedToday=()=>allDone()&&!restToday()&&todayQ().length>0;
 // progress on one objective of the active gate
 function gProg(k,raw){const G=S.gate;if(k==="run")return G.run+(clearedToday()&&S.day>=G.start&&S.day<=G.until?1:0);
   const v=Math.max(0,(k==="miles"?S.m.miles:S.ap[k])-G.base[k]);return raw?v:Math.floor(v*10)/10}
@@ -832,7 +865,7 @@ function adapt(){const notes=[],days=Object.keys(S.qlog).sort();
     if(to!==q.n){notes.push({q:q.q,from:q.n,to,u:q.u});q.n=to;S.adj[q.id]=S.day}}
   return notes}
 const ovr=()=>Math.round(Object.keys(STATS).reduce((a,k)=>a+eff(k),0)/5);
-const allDone=()=>Q().every(q=>S.done[q.id]);
+const allDone=()=>todayQ().every(q=>S.done[q.id]);
 const BOSSES={str:"Iron Warden",vit:"Sleepless Wraith",agi:"Swift Stalker",int:"Hollow Scholar",per:"Mirror Shade"};
 const weakest=()=>Object.keys(STATS).reduce((a,k)=>eff(k)<eff(a)?k:a,"str");
 const bossK=()=>S.bossStat||weakest(); // fixed for the week, chosen from the weakest stat when the boss spawns
@@ -889,7 +922,7 @@ home(){const t=tierOf(S.lvl),[rn]=RANKS[t],td=now(),wi=wd(td),late=left()<PEN_MS
 const days="MTWTFSS".split("").map((d,i)=>{const x=new Date(td);x.setDate(td.getDate()+i-wi);const k=dkey(x);
   const st=k<S.prog?"pre":i<wi?(S.hist[k]===2?"rest":S.hist[k]?"done":"miss"):i===wi?(restToday()?"rest today":allDone()?"done today":"today"):"fut";
   return `<div class="day ${i===wi?'now':''}"><div class="dot ${st}" aria-label="${d}: ${st}">${st.startsWith("done")?"✓":st.startsWith("rest")?"R":st==="miss"?"✕":""}</div>${d}</div>`}).join("");
-const rows=Q().map(q=>{const d=!!S.done[q.id],c=S.cnt[q.id]||0,open=openQ===q.id,nm=esc(q.q),u=q.u?" "+q.u:"";return `<div class="qrow ${d?'done':''}" style="--c:var(--${q.s})" data-row="${q.id}">
+const qrows=L=>L.map(q=>{const d=!!S.done[q.id],c=S.cnt[q.id]||0,open=openQ===q.id,nm=esc(q.q),u=q.u?" "+q.u:"";return `<div class="qrow ${d?'done':''}" style="--c:var(--${q.s})" data-row="${q.id}">
   <button class="qmain" data-qopen="${q.id}" aria-expanded="${open}" aria-label="${nm}, ${c} of ${q.n}${u}. Log progress">${hex(q.s,24)}<span><span class="q">${nm}</span><br><span class="x"><span class="xpv">+${q.xp} XP</span> · ${STATS[q.s].toUpperCase()}${q.s===weakest()?` <span class="focus">FOCUS</span>`:""}</span></span>${d?"":`<span class="goal">${S.adj[q.id]===S.day&&!S.done[q.id]?"<span class=\"adjm\">▲▼</span>":""}[${c}/${q.n}${u}]</span>`}</button>
   <button class="qck" data-q="${q.id}" aria-pressed="${d}" aria-label="${nm}: ${d?'complete, undo':'mark complete'}">${d?`<span class="stamp ${slamId===q.id?'slam':''}">DONE</span>`:'<span class="qbox"></span>'}</button>
   ${open?`<div class="qstep"><button class="btn chamf ghost" data-step="${q.id}:-1" aria-label="Minus ${stepOf(q)}">−${stepOf(q)}</button><span class="cnt">${c} / ${q.n}${u}</span><button class="btn chamf sysbtn" data-step="${q.id}:1" aria-label="Plus ${stepOf(q)}">+${stepOf(q)}</button></div>
@@ -898,6 +931,8 @@ const rows=Q().map(q=>{const d=!!S.done[q.id],c=S.cnt[q.id]||0,open=openQ===q.id
   <div class="tmeta">${tr?`TODAY ${tr.k.toUpperCase()} ${mmss(tr.t)} · ${mmss(tr.t/tr.n)}/${q.u}${tr.b===2?" · NEW BEST":tr.b?" · ABOVE AVG":""}`:`${q.n} ${q.u} · LOG YOUR TIME`}${bp.length?` · BEST ${tKind.toUpperCase()} ${mmss(Math.min(...bp))}/${q.u}`:""}</div>`})():""}
   ${c?`<div class="qbar"><i style="width:${c/q.n*100}%"></i></div>`:""}`:c&&!d?`<div class="qbar"><i style="width:${c/q.n*100}%"></i></div>`:""}
 </div>`}).join("");
+const offL=offQ(),off=!todayQ().length&&!restToday();
+const rows=qrows(todayQ())+(offL.length?`<div class="optq"><div class="optsh">OPTIONAL TODAY · NO PENALTY</div>${qrows(offL)}</div>`:"");
 return `<h1 class="title">Home.</h1>
 <div class="herorow"><div class="halo">${badge(t,104)}</div>
 <div><div class="lvl ${lvPop?'pop':''}">Lv. ${S.lvl}</div><div class="rk">${rn.toUpperCase()}</div><div class="cls">The Awakened${S.rest?` · <b style="color:var(--accent)">${S.rest}</b> rest day${S.rest>1?"s":""}`:""}</div>
@@ -906,11 +941,11 @@ return `<h1 class="title">Home.</h1>
 ${sh("Today",`<button class="link" data-grid="1" style="font:inherit;letter-spacing:inherit;color:var(--hl)">DAY ${progDay()} / 60 →</button> · ${td.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}).toUpperCase()}`)}
 <section class="sys ${late?'danger':''}" id="qpanel" aria-label="Daily quest"><span class="scanwrap" aria-hidden="true"><i></i></span>
   <div class="syshead"><span class="chip">[ DAILY QUEST ]</span><span style="display:flex;gap:10px;align-items:center"><span class="clock" id="qclock">${fmtLeft(left())} LEFT</span><button class="btn chamf ghost" data-edit="1" style="min-height:30px;padding:0 10px">Edit</button></span></div>
-  <h2 class="systitle">${restToday()?"Rest Day":late?"Penalty imminent":"Hunter Conditioning"}</h2>
+  <h2 class="systitle">${restToday()?"Rest Day":off?"Off Day":late?"Penalty imminent":"Hunter Conditioning"}</h2>
   <div class="stack" style="gap:0;margin-top:6px">
   ${S.penalty?`<div class="qrow pen" style="--c:var(--danger)"><button class="qmain" data-pen="1">${hex("str",24)}<span><span class="q">${esc(S.penalty)}</span><br><span class="x">+10 XP · CLEARS PENALTY QUEST</span></span><span class="goal">[0/1]</span></button><button class="qck" data-pen="1" aria-label="Complete Penalty Quest"><span class="qbox"></span></button></div>`:""}
   ${rows}</div>
-  <p class="warn" ${restToday()?'style="color:var(--accent);border-color:var(--accent)"':""}>${restToday()?"REST DAY: No Penalty Quest today. Training still counts.":allDone()?"All objectives complete. Rewards granted.":"WARNING: Failure assigns a Penalty Quest."}</p>
+  <p class="warn" ${restToday()?'style="color:var(--accent);border-color:var(--accent)"':""}>${restToday()?"REST DAY: No Penalty Quest today. Training still counts.":off?"OFF DAY: Nothing scheduled. Optional quests still count.":allDone()?"All objectives complete. Rewards granted.":"WARNING: Failure assigns a Penalty Quest."}</p>
   ${restToday()?`<button class="btn chamf ghost" data-rest="undo" style="margin-top:10px">Cancel rest day</button>`:!allDone()&&S.rest?`<button class="btn chamf ghost" data-rest="use" style="margin-top:10px">Use a Rest Day (${S.rest} left)</button>`:""}
 </section>
 <div style="margin-top:18px">${bossCard(true)}</div>
@@ -995,6 +1030,7 @@ ${sh("Backup")}<div class="card glowcard" style="--c:var(--hl);display:grid;gap:
 `},
 
 test(){const T=S.test;
+if(T.i>=TEST.length&&T.i<TEST.length+RT){if(!T.r)T.r=routineOf(workList());return routineScreen(T)}
 if(T.i<TEST.length){const[k,q,opts]=TEST[T.i];return `<div class="tw">
 <div style="display:flex;justify-content:space-between;align-items:center"><button class="link" data-back="1">${T.i?"← Back":"✕ Cancel"}</button><span class="clock" style="color:var(--muted)">${T.i+1} / ${TEST.length}</span></div>
 <div class="syshead" style="margin:16px 0 8px"><span class="chip">[ PLAYER ASSESSMENT ]</span><span class="tag" style="--c:var(--${k})">${hex(k,18)}${STATS[k].toUpperCase()}</span></div>
@@ -1007,11 +1043,50 @@ const r=results(),best=d=>Object.keys(r).sort((a,b)=>(r[b]-r[a])*d)[0];
 return `<h1 class="title">Results.</h1>
 <section class="sys"><div class="syshead"><span class="chip">[ ASSESSMENT COMPLETE ]</span><span class="clock">OVR ${Math.round(Object.values(r).reduce((a,b)=>a+b)/5)}</span></div>
 <div class="stack" style="gap:0">${Object.keys(STATS).map(k=>`<div class="res" style="border-top:1px solid var(--line)">${hex(k,26)}<span>${STATS[k]}<div class="bar" style="--c:var(--${k});margin-top:6px;height:4px"><i style="width:${r[k]}%"></i></div></span><b>${r[k]}</b></div>`).join("")}</div>
-<p style="font-size:13px;margin:12px 0 0;color:var(--muted)">Strongest: <b style="color:var(--fg)">${STATS[best(1)]}</b>. Most room to grow: <b style="color:var(--fg)">${STATS[best(-1)]}</b>.</p></section>
-<button class="primary chamf" data-save="1" style="margin-top:18px">Record baseline</button>
+<p style="font-size:13px;margin:12px 0 0;color:var(--muted)">Strongest: <b style="color:var(--fg)">${STATS[best(1)]}</b>. Most room to grow: <b style="color:var(--fg)">${STATS[best(-1)]}</b>.</p>
+${T.r?`<p class="bnote"><span class="qelbl">ROUTINE</span> Lift ${T.r.lift.map(i=>D2[i]).join(" ")||"none"} · ${({run:"Run",ruck:"Ruck",both:"Run/ruck"})[T.r.kind]} ${T.r.cardio.map(i=>D2[i]).join(" ")||"none"}</p>`:""}</section>
+<button class="primary chamf" data-save="1" style="margin-top:18px;width:100%;box-sizing:border-box">Record baseline</button>
 <button class="link" data-retake="1" style="display:block;margin:14px auto 0">Retake Player Assessment</button>`},
 };
 
+const RT=3; // routine screens after the questions
+// current schedule -> routine answers (so a re-assessment doubles as a routine check-in)
+function routineOf(L){const by=a=>L.find(q=>q.ach===a),all=[0,1,2,3,4,5,6];
+  // an existing quest with no `days` runs every day; only a quest that doesn't exist yet gets the lift/cardio split
+  const sch=(q,dflt)=>q?(q.days||all).slice():dflt;
+  const st=by("str50"),rn=by("agi30"),sl=by("vit30"),tm=sl&&/(\d{1,2}):(\d{2})/.exec(sl.q);
+  const hab=(q,n,u)=>({on:!!q&&!(q.days&&!q.days.length),n:q?q.n:n,u:q?q.u:u,days:q&&q.days&&q.days.length?q.days.slice():null}); // missing habit starts OFF (deleted stays deleted)
+  return {lift:sch(st,[0,2,4]),cardio:sch(rn,[1,3,5]),
+    kind:!rn?"both":/run/i.test(rn.q)&&/ruck/i.test(rn.q)?"both":/ruck/i.test(rn.q)?"ruck":"run",
+    h:{sleep:{...hab(sl,1,""),t:tm?`${pad(+tm[1])}:${tm[2]}`:"22:30"},water:hab(by("water25"),3,"L"),read:hab(by("int40"),20,"PG"),med:hab(by("per100"),10,"MIN")}}}
+const HABITS=[["sleep","Lights out by","vit30","time"],["water","Water","water25"],["read","Read","int40"],["med","Meditate","per100"]];
+// routine answers -> quests. Never deletes a quest, never re-adds one the player turned off, keeps custom names
+// and partial habit schedules, and protects typed targets from the next adaptive review.
+function applyRoutine(R){const L=workList().map(q=>({...q})),all=[0,1,2,3,4,5,6];
+  const up=(ach,d,v,keepName)=>{let q=L.find(x=>x.ach===ach),made=false;
+    if(!q){if(!d.length)return;const df=DEFAULT_QUESTS.find(x=>x.ach===ach);if(!df||L.length>=MAXQ||L.some(x=>x.id===df.id))return;q={...df};L.push(q);made=true}
+    if(v.q&&!made&&!keepName.test(q.q))delete v.q;   // a renamed quest ("Swim") keeps its name
+    if("n" in v&&v.n!==q.n)S.adj[q.id]=S.day;
+    Object.assign(q,v);withDays(q,d)};
+  const hd=h=>h.on?(h.days||all):[];
+  up("str50",R.lift,{},/./);
+  up("agi30",R.cardio,{q:{run:"Run",ruck:"Ruck",both:"Run or ruck"}[R.kind]},/\b(run|ruck)/i);
+  up("vit30",hd(R.h.sleep),{q:`Lights out by ${R.h.sleep.t}`},/lights out/i);
+  up("water25",hd(R.h.water),{n:R.h.water.n},/./);
+  up("int40",hd(R.h.read),{n:R.h.read.n},/./);
+  up("per100",hd(R.h.med),{n:R.h.med.n},/./);
+  if(started())S.questsNext=L;else{S.quests=L;S.questsNext=null}}
+function routineScreen(T){const s=T.i-TEST.length,R=T.r;
+  const head=`<div style="display:flex;justify-content:space-between;align-items:center"><button class="link" data-back="1">← Back</button><span class="clock" style="color:var(--muted)">ROUTINE ${s+1} / ${RT}</span></div>
+  <div class="syshead" style="margin:16px 0 8px"><span class="chip">[ PLAYER ASSESSMENT ]</span><span class="tag" style="--c:var(--hl)">ROUTINE</span></div>
+  <div class="bar" style="--c:var(--hl)"><i style="width:${(s+1)/RT*100}%"></i></div>`;
+  const body=s===0?`<p class="qtext">Which days do you lift?</p><p class="tsub">Strength is only due on these days. On other days it's optional, with no penalty.</p>${dayChips("lift",R.lift)}`
+   :s===1?`<p class="qtext">Which days do you do cardio?</p><p class="tsub">Run or ruck is only due on these days.</p>${dayChips("cardio",R.cardio)}
+     <div class="qelbl" style="margin-top:16px">Type</div><div class="seg rkind" role="group" aria-label="Cardio type">${[["run","Run"],["ruck","Ruck"],["both","Both"]].map(([k,n])=>`<button type="button" class="btn chamf" data-rk="${k}" aria-pressed="${R.kind===k}">${n}</button>`).join("")}</div>`
+   :`<p class="qtext">Daily habits</p><p class="tsub">Turn off what you don't do. Off habits stay as optional quests.</p>
+     <div class="stack" style="gap:10px">${HABITS.map(([k,n,_,u])=>{const h=R.h[k];u=u||h.u;return `<div class="hrow"><button type="button" class="btn chamf dchip hon" data-rh="${k}" aria-pressed="${h.on}" aria-label="${n}">${h.on?"ON":"OFF"}</button><span>${n}</span>${u==="time"?`<input class="tin" type="time" id="rh-${k}" value="${h.t}" aria-label="${n}">`:`<span class="hnum"><input class="tin" type="number" min="1" max="999" inputmode="numeric" id="rh-${k}" value="${h.n}" aria-label="${n} target"><small>${esc(u||"")}</small></span>`}</div>`}).join("")}</div>
+     <p class="qe-err" id="rh-err" role="alert"></p>`;
+  return `<div class="tw rt">${head}<div class="tq">${body}</div><button class="primary chamf" data-rnext="1" style="margin-top:20px">${s<RT-1?"Next":"See results"}</button></div>`}
 function results(){const r={};for(const k in STATS)r[k]=0;TEST.forEach(([k],i)=>r[k]+=S.test.a[i]);for(const k in r)r[k]=score(r[k],k);return r}
 const $=s=>document.querySelector(s),screenEl=$("#screen"),phone=$("#phone");
 function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("show"),1800)}
@@ -1124,10 +1199,10 @@ function setDone(q,on){const before=allDone(),prev=S.done[q.id];if(!!prev===on)r
     gainXP(q.xp*n);
     if(!S.bossDown){const dmg=(q.s===bossK()?15:5)*n;S.boss=Math.max(0,Math.min(100,S.boss-dmg))}
     if(S.boss===0&&!S.bossDown){S.bossDown=true;burst("var(--danger)");notify({chip:"[ WEEKLY BOSS ]",title:"BOSS DEFEATED",hero:true,center:true,extra:`<div class="lvsub">${BOSSES[bossK()]}</div><span class="ptchip">+150 XP</span>`,actions:[{label:"Collect"}]});gainXP(150)}
-    if(after&&!before){const xp=Q().reduce((a,x)=>a+x.xp,0);
+    if(after&&!before){const xp=todayQ().reduce((a,x)=>a+x.xp,0);
       burst("var(--hl)");notify({chip:"[ QUEST COMPLETE ]",title:"DAILY QUEST CLEARED",hero:true,center:true,
         extra:`<div class="lvsub">HUNTER CONDITIONING</div><div class="statpips">${Object.keys(STATS).map(k=>hex(k,22)).join("")}</div>
-        <div class="rlist"><div><span>Experience</span><b>+${xp} XP</b></div><div><span>Training logged</span><b>${Q().length} SESSIONS</b></div>
+        <div class="rlist"><div><span>Experience</span><b>+${xp} XP</b></div><div><span>Training logged</span><b>${todayQ().length} SESSIONS</b></div>
         <div><span>Streak</span><b>${streak()} DAYS</b></div><div><span>Program</span><b>DAY ${progDay()} / 60</b></div>
         <div><span>Daily Quest clears</span><b class="pt">${Math.min(S.ap.clear10,10)} / 10</b></div></div>`,
         actions:[{label:"Collect"}]})}
@@ -1138,6 +1213,10 @@ function setDone(q,on){const before=allDone(),prev=S.done[q.id];if(!!prev===on)r
 const started=()=>Q().some(q=>S.done[q.id]||S.cnt[q.id]);
 const workList=()=>S.questsNext||Q();
 let qeEdit=null; // id being edited, "new", or null
+// day chips (Mon..Sun) toggle in place, so typed form values survive; read back with pickedDays
+const dayChips=(key,sel)=>`<div class="dchips" role="group" aria-label="Days">${"MTWTFSS".split("").map((c,i)=>`<button type="button" class="btn chamf dchip" data-dc="${key}:${i}" aria-pressed="${sel.includes(i)}" aria-label="${DAYN[i]}">${c}</button>`).join("")}</div>`;
+const pickedDays=key=>[...document.querySelectorAll(`[data-dc^="${key}:"]`)].filter(b=>b.getAttribute("aria-pressed")==="true").map(b=>+b.dataset.dc.split(":")[1]);
+const withDays=(q,d)=>{if(d.length===7)delete q.days;else q.days=d;return q};
 function editorHTML(){const L=workList(),staged=started();
   if(qeEdit){const q=qeEdit==="new"?{q:"",s:"str",n:10,u:"MIN",xp:15,ach:null}:L.find(x=>x.id===qeEdit);
     return `<form class="qe"><label>Quest<input id="qe-q" maxlength="40" required></label>
@@ -1146,10 +1225,11 @@ function editorHTML(){const L=workList(),staged=started();
     <label>Unit<select id="qe-u">${UNITS.map(u=>`<option value="${u}" ${q.u===u?"selected":""}>${u||"none"}</option>`).join("")}</select></label>
     <label>XP<select id="qe-xp">${XPS.map(x=>`<option ${q.xp===x?"selected":""}>${x}</option>`).join("")}</select></label></div>
     <label style="margin-top:10px">Counts as<select id="qe-a"><option value="">Nothing (no trophy or Gate)</option>${OBJ.map(([a,n])=>{const used=L.some(x=>x.ach===a&&x.id!==qeEdit);return `<option value="${a}" ${q.ach===a?"selected":""} ${used?"disabled":""}>${n}${used?" (used)":""}</option>`}).join("")}</select></label>
+    <div class="qelbl" style="margin-top:10px">Days</div>${dayChips("qd",q.days||[0,1,2,3,4,5,6])}
     <p class="qe-err" id="qe-err" role="alert"></p>
-    <div class="acts" style="margin-top:8px"><button type="button" class="btn chamf sysbtn" data-qe="save">Save</button><button type="button" class="btn chamf ghost" data-qe="back">Back</button></div></form>`}
+    <div class="acts" style="margin-top:8px"><button type="button" class="btn chamf sysbtn" data-qe="save">Save</button><button type="button" class="btn chamf ghost" data-qe="back">Cancel</button></div></form>`}
   return `${staged?`<p class="warn" style="color:var(--hl);border-color:var(--hl);margin:0 0 10px">Today has started. Changes apply tomorrow.</p>`:""}
-  <div class="qelist">${L.map(q=>`<div class="qeitem">${hex(q.s,20)}<span>${esc(q.q)}<small>${q.n}${q.u?" "+q.u:""} · +${q.xp} XP${q.ach?" · "+objName(q.ach):""}</small></span>
+  <div class="qelist">${L.map(q=>`<div class="qeitem">${hex(q.s,20)}<span>${esc(q.q)}<small>${q.n}${q.u?" "+q.u:""} · +${q.xp} XP · ${daysLabel(q)}${q.ach?" · "+objName(q.ach):""}</small></span>
   <button class="btn chamf ghost" data-qe="edit:${q.id}" aria-label="Edit ${esc(q.q)}">Edit</button><button class="btn chamf ghost" data-qe="del:${q.id}" aria-label="Delete ${esc(q.q)}" ${L.length<=1?"disabled":""}>✕</button></div>`).join("")}</div>
   ${L.length<MAXQ?`<button class="btn chamf sysbtn" data-qe="new" style="width:100%;justify-content:center;margin-top:10px">+ Add quest</button>`:`<small style="color:var(--muted)">Up to ${MAXQ} quests.</small>`}`}
 function openEditor(){qeEdit=null;notify({chip:"[ QUEST EDITOR ]",title:"Daily Quest",extra:'<div id="qe"></div>',actions:[{label:"Done"}],onOpen:paintEditor})}
@@ -1164,9 +1244,10 @@ function editorAct(a,b){const L=workList().map(q=>({...q}));
   if(a==="save"||a==="enter"){const name=$("#qe-q").value.trim(),n=parseInt($("#qe-n").value,10),err=$("#qe-err");
     if(!name){err.textContent="Give the quest a name.";return}
     if(!(n>=1&&n<=999)){err.textContent="Target must be a whole number from 1 to 999.";return}
+    const dsel=pickedDays("qd");
     const a=$("#qe-a").value,v={q:name.slice(0,40),s:$("#qe-s").value,n,u:$("#qe-u").value,xp:+$("#qe-xp").value,ach:OBJ.some(o=>o[0]===a)&&!L.some(x=>x.ach===a&&x.id!==qeEdit)?a:null};
-    if(qeEdit==="new"){if(L.length>=MAXQ)return;L.push({id:"q"+Date.now().toString(36).slice(-8),...v})}
-    else{const q=L.find(x=>x.id===qeEdit);if(!q)return;Object.assign(q,v);S.adj[q.id]=S.day} // what it counts as is the player's explicit choice, kept through renames
+    if(qeEdit==="new"){if(L.length>=MAXQ)return;L.push(withDays({id:"q"+Date.now().toString(36).slice(-8),...v},dsel))}
+    else{const q=L.find(x=>x.id===qeEdit);if(!q)return;Object.assign(q,v);withDays(q,dsel);S.adj[q.id]=S.day} // what it counts as is the player's explicit choice, kept through renames
     qeEdit=null;commit(L);toast(started()?"SAVED · APPLIES TOMORROW":"QUEST SAVED")}}
 document.addEventListener("submit",e=>e.preventDefault());
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="pname"){e.preventDefault();const b=$("#sysA [data-act='0']");if(b)b.click()}}); // Enter in the editor must not reload the page
@@ -1192,11 +1273,19 @@ function onButton(b,d){
     if(d.demo==="sample"){S=sample();rollover();save();render();toast("SAMPLE DATA LOADED")}
     if(d.demo==="reset")notify({chip:"[ WARNING ]",tone:"danger",title:"Erase all progress?",body:"Level, stats, history and trophies return to zero.\nThis cannot be undone.",actions:[{label:"Cancel"},{label:"Erase",fn:()=>{shift=0;saveBlocked=false;S=fresh();rollover();save();render();toast("PROGRESS ERASED")}}]})
     return}
+  if(d.dc){const[key,i]=d.dc.split(":"),on=b.getAttribute("aria-pressed")!=="true";b.setAttribute("aria-pressed",on);
+    const T=S.test;if(S.tab==="test"&&T&&T.r&&(key==="lift"||key==="cardio")){const a=T.r[key],n=+i;T.r[key]=on?[...new Set([...a,n])].sort():a.filter(x=>x!==n)}return}
+  if(d.rk){S.test.r.kind=d.rk;document.querySelectorAll("[data-rk]").forEach(x=>x.setAttribute("aria-pressed",x===b));return}
+  if(d.rh){const h=S.test.r.h[d.rh];h.on=!h.on;b.setAttribute("aria-pressed",h.on);b.textContent=h.on?"ON":"OFF";return}
+  if(d.rnext){const T=S.test,s=T.i-TEST.length;
+    if(s===RT-1){const err=$("#rh-err");for(const[k,n,,u]of HABITS){const el=$("#rh-"+k);if(u==="time"){if(!/^\d{2}:\d{2}$/.test(el.value)){err.textContent="Set a lights-out time.";el.focus();return}T.r.h[k].t=el.value}
+      else{const v=parseInt(el.value,10);if(!(v>=1&&v<=999)){err.textContent=`${n}: target must be 1 to 999.`;el.focus();return}T.r.h[k].n=v}}}
+    T.i++;render();return}
   if(d.start||d.retake){S.test={i:0,a:[]};advancing=false;S.tab="test";render();return}
   if(d.a){if(advancing)return;advancing=true;const T=S.test;T.a[T.i]=+d.a;b.setAttribute("aria-pressed","true");
     setTimeout(()=>{advancing=false;if(S.test!==T||S.tab!=="test")return;T.i++;render()},RM?0:180);return}
   if(d.back){if(S.test.i)S.test.i--;else S.tab="stats";render();return}
-  if(d.save){S.stats=results();S.baseKey=dkey(now());S.base=now().toLocaleDateString("en-US",{month:"short",day:"numeric"});S.ap.first=1;
+  if(d.save){if(S.test.r)applyRoutine(S.test.r);S.stats=results();S.baseKey=dkey(now());S.base=now().toLocaleDateString("en-US",{month:"short",day:"numeric"});S.ap.first=1;
     S.tab="stats";const first=!S.onboarded;S.onboarded=true;save();render();notify({chip:"[ ASSESSMENT ]",title:"Baseline recorded.",body:`Your overall rating is ${ovr()}.\nDaily quests raise your stats from here.`});
     if(first)notify({chip:"[ DAILY QUEST ]",title:"Set your Daily Quest.",body:"Six default quests are ready.\nKeep them, or shape them to your life.",
       actions:[{label:"Review quests",fn:()=>{S.tab="home";render();openEditor()}},{label:"Keep defaults",fn:()=>{S.tab="home";render();arrival()}}]});return}
@@ -1253,8 +1342,8 @@ function arrival(){if(!S.onboarded)return onboard();const today=dkey(now());if(S
   {const last3=Object.keys(S.hist).sort().slice(-3).map(k=>S.hist[k]);if(S.rest>0&&!restToday()&&last3.filter(v=>v===0).length>=2)
     setTimeout(()=>notify({chip:"[ SYSTEM ]",title:"Recovery advised.",body:"You missed 2 of the last 3 days.\nA Rest Day now protects your streak.",actions:[{label:"Use Rest Day",fn:useRest},{label:"Not today"}]}))}
   if(reDue())setTimeout(()=>notify({chip:"[ RE-ASSESSMENT ]",title:"Monthly Re-Assessment",body:"30 days have passed.\nThe System must measure you again.",actions:[{label:"Begin",fn:()=>{S.test={i:0,a:[]};S.tab="test";render()}},{label:"Later"}]}));S.seen=today;save();notify({chip:"[ DAILY QUEST ]",title:"Hunter Conditioning has arrived.",
-  extra:`<ul class="glist">${Q().map(q=>`<li><span class="gq">${hex(q.s,14)}${esc(q.q)}</span><span>[0/${q.n}${q.u?" "+q.u:""}]</span></li>`).join("")}</ul>`,
-  warn:"WARNING: Failure assigns a Penalty Quest."})}
+  extra:todayQ().length?`<ul class="glist">${todayQ().map(q=>`<li><span class="gq">${hex(q.s,14)}${esc(q.q)}</span><span>[0/${q.n}${q.u?" "+q.u:""}]</span></li>`).join("")}</ul>`:`<p style="margin:8px 0 0;color:var(--muted)">Nothing is scheduled today. Optional quests still earn XP and training.</p>`,
+  warn:todayQ().length?"WARNING: Failure assigns a Penalty Quest.":""})}
 $("#rfile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;
   let sv=null;try{sv=JSON.parse(await f.text())}catch(err){}e.target.value="";
   if(!isSave(sv)){toast("THAT FILE ISN'T AN ASCEND BACKUP");return}
