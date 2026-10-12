@@ -1,14 +1,14 @@
 # Procedural art for the Gate Dispatch map: an original holo continent seen through a tilted camera,
 # plus looping flame-pillar sprite sheets. Output -> ../../gates/ (served next to index.html).
 #   python dev/art/gate_art.py
-# Pins must sit on land: PINS mirrors GPOS in dev/ascend.html (x%, y% of the map box).
+# Pins must sit on land: PINS mirrors GROW slots in dev/ascend.html (x%, y% of the map box).
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 from pathlib import Path
 
 OUT = Path(__file__).resolve().parents[2] / "gates"
 OUT.mkdir(exist_ok=True)
-PINS = {"e": (13, 86), "c": (44, 84), "a": (86, 86), "d": (27, 58), "b": (73, 58), "s": (57, 46)}
+PINS = {f"r{y}x{x}": (x, y) for y, xs in ((40, (18, 46, 74)), (60, (32, 60, 88)), (80, (16, 46, 76)), (46, (32, 60, 88))) for x in xs}  # mirrors GROW3 + GROW2
 rng = np.random.default_rng(7)
 
 # ---------- camera: screen (u,v in 0..1) <-> ground plane (X,Z) ----------
@@ -117,7 +117,8 @@ def render_map(W=760, H=740, SS=2):
 
     # city blocks: small extruded towers on land, away from the pins
     d = ImageDraw.Draw(im, "RGBA")
-    sites = [(.30, .74), (.62, .66), (.48, .58), (.66, .50)]  # each >= .08 from every pin
+    sites = [(.36, .78), (.64, .78), (.50, .53), (.20, .60)]
+    assert all(min(((cu - px / 100) ** 2 + (cv - py / 100) ** 2) ** .5 for px, py in PINS.values()) >= .08 for cu, cv in sites), "city site too close to a gate slot"
     for (cu, cv) in sites:
         X0, Z0 = ground(cu, cv)
         if hgt[int(cv * h), int(cu * w)] <= 0.02:  # only on land

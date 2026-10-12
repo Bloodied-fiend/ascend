@@ -21,8 +21,9 @@ export async function run({ ev, boot, click, base, check, KEY, DK, wait }) {
   await click(`[data-t="quests"]`);
   const ids = await ev(`[...document.querySelectorAll(".gpin:not(.lock)")].map(b=>b.dataset.gsel).join()`);
   await raw(`[data-gsel="d"]`); await raw(`[data-gate="d"]`); await raw(`#sysA [data-act="0"]`);
+  await ev(`(()=>{if(__ascend.S.gate)__ascend.S.gate.red=false;for(let i=0;i<4;i++)__ascend.closeNote()})()`); // entry rolls a 15% Red Gate; pin it for this case
   r = await S(`({id:S.gate&&S.gate.id,bm:S.gate&&S.gate.base.miles,until:S.gate&&S.gate.until})`);
-  check("C-Rank can enter E/D/C; entering D snapshots miles", ids === "e,d,c" && r.id === "d" && r.bm === 5, `${ids} ${JSON.stringify(r)}`);
+  check("C-Rank sees only D/C/B (3 each); entering D snapshots miles", ids === "d,d2,d3,c,c2,c3,b,b2,b3" && r.id === "d" && r.bm === 5, `${ids} ${JSON.stringify(r)}`);
 
   // 3. timed run adds miles once; re-logging the same run replaces it
   await click(`[data-t="home"]`);
@@ -90,7 +91,7 @@ export async function runRed({ ev, boot, click, base, check, KEY, DK, wait }) {
   const r2 = await S(`({g:S.gate,pen:!!S.penalty})`);
   check("red gate timeout -> Penalty Quest", r2.g === null && r2.pen, JSON.stringify(r2));
   // 3. per-day goals are capped at the window: red B (10 nights in 14 days) -> 14, not 15
-  const cap = await ev(`(()=>{const S=__ascend.S;S.gate={id:"b",start:"${d[0]}",until:"${d[6]}",run:0,failed:false,red:true,base:${JSON.stringify(zero)}};__ascend.render();return 1})()`);
+  const cap = await ev(`(()=>{const S=__ascend.S;S.lvl=25;S.gate={id:"b",start:"${d[0]}",until:"${d[6]}",run:0,failed:false,red:true,base:${JSON.stringify(zero)}};__ascend.render();return 1})()`);
   await click(`[data-t="quests"]`); await ev(`document.querySelector('[data-gsel="b"]').click()`); await wait(300);
   const t = await ev(`document.querySelector(".gdet .gobj b")?.textContent`);
   check("red goals capped at one per day", t === "0 / 14", t);

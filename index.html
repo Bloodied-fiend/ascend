@@ -254,7 +254,7 @@ button{font:inherit;color:inherit}
 .gpin.lock .grk,.gpin.lock .glv{opacity:.7}
 .gbrk{position:absolute;left:50%;top:26px;transform:translateX(-50%);font-family:var(--f-mono);font-size:9px;letter-spacing:.1em;color:#ffd6f4;white-space:nowrap;border-left:2px solid #ff4fd8;padding-left:4px;text-shadow:0 0 6px #ff4fd8}
 .gpin:focus-visible{outline:2px solid #fff;outline-offset:4px;border-radius:50%}
-.gdet{--gk:#4fb8ff}.gdet.active{--gk:#ff4fd8}
+.gdet{--gk:var(--gate)}.gdet.active{--gk:#ff4fd8}
 /* --- Gate Dispatch polish (Belphegor audit) --- */
 :root{--gate:#4fb8ff;--gbreak:#ff4fd8}
 [data-skin="hunter"]{--gate:#62d8e6}
@@ -357,6 +357,15 @@ button{font:inherit;color:inherit}
 .gpin.red .ring{animation:gsel 1s ease-out infinite}
 @media (prefers-reduced-motion:reduce){.gpin.red .ring{animation:none}}
 [data-skin="daylight"] .gdet.active.red{--gk:#c41f1f}
+/* rank-window layout: short beams, tall only when selected/active, HUD bottom-left */
+.gmap{height:420px}
+.ghud{top:auto;bottom:8px;left:8px}
+.gpin{--tb:var(--tb0,88px);--bs:var(--bs0,.65)}
+.gpin.sel,.gpin.active{--tb:var(--tb1,116px);--bs:.85}
+.gpin .beam{transform:scaleY(var(--bs));transform-origin:50% 100%}
+.gtag{bottom:var(--tb)}
+.gpin::before{height:calc(var(--tb) + 8px)}
+.gbrk{background:rgba(5,8,14,.75);padding:1px 6px 1px 4px}
 @keyframes gfr{to{background-position:-512px 0}}
 .gpin.lock .ring{border-color:#9aa6b4;background:radial-gradient(closest-side,rgba(5,8,14,.6),transparent 80%)}
 .gpin.lock .grk{background:rgba(5,8,14,.85)}
@@ -647,13 +656,32 @@ const objName=a=>(OBJ.find(o=>o[0]===a)||[0,""])[1];
 // Gates: ranked dungeons with real-life objectives. "run" = Daily Quest clears in a row (Rest Days neutral); others count up from entry.
 const GATES=[
   {id:"e",t:0,name:"Goblin Den",days:5,xp:60,obj:[["run",3,"Clear the Daily Quest 3 days in a row"]]},
+  {id:"e2",t:0,name:"Rat Warrens",days:5,xp:60,obj:[["str50",3,"3 strength sessions"]]},
+  {id:"e3",t:0,name:"Mossy Hollow",days:5,xp:60,obj:[["int40",3,"3 reading sessions"]]},
   {id:"d",t:1,name:"Flooded Cellar",days:7,xp:100,obj:[["miles",10,"Log 10 timed miles (run or ruck time)"]]},
+  {id:"d2",t:1,name:"Bone Crypt",days:7,xp:100,obj:[["vit30",5,"Lights out on time, 5 nights"]]},
+  {id:"d3",t:1,name:"Whispering Shrine",days:7,xp:100,obj:[["per100",5,"5 meditation sessions"]]},
   {id:"c",t:2,name:"Iron Mines",days:10,xp:150,obj:[["str50",6,"6 strength sessions"],["agi30",3,"3 runs or rucks"]]},
+  {id:"c2",t:2,name:"Sunken Library",days:10,xp:150,obj:[["int40",7,"7 reading sessions"]]},
+  {id:"c3",t:2,name:"Ashen Barracks",days:10,xp:150,obj:[["run",5,"Clear the Daily Quest 5 days in a row"]]},
   {id:"b",t:3,name:"Wraith Halls",days:14,xp:220,obj:[["vit30",10,"Lights out on time, 10 nights"]]},
+  {id:"b2",t:3,name:"Frost Spire",days:14,xp:220,obj:[["miles",25,"Log 25 timed miles"]]},
+  {id:"b3",t:3,name:"Ogre Fortress",days:14,xp:220,obj:[["str50",10,"10 strength sessions"],["water25",10,"Hit your water goal 10 days"]]},
   {id:"a",t:4,name:"Scholar's Labyrinth",days:21,xp:300,strict:true,obj:[["clear10",14,"Clear the Daily Quest 14 days"]]},
-  {id:"s",t:5,name:"Monarch's Gate",days:35,xp:500,obj:[["run",30,"Clear the Daily Quest 30 days in a row"]]}];
-const GBASE=["str50","agi30","vit30","clear10","miles"];
-const GPOS={e:[13,86,1],c:[44,84,1],a:[86,86,1],d:[27,58,.85],b:[73,58,.85],s:[57,46,.75]}; // [x%, y%, depth scale] of each pillar base // pillar base on the dispatch map, % of map box
+  {id:"a2",t:4,name:"Demon Keep",days:21,xp:300,obj:[["str50",14,"14 strength sessions"],["agi30",8,"8 runs or rucks"]]},
+  {id:"a3",t:4,name:"Storm Peak",days:21,xp:300,obj:[["miles",45,"Log 45 timed miles"]]},
+  {id:"s",t:5,name:"Monarch's Gate",days:35,xp:500,obj:[["run",30,"Clear the Daily Quest 30 days in a row"]]},
+  {id:"s2",t:5,name:"Queen's Hive",days:35,xp:500,obj:[["clear10",28,"Clear the Daily Quest 28 days"],["miles",60,"Log 60 timed miles"]]},
+  {id:"s3",t:5,name:"Abyssal Throne",days:35,xp:500,obj:[["str50",24,"24 strength sessions"],["vit30",24,"Lights out on time, 24 nights"],["per100",20,"20 meditation sessions"]]}];
+const GBASE=["str50","agi30","vit30","clear10","miles","int40","per100","water25"];
+const GTOP=5; // highest Gate rank (S); National Level and Monarch see A and S
+const gTier=()=>Math.min(tierOf(S.lvl),GTOP);
+// only Gates one rank below, at and above your rank exist on the map; the rest stay hidden until you reach them
+const gVisible=g=>Math.abs(g.t-gTier())<=1;
+// map rows (Belphegor spec): higher rank = farther back; staggered columns; tb/bs = tag height / beam scale, *1 = selected or active
+const GROW3={"1":{y:40,z:.7,x:[18,46,74],tb:80,bs:.59,tb1:108},"0":{y:60,z:.85,x:[32,60,88],tb:85,bs:.63,tb1:113},"-1":{y:80,z:1,x:[16,46,76],tb:88,bs:.65,tb1:116}};
+const GROW2={hi:{y:46,z:.8,x:[32,60,88],tb:80,bs:.59,tb1:108},lo:{y:80,z:1,x:[16,46,76],tb:88,bs:.65,tb1:116}};
+function gSlot(g){const T=gTier(),three=T>0&&T<GTOP,r=three?GROW3[g.t-T]:GROW2[g.t>Math.min(T,GTOP-1)||(T===GTOP&&g.t===GTOP)?"hi":"lo"],i=GATES.filter(x=>x.t===g.t).indexOf(g);return {x:r.x[i],y:r.y,z:r.z,tb:r.tb,bs:r.bs,tb1:r.tb1}} // [x%, y%, depth scale] of each pillar base // pillar base on the dispatch map, % of map box
 let selGate=null;
 const focusPin=()=>{const p=$(".gpin.sel");if(p)p.focus({preventScroll:true})};
 const LOCK='<svg width="9" height="9" viewBox="0 0 10 10" aria-hidden="true"><rect x="1.5" y="4.5" width="7" height="5" rx="1" fill="currentColor"/><path d="M3 4.5V3a2 2 0 0 1 4 0v1.5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>';
@@ -716,8 +744,8 @@ function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typ
   if(key(sv.gateCd))S.gateCd=sv.gateCd;
   if(sv.gateClears&&typeof sv.gateClears==="object")for(const g of GATES){const v=sv.gateClears[g.id];if(Number.isInteger(v)&&v>0)S.gateClears[g.id]=v}
   const g=sv.gate; // a damaged active gate is dropped on its own; the rest of the save still loads
-  if(g&&typeof g==="object"&&GATES.some(x=>x.id===g.id)&&key(g.start)&&key(g.until)&&g.start<=g.until&&Number.isInteger(g.run)&&g.run>=0&&typeof g.failed==="boolean"&&g.base&&GBASE.every(k=>num(g.base[k])&&g.base[k]>=0))
-    S.gate={id:g.id,start:g.start,until:g.until,run:g.run,failed:g.failed,red:g.red===true,base:Object.fromEntries(GBASE.map(k=>[k,g.base[k]]))}}
+  if(g&&typeof g==="object"&&GATES.some(x=>x.id===g.id)&&key(g.start)&&key(g.until)&&g.start<=g.until&&Number.isInteger(g.run)&&g.run>=0&&typeof g.failed==="boolean"&&g.base&&["str50","agi30","vit30","clear10","miles"].every(k=>num(g.base[k])&&g.base[k]>=0))
+    S.gate={id:g.id,start:g.start,until:g.until,run:g.run,failed:g.failed,red:g.red===true,base:Object.fromEntries(GBASE.map(k=>[k,num(g.base[k])&&g.base[k]>=0?g.base[k]:S.ap[k]]))}}
 let storageOK=true,saveBlocked=false;
 // accept stored/restored data only if it has the basic Ascend shape; never fill a blank profile from junk
 const VER=7,STORE="ascend-v7",OLD=["ascend-v6","ascend-v5","ascend-v4"];
@@ -764,7 +792,7 @@ const RED_CHANCE=.15;
 const gGoal=(g,k,n)=>S.gate&&S.gate.red&&S.gate.id===g.id?(k==="miles"?Math.ceil(n*1.5):Math.min(g.days,Math.ceil(n*1.5))):n;
 const gXP=g=>S.gate&&S.gate.red&&S.gate.id===g.id?g.xp*2:g.xp;
 const gMet=()=>!!S.gate&&!S.gate.failed&&(g=>g.obj.every(([k,n])=>gProg(k,1)>=gGoal(g,k,n)-1e-9))(gateDef(S.gate.id));
-const canEnter=g=>!S.gate&&g.t<=tierOf(S.lvl)&&!(S.gateCd&&S.day<S.gateCd);
+const canEnter=g=>!S.gate&&gVisible(g)&&!(S.gateCd&&S.day<S.gateCd);
 function enterGate(id){const g=gateDef(id);if(!g||!canEnter(g))return;
   S.gate={id,start:S.day,until:addDays(S.day,g.days-1),run:0,failed:false,red:Math.random()<RED_CHANCE,base:Object.fromEntries(GBASE.map(k=>[k,k==="miles"?S.m.miles:S.ap[k]]))};
   save();render(true);setTimeout(focusPin);
@@ -941,11 +969,12 @@ ${sh("Assessment")}
 <div class="card glowcard" style="--c:var(--hl)"><button class="cta" data-start="1">${hex("agi",28)}<span><b>${!S.base?"Player Assessment":reDue()?"Monthly Re-Assessment due":"Monthly Re-Assessment"}</b><small>${!S.base?"15 questions · 3 min":reDue()?"Re-measure yourself. Your stats reset to the honest result.":`Next in ${30-daysSince(S.baseKey)} days · last taken ${S.base}`}</small></span><span aria-hidden="true">→</span></button></div>`},
 
 quests(){const T=tierOf(S.lvl),G=S.gate;
-if(!gateDef(selGate))selGate=G?G.id:([...GATES].reverse().find(g=>g.t<=T)||GATES[0]).id;
-const st=g=>G&&G.id===g.id?"active":g.t>T?"lock":"open";
+if(G&&!gateDef(selGate))selGate=G.id;
+if(!G&&!(gateDef(selGate)&&gVisible(gateDef(selGate))))selGate=GATES.find(g=>g.t===gTier()).id;
+const st=g=>G&&G.id===g.id?"active":gVisible(g)?"open":"lock";
 // Gate Dispatch: a tilted holo map with one light pillar per Gate; the active Gate burns pink, like a dungeon break
-const pins=GATES.map(g=>{const[x,y,z]=GPOS[g.id],k=st(g),n=S.gateClears[g.id]||0,red=k==="active"&&G.red;
-  return `<button class="gpin ${k}${red?" red":""} ${selGate===g.id?"sel":""}" style="left:${x}%;top:${y}%;--z:${z};--zi:${(1/z).toFixed(3)};--d:${(g.t*.37)%1.3}s;z-index:${Math.round(y)}" data-gsel="${g.id}" role="radio" aria-checked="${selGate===g.id}" aria-label="${RANKS[g.t][0]}, ${g.name}, level ${RANK_AT[g.t]}, ${g.days} days${k==="lock"?", locked":red?", red gate, active":k==="active"?", active":""}${n?`, cleared ${n} times`:""}">
+const pins=GATES.filter(gVisible).map(g=>{const{x,y,z,tb,bs,tb1}=gSlot(g),k=st(g),n=S.gateClears[g.id]||0,red=k==="active"&&G.red;
+  return `<button class="gpin ${k}${red?" red":""} ${selGate===g.id?"sel":""}" style="left:${x}%;top:${y}%;--z:${z};--tb0:${tb}px;--bs0:${bs};--tb1:${tb1}px;--zi:${(1/z).toFixed(3)};--d:${(g.t*.37)%1.3}s;z-index:${Math.round(y)}" data-gsel="${g.id}" role="radio" aria-checked="${selGate===g.id}" aria-label="${RANKS[g.t][0]}, ${g.name}, level ${RANK_AT[g.t]}, ${g.days} days${k==="lock"?", locked":red?", red gate, active":k==="active"?", active":""}${n?`, cleared ${n} times`:""}">
   <i class="beam"></i><i class="flame"></i><i class="core"></i><i class="ring"></i>
   <span class="gtag"><span class="grk"><b>${"EDCBAS"[g.t]}</b><span class="glv">${k==="lock"?LOCK:""}Lv.${RANK_AT[g.t]}</span></span></span>
   ${k==="active"?`<span class="gbrk">${red?"RED GATE":"DUNGEON BREAK"}</span>`:""}</button>`}).join("");
