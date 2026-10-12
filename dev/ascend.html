@@ -96,6 +96,22 @@ button{font:inherit;color:inherit}
 .plist .pw small{letter-spacing:0;font-family:var(--f-body);font-size:12px}
 .pleave{color:var(--muted)}
 .plist .px{font-family:var(--f-display);font-weight:700;font-size:20px;text-align:right;font-variant-numeric:tabular-nums}.plist .px small{text-align:right}
+.qbar{position:relative}.qbar b{position:absolute;top:0;bottom:0;background:var(--accent)}
+/* overdrive: 0-2x scale; left half = the target (stat colour), tick at 1x, right half = extra in accent over dashed headroom */
+.qbar.od{height:5px;background:linear-gradient(90deg,rgba(0,0,0,.3) 50%,transparent 50%),repeating-linear-gradient(90deg,color-mix(in srgb,var(--accent) 30%,transparent) 0 4px,transparent 4px 8px)}
+.qbar.od i{width:50%!important}
+.qbar.od b{left:50%;width:calc(var(--x) * 50%);box-shadow:0 0 6px color-mix(in srgb,var(--accent) 60%,transparent)}
+.qbar.od::after{content:"";position:absolute;left:calc(50% - 1px);top:-3px;bottom:-3px;width:2px;background:var(--fg)}
+.qrow .x abbr{text-decoration:none}
+.odx{font-style:normal;font-family:var(--f-mono);font-size:11px;color:var(--accent)}
+[data-skin="daylight"] .goal.odg{color:#b45309}
+.clock{white-space:nowrap}
+.syshead .btn{margin-right:8px} /* clear the window's corner bracket */
+[data-skin="daylight"] .clock,[data-skin="ember"] .clock,[data-skin="daylight"] .qrow .x,[data-skin="ember"] .qrow .x{letter-spacing:.02em}
+.odt{font-style:normal;font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--accent)}
+.odt,.odh{display:block;margin:2px 0 0;text-align:center;white-space:nowrap}
+.odh{font-style:normal;font-family:var(--f-mono);font-size:10px;letter-spacing:.08em;color:var(--muted)}
+.goal.odg{color:var(--accent)}
 .themes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .themes .skin{grid-template-columns:36px 1fr;gap:10px;min-height:44px;padding:8px 10px}
 .themes .sw{width:36px;height:24px;border-radius:calc(var(--r) / 2)}
@@ -662,7 +678,18 @@ const pHandle=()=>"@"+(pName().toLowerCase().replace(/[^a-z0-9]+/g,".").replace(
 const nameField=v=>`<div class="qe" style="margin-top:12px;text-align:left"><label>Player name<input id="pname" maxlength="20" autocomplete="nickname" placeholder="Hunter"></label></div>`;
 function setNameFromField(){const f=$("#pname");if(f){S.name=cleanPlayer(f.value);save()}}
 function focusName(){const f=$("#pname");if(f){f.value=S.name;f.focus()}}
-const stepOf=q=>q.n>=20?5:1;
+const stepOf=q=>q.u==="MI"||q.u==="KM"?0.5:q.n>=20?5:1;
+// Overdrive (Jaime): log past the target. Every extra 50% of target = +25% of the quest's XP and +1 training, capped at 2x target.
+// Counted quests only (a unit and a target of 2+); yes/no quests like lights-out can't be overdone.
+const canOD=q=>!!q.u&&q.n>=2;
+const cntMax=q=>canOD(q)?2*q.n:q.n;
+const odXP=q=>Math.round(q.xp*.25);
+const odWant=q=>S.done[q.id]&&canOD(q)?Math.max(0,Math.min(2,Math.floor(((S.cnt[q.id]||0)-q.n)/(q.n/2)+1e-9))):0;
+// pay or take back bonus tiers so the record always matches the count (stepping down, unchecking)
+function applyOD(q){let have=S.od[q.id]||0;const want=odWant(q),d=want-have;
+  while(have<want){have++;gainXP(odXP(q));addTrain(q.s,1)}
+  while(have>want){have--;gainXP(-odXP(q));addTrain(q.s,-1)}
+  if(have)S.od[q.id]=have;else delete S.od[q.id];return d}
 // run/ruck times on distance quests; faster pace than your own history earns bonus training + XP
 const isDist=q=>q.u==="MI"||q.u==="KM";
 const mmss=s=>`${s/60|0}:${String(Math.round(s%60)).padStart(2,"0")}`;
@@ -737,7 +764,7 @@ function fresh(){const t=now();
   quests:DEFAULT_QUESTS.map(q=>({...q})),questsNext:null,cnt:{},onboarded:false,statHist:{},
   done:{},day:dkey(t),hist:{},seen:null,penalty:null,boss:100,bossDown:false,bossStat:null,wk:mondayKey(t),prog:dkey(t),
   ap:{first:0,str50:0,vit30:0,agi30:0,int40:0,per100:0,clear10:0,water25:0,lvl20:1},claimed:{},
-  awaken:0,debt:0,rev:"",m:{miles:0},gate:null,gateCd:null,gateClears:{},tab:"home",cat:"all"}}
+  od:{},awaken:0,debt:0,rev:"",m:{miles:0},gate:null,gateCd:null,gateClears:{},tab:"home",cat:"all"}}
 // demo data: mid-program hunter, used by "Load sample data"
 function sample(){const t=now(),h={};for(let i=1;i<=17;i++){const d=new Date(t);d.setDate(t.getDate()-i);h[dkey(d)]=1}for(const i of[wd(t)-3,9]){const d=new Date(t);d.setDate(t.getDate()-i);if(i>0)h[dkey(d)]=0}
   const pr=new Date(t);pr.setDate(pr.getDate()-17);
@@ -746,7 +773,7 @@ function sample(){const t=now(),h={};for(let i=1;i<=17;i++){const d=new Date(t);
   return {...fresh(),name:S.name,onboarded:true,statHist:sh,lvl:14,xp:62,rest:2,train:{str:2,vit:1,agi:3,int:0,per:2},base:"Sep 23",baseKey:dkey(pr),stats:{str:60,vit:69,agi:70,int:60,per:80},done:{sleep:2},cnt:{sleep:1},hist:h,boss:62,bossStat:"str",prog:dkey(pr),
   ap:{first:0,str50:26,vit30:29,agi30:12,int40:39,per100:64,clear10:15,water25:25,lvl20:14}}}
 let S=fresh();
-const KEEP=["runs","lvl","xp","rest","restDay","base","baseKey","stats","train","qlog","adj","adjNotes","done","day","hist","seen","penalty","ap","claimed","boss","bossDown","bossStat","wk","prog","quests","questsNext","cnt","onboarded","statHist","name","awaken","debt","rev","m","gate","gateCd","gateClears"];
+const KEEP=["runs","lvl","xp","rest","restDay","base","baseKey","stats","train","qlog","adj","adjNotes","done","day","hist","seen","penalty","ap","claimed","boss","bossDown","bossStat","wk","prog","quests","questsNext","cnt","onboarded","statHist","name","awaken","debt","rev","od","m","gate","gateCd","gateClears"];
 function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typeof v==="number"&&Number.isFinite(v),key=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v);
   for(const k of ["lvl","xp","rest","boss","debt"])if(num(sv[k]))S[k]=sv[k];S.awaken=sv.awaken===1?1:0;
   S.rest=Math.max(0,Math.min(3,Math.round(S.rest)));S.debt=Math.max(0,Math.round(S.debt));S.rev=typeof sv.rev==="string"&&sv.rev.length<=40?sv.rev:"";
@@ -764,8 +791,9 @@ function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typ
   const qn=vq(sv.questsNext);S.questsNext=qn&&qn.length?qn:null;
   const ids=new Set(S.quests.map(q=>q.id));
   S.done=Object.fromEntries(Object.entries(S.done).filter(([k,v])=>ids.has(k)&&(v===1||v===2)));
-  S.cnt={};if(sv.cnt&&typeof sv.cnt==="object")for(const q of S.quests){const v=sv.cnt[q.id];if(num(v))S.cnt[q.id]=Math.max(0,Math.min(q.n,Math.round(v)))}
-  for(const q of S.quests)if(S.done[q.id])S.cnt[q.id]=q.n; // legacy saves: done implies full progress
+  S.cnt={};if(sv.cnt&&typeof sv.cnt==="object")for(const q of S.quests){const v=sv.cnt[q.id];if(num(v)){const st=stepOf(q);S.cnt[q.id]=Math.max(0,Math.min(cntMax(q),Math.round(v/st)*st))}}
+  S.od={};if(sv.od&&typeof sv.od==="object")for(const q of S.quests){const v=sv.od[q.id];if(v===1||v===2)S.od[q.id]=v}
+  for(const q of S.quests)if(S.done[q.id]&&!(S.cnt[q.id]>=q.n))S.cnt[q.id]=q.n; // legacy saves: done implies full progress (overdrive keeps its count)
   S.name=cleanPlayer(sv.name);
   S.runs=Array.isArray(sv.runs)?sv.runs.filter(r=>r&&key(r.d)&&/^[a-z0-9]{1,12}$/.test(r.q)&&(r.k==="run"||r.k==="ruck")&&num(r.n)&&r.n>0&&r.n<=999&&(r.u==="MI"||r.u==="KM")&&Number.isInteger(r.t)&&r.t>0&&r.t<86400&&[0,1,2].includes(r.b)).slice(-500).map(r=>({d:r.d,q:r.q,k:r.k,n:r.n,u:r.u,t:r.t,b:r.b,...(r.m===1?{m:1}:{})})):[];
   S.onboarded=sv.onboarded===true||(sv.onboarded===undefined&&!!sv.base); // older saves with a baseline skip onboarding
@@ -780,7 +808,7 @@ function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typ
     S.gate={id:g.id,start:g.start,until:g.until,run:g.run,failed:g.failed,red:g.red===true,base:Object.fromEntries(GBASE.map(k=>[k,num(g.base[k])&&g.base[k]>=0?g.base[k]:S.ap[k]]))}}
 let storageOK=true,saveBlocked=false;
 // accept stored/restored data only if it has the basic Ascend shape; never fill a blank profile from junk
-const VER=9,STORE="ascend-v9",OLD=["ascend-v8","ascend-v7","ascend-v6","ascend-v5","ascend-v4"];
+const VER=10,STORE="ascend-v10",OLD=["ascend-v9","ascend-v8","ascend-v7","ascend-v6","ascend-v5","ascend-v4"];
 const isSave=sv=>!!sv&&typeof sv==="object"&&!(sv.ver>VER)&&Number.isFinite(sv.lvl)&&sv.stats&&typeof sv.stats==="object"&&Object.keys(STATS).every(k=>Number.isFinite(sv.stats[k]))&&Array.isArray(sv.quests)&&sv.quests.length>0;
 // build the new state aside and only swap it in if it loads cleanly
 function adopt(sv){if(!isSave(sv))return false;const prev=S;try{S=fresh();load(sv);return true}catch(e){S=prev;return false}}
@@ -806,7 +834,7 @@ function rollover(){const n=now(),t=dkey(n),wk=mondayKey(n);
   const dq=todayQ();
   if(dq.length&&(!S.restDay||S.restDay!==S.day)){const lg={};for(const q of dq)lg[q.id]=S.done[q.id]?1:0;S.qlog[S.day]=lg} // rest days and unscheduled quests don't count against a quest
   const rested=S.restDay===S.day||!dq.length,missed=!rested&&!dq.every(q=>S.done[q.id]);S.hist[S.day]=rested?2:missed?0:1;S.restDay=null;gateDay(S.day,S.hist[S.day]);
-  S.statHist[S.day]=Object.fromEntries(Object.keys(STATS).map(k=>[k,eff(k)]));{const ks=Object.keys(S.statHist).sort();for(const k of ks.slice(0,-90))delete S.statHist[k]}S.done={};S.cnt={};if(S.questsNext){S.quests=S.questsNext;S.questsNext=null}
+  S.statHist[S.day]=Object.fromEntries(Object.keys(STATS).map(k=>[k,eff(k)]));{const ks=Object.keys(S.statHist).sort();for(const k of ks.slice(0,-90))delete S.statHist[k]}S.done={};S.cnt={};S.od={};if(S.questsNext){S.quests=S.questsNext;S.questsNext=null}
   // days the app was never opened are missed days too, each finalized once (a day already logged is never rewritten)
   let gap=0;if(S.day<t)for(const d=new Date(S.day+"T12:00");d.setDate(d.getDate()+1),dkey(d)<t&&gap<400;){const k=dkey(d);if(k in S.hist)continue;const kq=Q().filter(q=>sched(q,k));if(!kq.length){S.hist[k]=2;gateDay(k,2);continue}S.hist[k]=0;gateDay(k,0);S.qlog[k]=Object.fromEntries(kq.map(q=>[q.id,0]));gap++}
   {const ks=Object.keys(S.qlog).sort();for(const k of ks.slice(0,-30))delete S.qlog[k]}
@@ -989,13 +1017,13 @@ const days="MTWTFSS".split("").map((d,i)=>{const x=new Date(td);x.setDate(td.get
   const st=k<S.prog?"pre":i<wi?(S.hist[k]===2?"rest":S.hist[k]?"done":"miss"):i===wi?(restToday()?"rest today":allDone()?"done today":"today"):"fut";
   return `<div class="day ${i===wi?'now':''}"><div class="dot ${st}" aria-label="${d}: ${st}">${st.startsWith("done")?"✓":st.startsWith("rest")?"R":st==="miss"?"✕":""}</div>${d}</div>`}).join("");
 const qrows=L=>L.map(q=>{const d=!!S.done[q.id],c=S.cnt[q.id]||0,open=openQ===q.id,nm=esc(q.q),u=q.u?" "+q.u:"";return `<div class="qrow ${d?'done':''}" style="--c:var(--${q.s})" data-row="${q.id}">
-  <button class="qmain" data-qopen="${q.id}" aria-expanded="${open}" aria-label="${nm}, ${c} of ${q.n}${u}. Log progress">${hex(q.s,24)}<span><span class="q">${nm}</span><br><span class="x"><span class="xpv">+${q.xp} XP</span> · ${STATS[q.s].toUpperCase()}${q.s===weakest()?` <span class="focus">FOCUS</span>`:""}</span></span>${d?"":`<span class="goal">${S.adj[q.id]===S.day&&!S.done[q.id]?"<span class=\"adjm\">▲▼</span>":""}[${c}/${q.n}${u}]</span>`}</button>
+  <button class="qmain" data-qopen="${q.id}" aria-expanded="${open}" aria-label="${nm}, ${c} of ${q.n}${u}. Log progress">${hex(q.s,24)}<span><span class="q">${nm}</span><br><span class="x"><span class="xpv">+${q.xp} XP</span>${S.od[q.id]?` <em class="odx">+${odXP(q)*S.od[q.id]}</em>`:""} · <abbr title="${STATS[q.s]}">${q.s.toUpperCase()}</abbr>${q.s===weakest()?` <span class="focus">FOCUS</span>`:""}</span></span>${d?(c>q.n?`<span class="goal odg">${c}/${q.n}${u}</span>`:""):`<span class="goal">${S.adj[q.id]===S.day&&!S.done[q.id]?"<span class=\"adjm\">▲▼</span>":""}[${c}/${q.n}${u}]</span>`}</button>
   <button class="qck" data-q="${q.id}" aria-pressed="${d}" aria-label="${nm}: ${d?'complete, undo':'mark complete'}">${d?`<span class="stamp ${slamId===q.id?'slam':''}">DONE</span>`:'<span class="qbox"></span>'}</button>
-  ${open?`<div class="qstep"><button class="btn chamf ghost" data-step="${q.id}:-1" aria-label="Minus ${stepOf(q)}">−${stepOf(q)}</button><span class="cnt">${c} / ${q.n}${u}</span><button class="btn chamf sysbtn" data-step="${q.id}:1" aria-label="Plus ${stepOf(q)}">+${stepOf(q)}</button></div>
+  ${open?`<div class="qstep"><button class="btn chamf ghost" data-step="${q.id}:-1" aria-label="Minus ${stepOf(q)}">−${stepOf(q)}</button><span class="cnt">${c} / ${q.n}${u}${c>q.n?` <em class="odt">OVERDRIVE${S.od[q.id]?" ×"+S.od[q.id]:""}</em>`:d&&canOD(q)?` <em class="odh">+${q.n/2}${u} = BONUS</em>`:""}</span><button class="btn chamf sysbtn" data-step="${q.id}:1" aria-label="Plus ${stepOf(q)}">+${stepOf(q)}</button></div>
   ${isDist(q)?(()=>{const tr=todayRun(q),bp=paces(tKind,q.u);return `<div class="qtime"><div class="seg" role="group"><button class="btn chamf" data-tkind="run" aria-pressed="${tKind==="run"}">Run</button><button class="btn chamf" data-tkind="ruck" aria-pressed="${tKind==="ruck"}">Ruck</button></div>
   <input class="tin" id="tin-${q.id}" inputmode="numeric" maxlength="6" placeholder="mm:ss" aria-label="${nm} time, minutes and seconds" value="${tr?mmss(tr.t):""}"><button class="btn chamf sysbtn" data-tlog="${q.id}">${tr?"Update":"Log time"}</button></div>
   <div class="tmeta">${tr?`TODAY ${tr.k.toUpperCase()} ${mmss(tr.t)} · ${mmss(tr.t/tr.n)}/${q.u}${tr.b===2?" · NEW BEST":tr.b?" · ABOVE AVG":""}`:`${q.n} ${q.u} · LOG YOUR TIME`}${bp.length?` · BEST ${tKind.toUpperCase()} ${mmss(Math.min(...bp))}/${q.u}`:""}</div>`})():""}
-  ${c?`<div class="qbar"><i style="width:${c/q.n*100}%"></i></div>`:""}`:c&&!d?`<div class="qbar"><i style="width:${c/q.n*100}%"></i></div>`:""}
+  ${c?(c>=q.n&&canOD(q)?`<div class="qbar od" style="--x:${Math.min(1,(c-q.n)/q.n)}"><i></i><b></b></div>`:`<div class="qbar"><i style="width:${Math.min(100,c/q.n*100)}%"></i></div>`):""}`:c&&!d?`<div class="qbar"><i style="width:${Math.min(100,c/q.n*100)}%"></i></div>`:""}
 </div>`}).join("");
 const offL=offQ(),off=!todayQ().length&&!restToday();
 const rows=qrows(todayQ())+(offL.length?`<div class="optq"><div class="optsh">OPTIONAL TODAY · NO PENALTY</div>${qrows(offL)}</div>`:"");
@@ -1262,7 +1290,7 @@ $("#psheet label").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" 
 function setDone(q,on){const before=allDone(),prev=S.done[q.id];if(!!prev===on)return;const n=on?1:-1;
     if(!on)dropRun(q);
     S.cnt[q.id]=on?q.n:Math.min(S.cnt[q.id]||0,q.n-stepOf(q));
-    if(on)S.done[q.id]=1;else delete S.done[q.id];
+    if(on)S.done[q.id]=1;else{delete S.done[q.id];applyOD(q)}
     if(on){S.train[q.s]=(S.train[q.s]||0)+1;if(S.train[q.s]%TRAIN===0&&S.stats[q.s]<STAT_MAX()){S.stats[q.s]++;S.done[q.id]=2}} // 2 = this check raised the stat
     else{if(prev===2)S.stats[q.s]--;S.train[q.s]=Math.max(0,(S.train[q.s]||0)-1)}
     if(q.ach)S.ap[q.ach]=Math.max(0,S.ap[q.ach]+n);
@@ -1379,15 +1407,17 @@ function onButton(b,d){
   if(d.tkind){tKind=d.tkind;render(true);return}
   if(d.tlog){const q=Q().find(x=>x.id===d.tlog),el=$("#tin-"+d.tlog);if(!q||!el)return;const t=parseT(el.value);
     if(!t){toast("ENTER TIME AS MM:SS");el.focus();return}
-    dropRun(q);const b=runTier(tKind,q.u,t/q.n);S.runs.push({d:S.day,q:q.id,k:tKind,n:q.n,u:q.u,t,b,m:1});addMiles(toMi(q.n,q.u));S.runs=S.runs.slice(-500);
+    const dist=Math.max(q.n,S.cnt[q.id]||0); // log the extra distance first, then the time: pace and Gate miles use what you covered
+    dropRun(q);const b=runTier(tKind,q.u,t/dist);S.runs.push({d:S.day,q:q.id,k:tKind,n:dist,u:q.u,t,b,m:1});addMiles(toMi(dist,q.u));S.runs=S.runs.slice(-500);
     if(!S.done[q.id])setDone(q,true);
     if(b){addTrain(q.s,b);gainXP(runXP(q,b))}save();render(true);
-    toast(b===2?`NEW BEST ${tKind.toUpperCase()} PACE ${mmss(t/q.n)}/${q.u} · +${runXP(q,b)} XP · +2 TRAINING`:b?`FASTER THAN YOUR AVERAGE · +${runXP(q,b)} XP · +1 TRAINING`:`${tKind.toUpperCase()} LOGGED · ${mmss(t)}`);return}
+    toast(b===2?`NEW BEST ${tKind.toUpperCase()} PACE ${mmss(t/dist)}/${q.u} · +${runXP(q,b)} XP · +2 TRAINING`:b?`FASTER THAN YOUR AVERAGE · +${runXP(q,b)} XP · +1 TRAINING`:`${tKind.toUpperCase()} LOGGED · ${mmss(t)}`);return}
   if(d.qopen){openQ=openQ===d.qopen?null:d.qopen;render(true);return}
-  if(d.step){const[id,dir]=d.step.split(":"),q=Q().find(x=>x.id===id);if(!q)return;const st=stepOf(q),c=S.cnt[id]||0,nc=Math.max(0,Math.min(q.n,c+st*(+dir)));
-    if(nc>=q.n&&!S.done[id]){setDone(q,true);openQ=null;return}
+  if(d.step){const[id,dir]=d.step.split(":"),q=Q().find(x=>x.id===id);if(!q)return;const st=stepOf(q),c=S.cnt[id]||0,nc=Math.max(0,Math.min(cntMax(q),Math.round((c+st*(+dir))/st)*st));
+    if(nc>=q.n&&!S.done[id]){setDone(q,true);if(nc===q.n){if(!canOD(q))openQ=null;return}}
     if(nc<q.n&&S.done[id]){setDone(q,false)}
-    S.cnt[id]=nc;save();render(true);return}
+    S.cnt[id]=nc;const od=applyOD(q);save();render(true);
+    if(od>0)toast(`OVERDRIVE · +${odXP(q)} XP · ${STATS[q.s].toUpperCase()} TRAINING +1`);else if(od<0)toast("OVERDRIVE BONUS TAKEN BACK");return}
   if(d.grid){S.tab="stats";render();const g=$("#pgrid");if(g)g.scrollIntoView({block:"center"});return}
   if(d.rename){notify({chip:"[ SYSTEM ]",title:"Rename Player",extra:nameField(),after:true,onOpen:focusName,
     actions:[{label:"Save",fn:()=>{setNameFromField();render();toast("NAME UPDATED")}},{label:"Cancel"}]});return}
