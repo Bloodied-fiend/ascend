@@ -534,6 +534,8 @@ button{font:inherit;color:inherit}
 .spulse{animation:spulse 2.4s ease-in-out infinite}.rb.t5{--gc:#ff6a4d}.rb.t6{--gc:#62d8e6}.rb.t7{--gc:#a66bff}.rung.lock .spulse{animation:none}
 @keyframes spulse{0%,100%{filter:drop-shadow(0 0 4px var(--gc))}50%{filter:drop-shadow(0 0 14px var(--gc))}}
 .lvl.pop{animation:lvpop 420ms var(--ease-out)}
+.bar.over{animation:over 600ms cubic-bezier(.4,0,.2,1)}
+@keyframes over{0%{background:var(--c);box-shadow:0 0 18px var(--c)}100%{box-shadow:0 0 0 transparent}}
 @keyframes lvpop{0%{transform:scale(.9);opacity:0;text-shadow:0 0 0 var(--hl)}55%{transform:scale(1.06);text-shadow:0 0 22px var(--hl)}100%{transform:scale(1);opacity:1}}
 /* ambient scan line on the daily quest panel */
 .scanwrap{position:absolute;inset:0;overflow:hidden;pointer-events:none}
@@ -1112,8 +1114,8 @@ const offL=offQ(),off=!todayQ().length&&!restToday();
 const rows=qrows(todayQ())+(offL.length?`<div class="optq"><div class="optsh">OPTIONAL TODAY · NO PENALTY</div>${qrows(offL)}</div>`:"");
 return `<h1 class="title">Home.</h1>
 <div class="herorow"><div class="halo">${badge(t,104)}</div>
-<div><div class="lvl ${lvPop?'pop':''}">Lv. ${S.lvl}</div><div class="rk">${rn.toUpperCase()}${S.awaken?` <span class="awk">2ND AWAKENING</span>`:""}</div><div class="cls"><span class="ttlp">${esc(tName())}</span>${S.rest?` · <b style="color:var(--accent)">${S.rest}</b> rest day${S.rest>1?"s":""}`:""}</div>
-<div class="bar" style="--c:var(--hl)"><i id="xpbar" style="width:${xpPct()}%"></i></div><div class="barlbl"><span style="color:var(--hl)">${S.xp} / ${xpNeed(S.lvl)} XP</span><span>${S.debt?`<b style="color:var(--danger)">OWES ${S.debt} XP</b>`:`${xpNeed(S.lvl)-S.xp} to Lv. ${S.lvl+1}`}</span></div></div></div>
+<div><div class="lvl">Lv. ${lvUp?lvUp.lv:S.lvl}</div><div class="rk">${rn.toUpperCase()}${S.awaken?` <span class="awk">2ND AWAKENING</span>`:""}</div><div class="cls"><span class="ttlp">${esc(tName())}</span>${S.rest?` · <b style="color:var(--accent)">${S.rest}</b> rest day${S.rest>1?"s":""}`:""}</div>
+<div class="bar" style="--c:var(--hl)"><i id="xpbar" style="width:${lvUp?lvUp.from:xpPct()}%"></i></div><div class="barlbl">${lvUp?xpLbl(lvUp.lv,lvUp.xp,0):xpLbl(S.lvl,S.xp,S.debt)}</div></div></div>
 <div class="week">${days}</div>
 ${sh("Today",`<button class="link" data-grid="1" style="font:inherit;letter-spacing:inherit;color:var(--hl)">DAY ${progDay()} / 60 →</button> · ${td.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}).toUpperCase()}`)}
 <section class="sys ${late?'danger':''}" id="qpanel" aria-label="Daily quest"><span class="scanwrap" aria-hidden="true"><i></i></span>
@@ -1278,7 +1280,7 @@ function results(){const r={};for(const k in STATS)r[k]=0;TEST.forEach(([k],i)=>
 const $=s=>document.querySelector(s),screenEl=$("#screen"),phone=$("#phone");
 function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("show"),1800)}
 function render(keep){const y=screenEl.scrollTop;
-  lvPop=S.tab==="home"&&lastLv!==null&&S.lvl>lastLv;
+  if(S.tab==="home"&&lastLv!==null&&S.lvl>lastLv&&!lvUp)lvUp={lv:lastLv,xp:lastXP,from:Math.min(100,lastXP/xpNeed(lastLv)*100)}; // Home keeps showing the old level until the bar overflows
   screenEl.innerHTML=screens[S.tab]();
   if(S.tab==="home")lastLv=S.lvl;
   const tabOf=S.tab==="test"?"stats":S.tab;
@@ -1288,10 +1290,22 @@ function render(keep){const y=screenEl.scrollTop;
   screenEl.scrollTop=keep?y:0;slamId=null;tick();
   $("#player").classList.toggle("away",screenEl.scrollTop>24);
   $("#player").hidden=S.tab==="test"||!$("#ov").hidden;
-  const xb=$("#xpbar");if(xb&&lastXP!==null&&lastXP<S.xp){xb.style.transition="none";xb.style.width=Math.min(100,lastXP/xpNeed(S.lvl)*100)+"%";xb.offsetWidth;xb.style.transition="";xb.style.width=xpPct()+"%"}
+  const xb=$("#xpbar");if(lvUp)playLvUp();else if(xb&&lastXP!==null&&lastXP<S.xp){xb.style.transition="none";xb.style.width=Math.min(100,lastXP/xpNeed(S.lvl)*100)+"%";xb.offsetWidth;xb.style.transition="";xb.style.width=xpPct()+"%"}
   if(S.tab==="home")lastXP=S.xp;
 }
-let lastXP=null,lvPop=false,lastLv=null;
+let lastXP=null,lvUp=null,lastLv=null;
+// level-up on Home: bar fills to full, flashes, the level ticks over, then the bar refills to the leftover XP.
+// Waits while a popup is open (closeNote calls it again) so it plays where the player can see it.
+const xpLbl=(l,x,debt)=>`<span style="color:var(--hl)">${x} / ${xpNeed(l)} XP</span><span>${debt?`<b style="color:var(--danger)">OWES ${debt} XP</b>`:`${xpNeed(l)-x} to Lv. ${l+1}`}</span>`;
+function playLvUp(){const xb=$("#xpbar"),lv=$(".lvl"),lb=$(".barlbl");if(!lvUp||!xb||!lv||!$("#ov").hidden)return;
+  const u=lvUp;lvUp=null;
+  const turn=()=>{if(!lv.isConnected)return;lv.textContent="Lv. "+S.lvl;lv.classList.add("pop");lb.innerHTML=xpLbl(S.lvl,S.xp,S.debt);xb.parentNode.classList.add("over")},
+    refill=()=>{if(!xb.isConnected)return;xb.style.transition="none";xb.style.width="0";xb.offsetWidth;xb.style.transition="";xb.style.width=xpPct()+"%"};
+  if(RM){turn();refill();return}
+  const d=Math.round(300+3*(100-u.from)); // 300-600ms: a short gap to full shouldn't crawl
+  xb.style.transition="none";xb.style.width=u.from+"%";xb.offsetWidth;
+  xb.style.transition=`width ${d}ms cubic-bezier(.5,0,.75,0)`;xb.style.width="100%"; // ease-in: speeds up into the overflow
+  setTimeout(turn,d+20);setTimeout(refill,d+60)} // reset hides inside the flash (track is solid --c then)
 // one-shot burst for rare moments (level-up, rewards); skipped under reduced motion
 function burst(color){if(RM)return;const fx=$("#fx");fx.style.setProperty("--fxc",color);
   fx.innerHTML='<i class="flash"></i><i class="ring"></i><i class="ring"></i>'+Array.from({length:14},(_,i)=>`<i class="pt" style="left:${8+i*6.2}%;animation-delay:${(i%7)*40}ms"></i>`).join("");
@@ -1320,7 +1334,7 @@ function nextNote(){const n=queue.shift();if(!n)return;
 let noteActs=[],queueBurst=false;
 function closeNote(i=0){clearInterval(typer);$("#ov").hidden=true;screenEl.inert=false;$(".pitch").inert=false;$("#tabs").inert=false;$("#player").hidden=S.tab==="test";
   const act=noteActs[i]||{};noteActs=[];if(act.fn)act.fn();if(act.go){S.tab=act.go;render()}
-  if(queue.length)return nextNote();if(lastFocus&&lastFocus.isConnected)lastFocus.focus()}
+  if(queue.length)return nextNote();playLvUp();if(lastFocus&&lastFocus.isConnected)lastFocus.focus()}
 
 const canAwaken=()=>!S.awaken&&tierOf(S.lvl)===LAST;
 function offerAwakening(){notify({chip:"[ SECOND AWAKENING ]",title:"Awaken again?",hero:true,center:true,burst:"var(--accent)",
