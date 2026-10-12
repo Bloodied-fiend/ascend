@@ -35,4 +35,24 @@ export async function runOD({ ev, boot, check, KEY, base, wait }) {
     const r = await S(`({c:S.cnt.run,od:S.od.run||0,n:S.runs[S.runs.length-1].n,mi:S.m.miles})`);
     check("lights-out caps at 1; run steps 0.5 and logs 3 MI", sl === 1 && r.c === 3 && r.od === 1 && r.n === 3 && r.mi === 3, JSON.stringify({ sl, r }));
   }
+  // 3. distance targets adapt in half steps: a strong week 2 -> 2.5 MI, a weak week 2 -> 1.5 MI
+  for (const [hit, want] of [[1, 2.5], [0, 1.5]]) {
+    const days = await ev(`(()=>{const d=new Date(Date.now()-4*3600e3),k=x=>{const y=new Date(d);y.setDate(y.getDate()+x);return y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0")};return [k(-1),...[2,3,4,5,6,7].map(i=>k(-i))]})()`);
+    const qlog = Object.fromEntries(days.slice(1).map(k => [k, { run: hit }]));
+    const done = hit ? Object.fromEntries(base.quests.map(q => [q.id, 1])) : {};
+    await boot(KEY, { ...base, day: days[0], done, qlog, adj: {} });
+    const n = await S(`S.quests.find(q=>q.id==="run").n`);
+    check(`distance adapts in 0.5 steps (${hit ? "strong" : "weak"} week -> ${want})`, n === want, n);
+  }
+  // 4. editor takes half-mile targets; the penalty rules are one tap away before any miss
+  {
+    await boot(KEY, base);
+    await raw(`[data-edit]`); await raw(`[data-qe="edit:run"]`);
+    await ev(`document.querySelector("#qe-n").value="2.5"`); await raw(`[data-qe="save"]`);
+    const n = await S(`S.quests.find(q=>q.id==="run").n`);
+    await ev(`(()=>{for(let i=0;i<4;i++)__ascend.closeNote()})()`); await wait(200);
+    await raw(`[data-penrules]`);
+    const title = await ev(`document.querySelector("#sysT").textContent`);
+    check("editor saves 2.5 MI; penalty rules open from Home", n === 2.5 && title === "How penalties work", JSON.stringify({ n, title }));
+  }
 }

@@ -125,6 +125,11 @@ button{font:inherit;color:inherit}
 .odt,.odh{display:block;margin:2px 0 0;text-align:center;white-space:nowrap}
 .odh{font-style:normal;font-family:var(--f-mono);font-size:10px;letter-spacing:.08em;color:var(--muted)}
 .goal.odg{color:var(--accent)}
+.warn .penr{all:unset;cursor:pointer;display:inline-block;padding:14px 6px;margin:-14px 0 -14px -2px;font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;color:var(--hl);text-decoration:underline;text-underline-offset:3px}
+.warn .penr:focus-visible{outline:2px solid var(--hl);outline-offset:-10px}
+.penl{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:6px;text-align:left}
+.penl li{padding-left:14px;position:relative}
+.penl li::before{content:"";position:absolute;left:0;top:.6em;width:6px;height:6px;background:var(--danger)}
 .themes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .themes .skin{grid-template-columns:36px 1fr;gap:10px;min-height:44px;padding:8px 10px}
 .themes .sw{width:36px;height:24px;border-radius:calc(var(--r) / 2)}
@@ -676,7 +681,7 @@ html.app .player{top:calc(18px + env(safe-area-inset-top,0px))}
 
 <script>
 (()=>{
-const STATS={str:"Strength",vit:"Vitality",agi:"Agility",int:"Intelligence",per:"Perception"};
+const STATS={str:"Strength",vit:"Vitality",agi:"Agility",int:"Intellect",per:"Perception"};
 const ABOUT={str:"Lifting, push-ups, raw power",vit:"Sleep, food, recovery",agi:"Cardio, speed, mobility",int:"Reading, learning, skills",per:"Focus, calm, awareness"};
 const DEFAULT_QUESTS=[
   {id:"str",q:"Strength training",s:"str",n:45,u:"MIN",xp:20,ach:"str50"},
@@ -706,7 +711,7 @@ function focusName(){const f=$("#pname");if(f){f.value=S.name;f.focus()}}
 const stepOf=q=>q.u==="MI"||q.u==="KM"?0.5:q.n>=20?5:1;
 // Overdrive (Jaime): log past the target. Every extra 50% of target = +25% of the quest's XP and +1 training, capped at 2x target.
 // Counted quests only (a unit and a target of 2+); yes/no quests like lights-out can't be overdone.
-const canOD=q=>!!q.u&&q.n>=2;
+const canOD=q=>!!q.u&&(q.n>=2||((q.u==="MI"||q.u==="KM")&&q.n>=1));
 const cntMax=q=>canOD(q)?2*q.n:q.n;
 const odXP=q=>Math.round(q.xp*.25);
 const odWant=q=>S.done[q.id]&&canOD(q)?Math.max(0,Math.min(2,Math.floor(((S.cnt[q.id]||0)-q.n)/(q.n/2)+1e-9))):0;
@@ -774,7 +779,9 @@ const SKINS=[["hunter","Hunter System","#2b333d 40%,#1a2028 40% 60%,#f6a43a 60% 
   ["ember","Ember Forge","#120b07 40%,#f0a630 40% 60%,#d8483a 60% 80%,#7fc77a 80%"],["daylight","Daylight","#faf9f6 40%,#1f4fd8 40% 60%,#0f9a6a 60% 80%,#d1302a 80%"]];
 const RANKS=[["E-Rank"],["D-Rank"],["C-Rank"],["B-Rank"],["A-Rank"],["S-Rank"],["National Level"],["Monarch"]];
 const RANK_AT=[1,9,17,25,33,41,51,61]; // first level of each rank
-const PENALTY="Penalty Quest: 50 push-ups, 2-mile walk. Before 12:00.";
+const PENALTY="Penalty Quest: 50 push-ups, 2-mile walk.";
+const penRules=()=>notify({chip:"[ PENALTY QUEST ]",tone:"danger",title:"How penalties work",body:"If any quest scheduled for today is unfinished when the day ends at 04:00, the next day brings a Penalty Quest: 50 push‑ups and a 2‑mile walk.",after:true,
+  extra:`<ul class="penl"><li>Stays until cleared · +10 XP</li><li>Never costs levels, stats or XP</li><li>Streak resets</li><li>Unopened days count as missed</li><li>Rest Days and off days never trigger it</li></ul>`,actions:[{label:"Got it"}]});
 
 let shift=0; // demo time offset in ms
 const DAY_START_H=4; // the System day runs 04:00 to 04:00
@@ -811,7 +818,7 @@ function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typ
   S.adjNotes=Array.isArray(sv.adjNotes)?sv.adjNotes.filter(n=>n&&typeof n.q==="string"&&num(n.from)&&num(n.to)).slice(0,8).map(n=>({q:n.q.slice(0,40),from:n.from,to:n.to,u:UNITS.includes(n.u)?n.u:""})):[];
   if(typeof sv.base==="string"&&sv.base.length<16&&/^[\w ,]+$/.test(sv.base))S.base=sv.base;
   if(S.base&&!S.baseKey)S.baseKey=dkey(now()); // older saves: start the monthly clock now
-  const vq=a=>Array.isArray(a)&&a.length>=1&&a.length<=MAXQ?a.filter(q=>q&&/^[a-z0-9]{1,12}$/.test(q.id)&&typeof q.q==="string"&&q.q.length<=40&&STATS[q.s]&&Number.isInteger(q.n)&&q.n>=1&&q.n<=999&&UNITS.includes(q.u)&&XPS.includes(q.xp)).map(q=>({id:q.id,q:q.q,s:q.s,n:q.n,u:q.u,xp:q.xp,ach:OBJ.some(o=>o[0]===q.ach)?q.ach:null,...(Array.isArray(q.days)&&q.days.length<7&&q.days.every(i=>Number.isInteger(i)&&i>=0&&i<=6)&&new Set(q.days).size===q.days.length?{days:[...q.days].sort()}:{})})).map((q,i,L)=>q.ach&&L.findIndex(x=>x.ach===q.ach)<i?{...q,ach:null}:q):null;
+  const vq=a=>Array.isArray(a)&&a.length>=1&&a.length<=MAXQ?a.filter(q=>q&&/^[a-z0-9]{1,12}$/.test(q.id)&&typeof q.q==="string"&&q.q.length<=40&&STATS[q.s]&&(Number.isInteger(q.n)||((q.u==="MI"||q.u==="KM")&&Number.isInteger(q.n*2)))&&q.n>=0.5&&q.n<=999&&UNITS.includes(q.u)&&XPS.includes(q.xp)).map(q=>({id:q.id,q:q.q,s:q.s,n:q.n,u:q.u,xp:q.xp,ach:OBJ.some(o=>o[0]===q.ach)?q.ach:null,...(Array.isArray(q.days)&&q.days.length<7&&q.days.every(i=>Number.isInteger(i)&&i>=0&&i<=6)&&new Set(q.days).size===q.days.length?{days:[...q.days].sort()}:{})})).map((q,i,L)=>q.ach&&L.findIndex(x=>x.ach===q.ach)<i?{...q,ach:null}:q):null;
   const qs=vq(sv.quests);if(qs&&qs.length&&new Set(qs.map(q=>q.id)).size===qs.length)S.quests=qs;
   const qn=vq(sv.questsNext);S.questsNext=qn&&qn.length?qn:null;
   const ids=new Set(S.quests.map(q=>q.id));
@@ -976,11 +983,11 @@ const restToday=()=>S.restDay===S.day;
 // The System reviews each quest's last 7 logged days: hit 5+ -> raise ~10%, hit 3 or fewer -> ease off.
 // Binary quests (target under 5) stay fixed; each quest changes at most once a week.
 function adapt(){const notes=[],days=Object.keys(S.qlog).sort();
-  for(const q of Q()){if(q.n<5)continue;if(S.adj[q.id]&&daysSince(S.adj[q.id])<7)continue;
+  for(const q of Q()){const dist=q.u==="MI"||q.u==="KM";if(q.n<5&&!dist)continue; // small counts are yes/no; distances adjust in 0.5 stepsif(S.adj[q.id]&&daysSince(S.adj[q.id])<7)continue;
     const last=days.filter(d=>q.id in S.qlog[d]).slice(-7);if(last.length<7)continue;
     const hits=last.reduce((a,d)=>a+S.qlog[d][q.id],0);
-    let step=Math.max(1,Math.round(q.n*0.1));if(q.n>=20)step=Math.max(5,Math.round(q.n*0.1/5)*5);
-    const to=hits>=5?Math.min(999,q.n+step):hits<=3?Math.max(5,q.n-step):q.n;
+    let step=Math.max(1,Math.round(q.n*0.1));if(q.n>=20)step=Math.max(5,Math.round(q.n*0.1/5)*5);if(dist)step=0.5;
+    const to=hits>=5?Math.min(999,q.n+step):hits<=3?Math.max(dist?1:5,q.n-step):q.n;
     if(to!==q.n){notes.push({q:q.q,from:q.n,to,u:q.u});q.n=to;S.adj[q.id]=S.day}}
   return notes}
 const ovr=()=>Math.round(Object.keys(STATS).reduce((a,k)=>a+eff(k),0)/5);
@@ -1064,7 +1071,7 @@ ${sh("Today",`<button class="link" data-grid="1" style="font:inherit;letter-spac
   <div class="stack" style="gap:0;margin-top:6px">
   ${S.penalty?`<div class="qrow pen" style="--c:var(--danger)"><button class="qmain" data-pen="1">${hex("str",24)}<span><span class="q">${esc(S.penalty)}</span><br><span class="x">+10 XP · CLEARS PENALTY QUEST</span></span><span class="goal">[0/1]</span></button><button class="qck" data-pen="1" aria-label="Complete Penalty Quest"><span class="qbox"></span></button></div>`:""}
   ${rows}</div>
-  <p class="warn" ${restToday()?'style="color:var(--accent);border-color:var(--accent)"':""}>${restToday()?"REST DAY: No Penalty Quest today. Training still counts.":off?"OFF DAY: Nothing scheduled. Optional quests still count.":allDone()?"All objectives complete. Rewards granted.":"WARNING: Failure assigns a Penalty Quest."}</p>
+  <p class="warn" ${restToday()?'style="color:var(--accent);border-color:var(--accent)"':""}>${restToday()?"REST DAY: No Penalty Quest today. Training still counts.":off?"OFF DAY: Nothing scheduled. Optional quests still count.":allDone()?"All objectives complete. Rewards granted.":late?"Unfinished at 04:00: 50 push‑ups + 2‑mile walk tomorrow.":"WARNING: Unfinished quests at 04:00 bring a Penalty Quest."}${!restToday()&&!off&&!allDone()?` <button class="link penr" data-penrules="1">How it works</button>`:""}</p>
   ${restToday()?`<button class="btn chamf ghost" data-rest="undo" style="margin-top:10px">Cancel rest day</button>`:!allDone()&&S.rest?`<button class="btn chamf ghost" data-rest="use" style="margin-top:10px">Use a Rest Day (${S.rest} left)</button>`:""}
 </section>
 <div style="margin-top:18px">${bossCard(true)}</div>
@@ -1347,7 +1354,7 @@ function editorHTML(){const L=workList(),staged=started();
   if(qeEdit){const q=qeEdit==="new"?{q:"",s:"str",n:10,u:"MIN",xp:15,ach:null}:L.find(x=>x.id===qeEdit);
     return `<form class="qe"><label>Quest<input id="qe-q" maxlength="40" required></label>
     <div class="qe2"><label>Stat<select id="qe-s">${Object.entries(STATS).map(([k,n])=>`<option value="${k}" ${q.s===k?"selected":""}>${n}</option>`).join("")}</select></label>
-    <label>Target<input id="qe-n" type="number" min="1" max="999" inputmode="numeric" value="${q.n}"></label>
+    <label>Target<input id="qe-n" type="number" min="0.5" max="999" step="0.5" inputmode="decimal" value="${q.n}"></label>
     <label>Unit<select id="qe-u">${UNITS.map(u=>`<option value="${u}" ${q.u===u?"selected":""}>${u||"none"}</option>`).join("")}</select></label>
     <label>XP<select id="qe-xp">${XPS.map(x=>`<option ${q.xp===x?"selected":""}>${x}</option>`).join("")}</select></label></div>
     <label style="margin-top:10px">Counts as<select id="qe-a"><option value="">Nothing (no trophy or Gate)</option>${OBJ.map(([a,n])=>{const used=L.some(x=>x.ach===a&&x.id!==qeEdit);return `<option value="${a}" ${q.ach===a?"selected":""} ${used?"disabled":""}>${n}${used?" (used)":""}</option>`}).join("")}</select></label>
@@ -1367,9 +1374,9 @@ function editorAct(a,b){const L=workList().map(q=>({...q}));
   if(a==="back"){qeEdit=null;return paintEditor()}
   if(a.startsWith("edit:")){qeEdit=a.slice(5);return paintEditor()}
   if(a.startsWith("del:")){if(L.length<=1)return;commit(L.filter(q=>q.id!==a.slice(4)));toast("QUEST REMOVED");return}
-  if(a==="save"||a==="enter"){const name=$("#qe-q").value.trim(),n=parseInt($("#qe-n").value,10),err=$("#qe-err");
+  if(a==="save"||a==="enter"){const name=$("#qe-q").value.trim(),err=$("#qe-err"),du=$("#qe-u").value,dist=du==="MI"||du==="KM",raw=parseFloat($("#qe-n").value),n=dist?Math.round(raw*2)/2:Math.round(raw);
     if(!name){err.textContent="Give the quest a name.";return}
-    if(!(n>=1&&n<=999)){err.textContent="Target must be a whole number from 1 to 999.";return}
+    if(!(n>=(dist?0.5:1)&&n<=999)||(!dist&&raw!==n)){err.textContent=dist?"Distance must be 0.5 to 999, in half steps.":"Target must be a whole number from 1 to 999.";return}
     const dsel=pickedDays("qd");
     const a=$("#qe-a").value,v={q:name.slice(0,40),s:$("#qe-s").value,n,u:$("#qe-u").value,xp:+$("#qe-xp").value,ach:OBJ.some(o=>o[0]===a)&&!L.some(x=>x.ach===a&&x.id!==qeEdit)?a:null};
     if(qeEdit==="new"){if(L.length>=MAXQ)return;L.push(withDays({id:"q"+Date.now().toString(36).slice(-8),...v},dsel))}
@@ -1418,6 +1425,7 @@ function onButton(b,d){
       actions:[{label:"Stay"},{label:"Leave",fn:()=>partyCall({op:"leave",code:c}).then(()=>toast("LEFT PARTY")).catch(e=>toast(e.message.toUpperCase()))}]});return}
   if(d.pforget){notify({chip:"[ PARTY ]",tone:"danger",title:"Delete party data?",body:"Removes you from every party and deletes your data on the party server.\nYour progress on this phone is untouched.",
       actions:[{label:"Keep"},{label:"Delete",fn:()=>partyCall({op:"forget"}).then(()=>{try{localStorage.removeItem(PKEY);localStorage.removeItem(PCACHE)}catch(e){}party={parties:[],at:0};render(true);toast("PARTY DATA DELETED")}).catch(e=>toast(e.message.toUpperCase()))}]});return}
+  if(d.penrules){penRules();return}
   if(d.awaken){if(canAwaken())offerAwakening();return}
   if(d.start||d.retake){S.test={i:0,a:[]};advancing=false;S.tab="test";render();return}
   if(d.a){if(advancing)return;advancing=true;const T=S.test;T.a[T.i]=+d.a;b.setAttribute("aria-pressed","true");
@@ -1483,7 +1491,7 @@ function arrival(){if(!S.onboarded)return onboard();const today=dkey(now());if(S
     setTimeout(()=>notify({chip:"[ SYSTEM ]",title:"Recovery advised.",body:"You missed 2 of the last 3 days.\nA Rest Day now protects your streak.",actions:[{label:"Use Rest Day",fn:useRest},{label:"Not today"}]}))}
   if(reDue())setTimeout(()=>notify({chip:"[ RE-ASSESSMENT ]",title:"Monthly Re-Assessment",body:"30 days have passed.\nThe System must measure you again.",actions:[{label:"Begin",fn:()=>{S.test={i:0,a:[]};S.tab="test";render()}},{label:"Later"}]}));S.seen=today;save();notify({chip:"[ DAILY QUEST ]",title:"Hunter Conditioning has arrived.",
   extra:todayQ().length?`<ul class="glist">${todayQ().map(q=>`<li><span class="gq">${hex(q.s,14)}${esc(q.q)}</span><span>[0/${q.n}${q.u?" "+q.u:""}]</span></li>`).join("")}</ul>`:`<p style="margin:8px 0 0;color:var(--muted)">Nothing is scheduled today. Optional quests still earn XP and training.</p>`,
-  warn:todayQ().length?"WARNING: Failure assigns a Penalty Quest.":""})}
+  warn:todayQ().length?"WARNING: Unfinished at 04:00 = Penalty Quest (50 push-ups, 2-mile walk). Rules: tap \"How it works\" on Home.":""})}
 $("#rfile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;
   let sv=null;try{sv=JSON.parse(await f.text())}catch(err){}e.target.value="";
   if(!isSave(sv)){toast("THAT FILE ISN'T AN ASCEND BACKUP");return}
