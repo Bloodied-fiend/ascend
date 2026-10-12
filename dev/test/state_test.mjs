@@ -40,7 +40,7 @@ try {
 
   // B: complete -> undo -> complete across a level-up must end where the first complete ended
   {
-    await boot(KEY, { ...base, lvl: 3, xp: 90 });
+    await boot(KEY, { ...base, lvl: 3, xp: 106 }); // Lv3 needs 116 XP: +20 levels up with 10 left over
     const q = await ev(`(()=>{const q=__ascend.S.quests.find(x=>x.xp>=15);return q.id})()`);
     await click(`[data-q="${q}"]`);
     const a = await ev(`[__ascend.S.lvl,__ascend.S.xp]`);
@@ -67,7 +67,7 @@ try {
     const r = await ev(`Object.keys(JSON.parse(localStorage.getItem(${JSON.stringify(KEY)})).done).sort().join()`);
     check("stale copy keeps the other copy's save", r === [qa, qb].sort().join(), "done=" + r);
   }
-  if (process.argv[6] === "gates") { const m = await import("./gates_cases.mjs"); await m.run({ ev, boot, click, base, check, KEY, DK, wait }); await m.runRed({ ev, boot, click, base, check, KEY, DK, wait }); await (await import("./sched_cases.mjs")).runSched({ ev, boot, click, base, check, KEY, DK, wait }); }
+  if (process.argv[6] === "gates") { const m = await import("./gates_cases.mjs"); await m.run({ ev, boot, click, base, check, KEY, DK, wait }); await m.runRed({ ev, boot, click, base, check, KEY, DK, wait }); await (await import("./sched_cases.mjs")).runSched({ ev, boot, click, base, check, KEY, DK, wait }); await (await import("./awaken_cases.mjs")).runAwaken({ ev, boot, click, base, check, KEY, DK, wait }); }
   console.log(res.join("\n"));
   ws.close();
 } finally { chrome.kill(); }
