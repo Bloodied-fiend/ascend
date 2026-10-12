@@ -36,7 +36,7 @@ export async function runSched({ ev, boot, click, base, check, KEY, DK, wait }) 
     await raw(`[data-rk="ruck"]`); await raw(`[data-rnext]`);
     await ev(`(()=>{document.querySelector("#rh-sleep").value="23:00";document.querySelector("#rh-read").value="30"})()`);
     await raw(`[data-rh="water"]`); await raw(`[data-rnext]`); await raw(`[data-save]`);
-    await ev(`(()=>{for(let i=0;i<6;i++)__ascend.closeNote()})()`);
+    await ev(`(()=>{for(let i=0;i<6;i++)__ascend.closeNote(-1)})()`);
     const r = await S(`(()=>{const L=S.questsNext||S.quests,f=a=>L.find(q=>q.ach===a);return {str:f("str50").days,run:[f("agi30").q,f("agi30").days],sleep:[f("vit30").q,f("vit30").days],water:f("water25").days,read:f("int40").n}})()`);
     // existing quests with no days run every day, so lift starts as all 7 (Wednesday toggled off) and cardio stays daily
     check("routine -> schedule", JSON.stringify(r) === JSON.stringify({ str: [0, 1, 3, 4, 5, 6], run: ["Run or ruck".replace("Run or ruck","Ruck"), undefined], sleep: ["Lights out by 23:00", undefined], water: [], read: 30 }), JSON.stringify(r));
@@ -47,7 +47,7 @@ export async function runSched({ ev, boot, click, base, check, KEY, DK, wait }) 
     await boot(KEY, { ...base, quests });
     await ev(`(()=>{__ascend.S.test={i:15,a:Array(15).fill(2)};__ascend.S.tab="test";__ascend.render()})()`); await wait(200);
     await raw(`[data-rnext]`); await raw(`[data-rnext]`); await raw(`[data-rnext]`); await raw(`[data-save]`);
-    await ev(`(()=>{for(let i=0;i<6;i++)__ascend.closeNote()})()`);
+    await ev(`(()=>{for(let i=0;i<6;i++)__ascend.closeNote(-1)})()`);
     const r = await S(`(()=>{const L=S.questsNext||S.quests;return {n:L.length,swim:L.find(q=>q.id==="run").q,read:L.find(q=>q.id==="read").days,med:L.some(q=>q.ach==="per100"),str:L.find(q=>q.id==="str").days}})()`);
     check("routine keeps custom names, partial days, deleted quests", r.n === 5 && r.swim === "Swim" && JSON.stringify(r.read) === "[0,1,2,3,4]" && !r.med && r.str === undefined, JSON.stringify(r));
   }

@@ -13,7 +13,7 @@ const call = async (key, body, origin = O) => {
 const res = [], check = (n, ok, info) => res.push(`${ok ? "PASS" : "FAIL"} ${n}${ok ? "" : " " + JSON.stringify(info)}`);
 const A = randomBytes(32).toString("hex"), B = randomBytes(32).toString("hex"), C = randomBytes(32).toString("hex");
 let E = "0".repeat(64);
-const sum = (xp, lvl = 5) => ({ lvl, xp, tier: 0, streak: 3, gates: 1, red: 0, awaken: 0 });
+const sum = (xp, lvl = 5) => ({ title: "Road Warrior", lvl, xp, tier: 0, streak: 3, gates: 1, red: 0, awaken: 0 });
 try {
   let [s, b] = await call(A, { op: "create", name: "TestA", party: "Test Squad" });
   const code = b.parties?.[0]?.code;
@@ -23,7 +23,7 @@ try {
   await call(A, { op: "sync", summary: sum(900) });
   [s, b] = await call(B, { op: "sync", summary: sum(1500, 9) });
   const m = b.parties[0].members;
-  check("board ranks by total XP, marks me", m[0].name === "TestB" && m[0].me && m[1].xp === 900 && !m[1].me, m);
+  check("board ranks by total XP, marks me, carries title", m[0].name === "TestB" && m[0].me && m[1].xp === 900 && !m[1].me && m[0].title === "Road Warrior", m);
   [s, b] = await call(C, { op: "board", name: "Stranger" });
   check("stranger sees nothing", s === 200 && b.parties.length === 0, b);
   [s, b] = await call(C, { op: "join", code: "ZZZZZZZZ" });

@@ -50,7 +50,7 @@ export async function runOD({ ev, boot, check, KEY, base, wait }) {
     await raw(`[data-edit]`); await raw(`[data-qe="edit:run"]`);
     await ev(`document.querySelector("#qe-n").value="2.5"`); await raw(`[data-qe="save"]`);
     const n = await S(`S.quests.find(q=>q.id==="run").n`);
-    await ev(`(()=>{for(let i=0;i<4;i++)__ascend.closeNote()})()`); await wait(200);
+    await ev(`(()=>{for(let i=0;i<4;i++)__ascend.closeNote(-1)})()`); await wait(200);
     await raw(`[data-penrules]`);
     const title = await ev(`document.querySelector("#sysT").textContent`);
     check("editor saves 2.5 MI; penalty rules open from Home", n === 2.5 && title === "How penalties work", JSON.stringify({ n, title }));

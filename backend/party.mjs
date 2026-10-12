@@ -25,7 +25,8 @@ create table if not exists parties(id bigserial primary key, code text unique no
 create table if not exists members(party_id bigint not null references parties(id) on delete cascade, player_id bigint not null references players(id) on delete cascade, joined_at timestamptz not null default now(), primary key(party_id, player_id));
 create table if not exists summaries(player_id bigint primary key references players(id) on delete cascade, lvl int not null, xp_total bigint not null, tier int not null, streak int not null, gates int not null, red int not null, awaken int not null, updated_at timestamptz not null default now());
 create index if not exists members_player on members(player_id);
-create index if not exists players_ip on players(ip, created_at);`;
+create index if not exists players_ip on players(ip, created_at);
+alter table summaries add column if not exists title text;`;
 let ready = null;
 const init = () => (ready ??= (async () => { for (const s of SCHEMA.split(";").map(x => x.trim()).filter(Boolean)) await sql(s); })().catch(e => { ready = null; throw e; }));
 
@@ -38,7 +39,7 @@ async function board(me) {
   const { rows } = await pool.query(
     `select p.code, p.name,
        json_agg(json_build_object('name', pl.name, 'me', pl.id = $1, 'lvl', s.lvl, 'xp', s.xp_total, 'tier', s.tier,
-         'streak', s.streak, 'gates', s.gates, 'red', s.red, 'awaken', s.awaken)
+         'streak', s.streak, 'gates', s.gates, 'red', s.red, 'awaken', s.awaken, 'title', s.title)
          order by s.xp_total desc nulls last, pl.id) as members
      from members m join parties p on p.id = m.party_id
      join members m2 on m2.party_id = p.id join players pl on pl.id = m2.player_id
@@ -87,9 +88,9 @@ async function handle(req, ip) {
       if (!(int(s.lvl, 1, 999) && int(s.xp, 0, 1e8) && int(s.tier, 0, 7) && int(s.streak, 0, 1e5) && int(s.gates, 0, 1e5) && int(s.red, 0, 1e5) && (s.awaken === 0 || s.awaken === 1)))
         return [400, { error: "summary" }];
       await pool.query(
-        `insert into summaries(player_id, lvl, xp_total, tier, streak, gates, red, awaken) values($1,$2,$3,$4,$5,$6,$7,$8)
-         on conflict (player_id) do update set lvl=$2, xp_total=$3, tier=$4, streak=$5, gates=$6, red=$7, awaken=$8, updated_at=now()`,
-        [me, s.lvl, s.xp, s.tier, s.streak, s.gates, s.red, s.awaken]);
+        `insert into summaries(player_id, lvl, xp_total, tier, streak, gates, red, awaken, title) values($1,$2,$3,$4,$5,$6,$7,$8,$9)
+         on conflict (player_id) do update set lvl=$2, xp_total=$3, tier=$4, streak=$5, gates=$6, red=$7, awaken=$8, title=$9, updated_at=now()`,
+        [me, s.lvl, s.xp, s.tier, s.streak, s.gates, s.red, s.awaken, typeof s.title === "string" ? cleanName(s.title, 40) : null]);
       break;
     }
     // ponytail: party/member caps are check-then-insert without a transaction; simultaneous requests can overshoot by a few (friends-scale)

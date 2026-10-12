@@ -26,9 +26,9 @@ try {
   const boot = async (key, save) => {
     await ev(`localStorage.clear();${save ? `localStorage.setItem(${JSON.stringify(key)},${JSON.stringify(JSON.stringify(save))})` : ""}`);
     await send("Page.reload"); await wait(1500);
-    await ev(`(()=>{for(let i=0;i<6;i++)__ascend.closeNote()})()`); await wait(200);
+    await ev(`(()=>{for(let i=0;i<6;i++)__ascend.closeNote(-1)})()`); await wait(200);
   };
-  const click = async sel => { await ev(`document.querySelector(${JSON.stringify(sel)}).click()`); await wait(250); await ev(`(()=>{for(let i=0;i<6;i++)__ascend.closeNote()})()`); await wait(150); };
+  const click = async sel => { await ev(`document.querySelector(${JSON.stringify(sel)}).click()`); await wait(250); await ev(`(()=>{for(let i=0;i<6;i++)__ascend.closeNote(-1)})()`); await wait(150); };
 
   // A: an older v5 save is imported; v5 itself is left as it was
   if (PREV) {
@@ -67,7 +67,7 @@ try {
     const r = await ev(`Object.keys(JSON.parse(localStorage.getItem(${JSON.stringify(KEY)})).done).sort().join()`);
     check("stale copy keeps the other copy's save", r === [qa, qb].sort().join(), "done=" + r);
   }
-  if (process.argv[6] === "gates") { const m = await import("./gates_cases.mjs"); await m.run({ ev, boot, click, base, check, KEY, DK, wait }); await m.runRed({ ev, boot, click, base, check, KEY, DK, wait }); await (await import("./sched_cases.mjs")).runSched({ ev, boot, click, base, check, KEY, DK, wait }); await (await import("./awaken_cases.mjs")).runAwaken({ ev, boot, click, base, check, KEY, DK, wait }); await (await import("./od_cases.mjs")).runOD({ ev, boot, click, base, check, KEY, DK, wait }); }
+  if (process.argv[6] === "gates") { const m = await import("./gates_cases.mjs"); await m.run({ ev, boot, click, base, check, KEY, DK, wait }); await m.runRed({ ev, boot, click, base, check, KEY, DK, wait }); await (await import("./sched_cases.mjs")).runSched({ ev, boot, click, base, check, KEY, DK, wait }); await (await import("./awaken_cases.mjs")).runAwaken({ ev, boot, click, base, check, KEY, DK, wait }); await (await import("./od_cases.mjs")).runOD({ ev, boot, click, base, check, KEY, DK, wait }); await (await import("./title_cases.mjs")).runTitles({ ev, boot, click, base, check, KEY, DK, wait }); }
   if (process.argv[7] === "party") await (await import("./party_cases.mjs")).runParty({ ev, boot, click, base, check, KEY, DK, wait });
   console.log(res.join("\n"));
   ws.close();

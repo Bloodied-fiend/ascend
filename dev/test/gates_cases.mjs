@@ -21,7 +21,7 @@ export async function run({ ev, boot, click, base, check, KEY, DK, wait }) {
   await click(`[data-t="quests"]`);
   const ids = await ev(`[...document.querySelectorAll(".gpin:not(.lock)")].map(b=>b.dataset.gsel).join()`);
   await raw(`[data-gsel="d"]`); await raw(`[data-gate="d"]`); await raw(`#sysA [data-act="0"]`);
-  await ev(`(()=>{if(__ascend.S.gate)__ascend.S.gate.red=false;for(let i=0;i<4;i++)__ascend.closeNote()})()`); // entry rolls a 15% Red Gate; pin it for this case
+  await ev(`(()=>{if(__ascend.S.gate)__ascend.S.gate.red=false;for(let i=0;i<4;i++)__ascend.closeNote(-1)})()`); // entry rolls a 15% Red Gate; pin it for this case
   r = await S(`({id:S.gate&&S.gate.id,bm:S.gate&&S.gate.base.miles,until:S.gate&&S.gate.until})`);
   check("C-Rank sees only D/C/B (3 each); entering D snapshots miles", ids === "d,d2,d3,c,c2,c3,b,b2,b3" && r.id === "d" && r.bm === 5, `${ids} ${JSON.stringify(r)}`);
 

@@ -9,7 +9,7 @@ export async function runAwaken({ ev, boot, click, base, check, KEY, wait }) {
     await raw(`[data-q="str"]`); // +20 XP -> Lv61 Monarch; training 4/4 at the 99 ceiling (raw click: closing notes would press "Awaken")
     const before = await S(`({lvl:S.lvl,str:S.stats.str,awaken:S.awaken})`);
     const offer = await ev(`[...document.querySelectorAll("#sysC")].map(x=>x.textContent).join()`);
-    await ev(`(()=>{for(let i=0;i<6;i++){const c=document.querySelector("#sysC").textContent;if(c.includes("SECOND AWAKENING")){document.querySelector('#sysA [data-act="0"]').click();break}__ascend.closeNote()}})()`); await wait(400);
+    await ev(`(()=>{for(let i=0;i<6;i++){const c=document.querySelector("#sysC").textContent;if(c.includes("SECOND AWAKENING")){document.querySelector('#sysA [data-act="0"]').click();break}__ascend.closeNote(-1)}})()`); await wait(400);
     const after = await S(`({awaken:S.awaken,str:S.stats.str,vit:S.stats.vit})`);
     check("Monarch -> Second Awakening keeps stats", before.lvl === 61 && before.str === 99 && before.awaken === 0 && after.awaken === 1 && after.str === 99 && after.vit === 80, JSON.stringify({ before, after, offer }));
   }
@@ -20,7 +20,7 @@ export async function runAwaken({ ev, boot, click, base, check, KEY, wait }) {
     const vit = await S(`S.stats.vit`);
     await ev(`(()=>{__ascend.S.test={i:15,a:[4,4,4,1,1,1,4,4,4,4,4,4,4,4,4],r:null};__ascend.S.tab="test";__ascend.render()})()`); await wait(200);
     await ev(`(()=>{__ascend.S.test.i=18;__ascend.render()})()`); await wait(200);
-    await raw(`[data-save]`); await ev(`(()=>{for(let i=0;i<6;i++)__ascend.closeNote()})()`);
+    await raw(`[data-save]`); await ev(`(()=>{for(let i=0;i<6;i++)__ascend.closeNote(-1)})()`);
     const r = await S(`({str:S.stats.str,vit:S.stats.vit,int:S.stats.int,per:S.stats.per})`);
     check("past 99 by training; re-assessment keeps it at top, drops when lower", vit === 100 && r.str === 120 && r.vit < 99 && r.int === 95 && r.per === 110, JSON.stringify({ vit, r }));
   }

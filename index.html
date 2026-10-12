@@ -130,6 +130,20 @@ button{font:inherit;color:inherit}
 .penl{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:6px;text-align:left}
 .penl li{padding-left:14px;position:relative}
 .penl li::before{content:"";position:absolute;left:0;top:.6em;width:6px;height:6px;background:var(--danger)}
+.tlist{display:grid;gap:8px}
+.glist.gcen{text-align:center}.glist.gcen li{justify-content:center}
+.tcard{all:unset;box-sizing:border-box;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px;min-height:56px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r);cursor:pointer}
+.tcard b{display:block;font-size:15px}.tcard small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.tcard .tst{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--hl);white-space:nowrap}
+.tcard.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--panel))}.tcard.on .tst{color:var(--accent)}
+.tcard.lock{cursor:default;opacity:1;background:transparent;border-style:dashed}
+.tcard.lock b,.tcard.lock small,.tcard.lock .tst{color:var(--muted)}
+.tcard .tbar2{grid-column:1/-1;display:block;height:4px;margin-top:2px}
+.tcard .tst{min-width:7ch;text-align:right}
+.tmore{width:100%;min-height:44px;justify-content:center}
+.tcard:focus-visible{outline:2px solid var(--hl);outline-offset:2px}
+.ttlp{color:var(--hl)}
+.plist small em.pt{font-style:normal;color:var(--hl);margin:0}
 .themes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .themes .skin{grid-template-columns:36px 1fr;gap:10px;min-height:44px;padding:8px 10px}
 .themes .sw{width:36px;height:24px;border-radius:calc(var(--r) / 2)}
@@ -717,6 +731,7 @@ const odXP=q=>Math.round(q.xp*.25);
 const odWant=q=>S.done[q.id]&&canOD(q)?Math.max(0,Math.min(2,Math.floor(((S.cnt[q.id]||0)-q.n)/(q.n/2)+1e-9))):0;
 // pay or take back bonus tiers so the record always matches the count (stepping down, unchecking)
 function applyOD(q){let have=S.od[q.id]||0;const want=odWant(q),d=want-have;
+  if(!have&&want)S.m.odn=(S.m.odn||0)+1;else if(have&&!want)S.m.odn=Math.max(0,(S.m.odn||0)-1);
   while(have<want){have++;gainXP(odXP(q));addTrain(q.s,1)}
   while(have>want){have--;gainXP(-odXP(q));addTrain(q.s,-1)}
   if(have)S.od[q.id]=have;else delete S.od[q.id];return d}
@@ -732,7 +747,7 @@ function addTrain(s,k){for(let i=0;i<Math.abs(k);i++)if(k>0){S.train[s]=(S.train
 const runXP=(q,b)=>b===2?Math.round(q.xp*.5):b?Math.round(q.xp*.25):0;
 const toMi=(n,u)=>u==="KM"?n*0.621371:n;
 const addMiles=x=>{S.m.miles=Math.max(0,Math.round((S.m.miles+x)*100)/100)};
-function dropRun(q){const r=todayRun(q);if(!r)return;if(r.b){addTrain(q.s,-r.b);gainXP(-runXP(q,r.b))}if(r.m)addMiles(-toMi(r.n,r.u));S.runs=S.runs.filter(x=>x!==r)}
+function dropRun(q){const r=todayRun(q);if(!r)return;if(r.b){addTrain(q.s,-r.b);gainXP(-runXP(q,r.b))}if(r.m)addMiles(-toMi(r.n,r.u));if(r.m&&r.b===2)S.m.pb=Math.max(0,(S.m.pb||0)-1);S.runs=S.runs.filter(x=>x!==r)}
 let tKind="run";
 const ACH=[ // [id, stat|sys, title, goal, xp]
   ["first","sys","Complete the Player Assessment",1,50],["str50","str","Finish 50 strength sessions",50,150],
@@ -771,7 +786,7 @@ const gVisible=g=>Math.abs(g.t-gTier())<=1;
 // fixed organic layout per rank tier, computed offline with a collision check (dev/art/gate_layout.py, Belphegor spec)
 const GLAY={"0":{"e":[37.2,82.6,0.991,88,0.65,116],"e2":[55.5,65.3,0.88,88,0.65,116],"e3":[84.9,76.1,0.95,88,0.65,116],"d":[14.3,45.1,0.751,80,0.59,108],"d2":[72.2,54.4,0.81,80,0.59,108],"d3":[89.9,38.8,0.711,80,0.59,108]},"1":{"e":[12.9,71.4,0.919,88,0.65,116],"e2":[41.3,77.4,0.958,88,0.65,116],"e3":[72.2,83.8,0.999,88,0.65,116],"d":[25.8,47.8,0.768,85,0.63,113],"d2":[59.4,54.7,0.813,85,0.63,113],"d3":[89.0,62.5,0.862,85,0.63,113],"c":[11.7,35.3,0.688,80,0.59,108],"c2":[39.0,40.1,0.719,80,0.59,108],"c3":[73.1,45.7,0.755,80,0.59,108]},"2":{"d":[15.1,83.8,0.999,88,0.65,116],"d2":[46.6,71.3,0.919,88,0.65,116],"d3":[75.0,77.5,0.958,88,0.65,116],"c":[26.2,55.0,0.814,85,0.63,113],"c2":[61.8,61.5,0.856,85,0.63,113],"c3":[89.8,48.0,0.769,85,0.63,113],"b":[12.7,45.7,0.755,80,0.59,108],"b2":[51.1,35.3,0.688,80,0.59,108],"b3":[74.7,39.9,0.718,80,0.59,108]},"3":{"c":[15.1,71.2,0.918,88,0.65,116],"c2":[41.5,83.7,0.998,88,0.65,116],"c3":[74.3,77.6,0.959,88,0.65,116],"b":[28.3,53.4,0.804,85,0.63,113],"b2":[56.1,65.8,0.884,85,0.63,113],"b3":[89.1,59.8,0.845,85,0.63,113],"a":[12.3,35.3,0.688,80,0.59,108],"a2":[44.5,45.6,0.754,80,0.59,108],"a3":[66.8,40.3,0.72,80,0.59,108]},"4":{"b":[12.5,79.2,0.969,88,0.65,116],"b2":[45.6,74.1,0.937,88,0.65,116],"b3":[75.0,84.0,1.0,88,0.65,116],"a":[31.3,65.0,0.878,85,0.63,113],"a2":[59.5,58.0,0.834,85,0.63,113],"a3":[86.6,51.4,0.791,85,0.63,113],"s":[12.9,35.3,0.688,80,0.59,108],"s2":[49.0,37.7,0.704,80,0.59,108],"s3":[73.0,43.7,0.742,80,0.59,108]},"5":{"a":[21.6,61.0,0.853,88,0.65,116],"a2":[42.1,82.5,0.99,88,0.65,116],"a3":[69.6,68.7,0.902,88,0.65,116],"s":[37.5,42.1,0.732,80,0.59,108],"s2":[54.1,56.7,0.825,80,0.59,108],"s3":[86.5,49.1,0.777,80,0.59,108]}}; // generated by dev/art/gate_layout.py: tier -> id -> [x%,y%,z,tb,bs,tb1]
 function gSlot(g){const[x,y,z,tb,bs,tb1]=GLAY[gTier()][g.id];return {x,y,z,tb,bs,tb1}}
-let selGate=null;
+let selGate=null,showAllTitles=false;
 const focusPin=()=>{const p=$(".gpin.sel");if(p)p.focus({preventScroll:true})};
 const LOCK='<svg width="9" height="9" viewBox="0 0 10 10" aria-hidden="true"><rect x="1.5" y="4.5" width="7" height="5" rx="1" fill="currentColor"/><path d="M3 4.5V3a2 2 0 0 1 4 0v1.5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>';
 // in-app theme picker (Profile); same four looks as the desktop preview panel
@@ -790,13 +805,44 @@ const dkey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const wd=d=>(d.getDay()+6)%7; // Monday=0
 const pad=n=>String(n).padStart(2,"0");
 const mondayKey=d=>{const m=new Date(d);m.setDate(d.getDate()-wd(d));return dkey(m)};
+const BOSSES={str:"Iron Warden",vit:"Sleepless Wraith",agi:"Swift Stalker",int:"Hollow Scholar",per:"Mirror Shade"};
+// Titles: cosmetic, earned from real data, never taken away. New counters (pb/odn/adv/sleep/kills) start at install;
+// the rest (miles, Gates, Red Gates, program clears, rank, awakening) read data you already have.
+// [id, name, how to earn, () => [progress, goal]]
+const progClears=()=>{let n=0;for(let i=0;i<60;i++)if(S.hist[addDays(S.prog,i)]===1)n++;return n};
+const TITLES=[
+  ["awakened","The Awakened","Where every Hunter starts.",()=>[1,1]],
+  ["adversity","One Who Overcame Adversity","Clear a Penalty Quest, then 7 straight clear days.",()=>[S.m.adv||0,7]],
+  ["earlyrise","Early Riser","Lights out on time 14 nights in a row.",()=>[S.m.sleep||0,14]],
+  ["roadwarrior","Road Warrior","Log 100 timed miles.",()=>[Math.floor(S.m.miles),100]],
+  ["pacesetter","Pacesetter","Set 5 new personal-best paces.",()=>[S.m.pb||0,5]],
+  ["overachiever","Overachiever","Overdrive 20 quests.",()=>[S.m.odn||0,20]],
+  ["unbroken","Unbroken","Clear 50 days of a 60-day program.",()=>[progClears(),50]],
+  ["gatebreaker","Gatebreaker","Clear 5 Gates.",()=>[Object.values(S.gateClears).reduce((a,b)=>a+b,0),5]],
+  ["redgate","Red Gate Survivor","Survive a Red Gate.",()=>[S.m.red||0,1]],
+  ...Object.keys(BOSSES).map(k=>["bane_"+k,`${BOSSES[k]}'s Bane`,`Defeat the ${BOSSES[k]}.`,()=>[(S.m.kills||{})[k]||0,1]]),
+  ["heir","Heir to the Throne","Reach S-Rank.",()=>[Math.min(tierOf(S.lvl),5),5],()=>`${"EDCBAS"[Math.min(tierOf(S.lvl),5)]} → S`], // optional 5th: progress label
+  ["twice","Twice-Awakened","Accept the Second Awakening.",()=>[S.awaken,1]]];
+const tEarned=id=>id==="awakened"||Object.hasOwn(S.titles,id);
+const tName=()=>(TITLES.find(t=>t[0]===S.title&&tEarned(t[0]))||TITLES[0])[1];
+// once per action (in act), after every change: record new titles first, then announce them
+function checkTitles(){const got=[];for(const t of TITLES){if(tEarned(t[0]))continue;const[c,g]=t[3]();if(c>=g){S.titles[t[0]]=S.day;got.push(t)}}
+  if(got.length===1){const[id,name,how]=got[0];notify({chip:"[ TITLE ACQUIRED ]",title:name,hero:true,center:true,burst:"var(--accent)",body:how,
+    actions:[{label:"Equip",acc:true,fn:()=>{if(!tEarned(id))return;S.title=id;save();render(true);toast("TITLE EQUIPPED")}},{label:"Later"}]})}
+  else if(got.length)notify({chip:"[ TITLES ACQUIRED ]",title:`${got.length} titles earned`,hero:true,center:true,burst:"var(--accent)", // one notice, not a stack of popups
+    extra:`<ul class="glist gcen">${got.map(t=>`<li><span class="gq">${esc(t[1])}</span></li>`).join("")}</ul>`,after:true,actions:[{label:"View titles",acc:true,go:"me"},{label:"Later"}]});
+  return got.length}
+// a finalized day feeds the streak-style titles (Rest Days and days with nothing scheduled are neutral)
+function titleDay(k,h,L){const m=S.m;
+  if(m.advOn){if(h===1)m.adv=(m.adv||0)+1;else if(h===0){m.adv=0;m.advOn=0}} // a miss disarms it; clearing that next penalty re-arms
+  const sq=L.find(q=>q.ach==="vit30");if(sq&&h!==2)m.sleep=k===S.day&&S.done[sq.id]?(m.sleep||0)+1:0}
 function fresh(){const t=now();
   return {runs:[],name:"",lvl:1,xp:0,rest:1,restDay:null,base:null,baseKey:null,qlog:{},adj:{},adjNotes:[],
   stats:{str:30,vit:30,agi:30,int:30,per:30},train:{str:0,vit:0,agi:0,int:0,per:0},
   quests:DEFAULT_QUESTS.map(q=>({...q})),questsNext:null,cnt:{},onboarded:false,statHist:{},
   done:{},day:dkey(t),hist:{},seen:null,penalty:null,boss:100,bossDown:false,bossStat:null,wk:mondayKey(t),prog:dkey(t),
   ap:{first:0,str50:0,vit30:0,agi30:0,int40:0,per100:0,clear10:0,water25:0,lvl20:1},claimed:{},
-  od:{},awaken:0,debt:0,rev:"",m:{miles:0},gate:null,gateCd:null,gateClears:{},tab:"home",cat:"all"}}
+  titles:{},title:"awakened",od:{},awaken:0,debt:0,rev:"",m:{miles:0},gate:null,gateCd:null,gateClears:{},tab:"home",cat:"all"}}
 // demo data: mid-program hunter, used by "Load sample data"
 function sample(){const t=now(),h={};for(let i=1;i<=17;i++){const d=new Date(t);d.setDate(t.getDate()-i);h[dkey(d)]=1}for(const i of[wd(t)-3,9]){const d=new Date(t);d.setDate(t.getDate()-i);if(i>0)h[dkey(d)]=0}
   const pr=new Date(t);pr.setDate(pr.getDate()-17);
@@ -805,7 +851,7 @@ function sample(){const t=now(),h={};for(let i=1;i<=17;i++){const d=new Date(t);
   return {...fresh(),name:S.name,onboarded:true,statHist:sh,lvl:14,xp:62,rest:2,train:{str:2,vit:1,agi:3,int:0,per:2},base:"Sep 23",baseKey:dkey(pr),stats:{str:60,vit:69,agi:70,int:60,per:80},done:{sleep:2},cnt:{sleep:1},hist:h,boss:62,bossStat:"str",prog:dkey(pr),
   ap:{first:0,str50:26,vit30:29,agi30:12,int40:39,per100:64,clear10:15,water25:25,lvl20:14}}}
 let S=fresh();
-const KEEP=["runs","lvl","xp","rest","restDay","base","baseKey","stats","train","qlog","adj","adjNotes","done","day","hist","seen","penalty","ap","claimed","boss","bossDown","bossStat","wk","prog","quests","questsNext","cnt","onboarded","statHist","name","awaken","debt","rev","od","m","gate","gateCd","gateClears"];
+const KEEP=["runs","lvl","xp","rest","restDay","base","baseKey","stats","train","qlog","adj","adjNotes","done","day","hist","seen","penalty","ap","claimed","boss","bossDown","bossStat","wk","prog","quests","questsNext","cnt","onboarded","statHist","name","awaken","debt","rev","od","titles","title","m","gate","gateCd","gateClears"];
 function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typeof v==="number"&&Number.isFinite(v),key=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v);
   for(const k of ["lvl","xp","rest","boss","debt"])if(num(sv[k]))S[k]=sv[k];S.awaken=sv.awaken===1?1:0;
   S.rest=Math.max(0,Math.min(3,Math.round(S.rest)));S.debt=Math.max(0,Math.round(S.debt));S.rev=typeof sv.rev==="string"&&sv.rev.length<=40?sv.rev:"";
@@ -832,7 +878,13 @@ function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typ
   S.statHist={};if(sv.statHist&&typeof sv.statHist==="object")for(const[k,v]of Object.entries(sv.statHist).slice(-90))
     if(key(k)&&v&&typeof v==="object"&&Object.keys(STATS).every(x=>num(v[x])))S.statHist[k]=Object.fromEntries(Object.keys(STATS).map(x=>[x,v[x]]));
   S.penalty=sv.penalty?PENALTY:null;S.bossDown=sv.bossDown===true;S.bossStat=STATS[sv.bossStat]?sv.bossStat:null;
-  if(sv.m&&num(sv.m.miles)&&sv.m.miles>=0)S.m.miles=sv.m.miles;if(sv.m&&Number.isInteger(sv.m.red)&&sv.m.red>0)S.m.red=sv.m.red;
+  if(sv.m&&num(sv.m.miles)&&sv.m.miles>=0)S.m.miles=sv.m.miles;
+  if(sv.m)for(const k of ["red","pb","odn","adv","sleep"])if(Number.isInteger(sv.m[k])&&sv.m[k]>0)S.m[k]=sv.m[k];
+  if(sv.m&&sv.m.advOn===1)S.m.advOn=1;
+  if(sv.m&&sv.m.kills&&typeof sv.m.kills==="object"){S.m.kills={};for(const k in BOSSES)if(Number.isInteger(sv.m.kills[k])&&sv.m.kills[k]>0)S.m.kills[k]=sv.m.kills[k]}
+  S.titles={};if(sv.titles&&typeof sv.titles==="object")for(const t of TITLES)if(key(sv.titles[t[0]]))S.titles[t[0]]=sv.titles[t[0]];
+  if(sv.awaken===1&&sv.title===undefined){S.titles.twice=S.day;S.title="twice"} // pre-titles save: an awakened player keeps showing Twice-Awakened
+  else S.title=typeof sv.title==="string"&&tEarned(sv.title)&&TITLES.some(t=>t[0]===sv.title)?sv.title:"awakened";
   if(key(sv.gateCd))S.gateCd=sv.gateCd;
   if(sv.gateClears&&typeof sv.gateClears==="object")for(const g of GATES){const v=sv.gateClears[g.id];if(Number.isInteger(v)&&v>0)S.gateClears[g.id]=v}
   const g=sv.gate; // a damaged active gate is dropped on its own; the rest of the save still loads
@@ -840,7 +892,7 @@ function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typ
     S.gate={id:g.id,start:g.start,until:g.until,run:g.run,failed:g.failed,red:g.red===true,base:Object.fromEntries(GBASE.map(k=>[k,num(g.base[k])&&g.base[k]>=0?g.base[k]:S.ap[k]]))}}
 let storageOK=true,saveBlocked=false;
 // accept stored/restored data only if it has the basic Ascend shape; never fill a blank profile from junk
-const VER=10,STORE="ascend-v10",OLD=["ascend-v9","ascend-v8","ascend-v7","ascend-v6","ascend-v5","ascend-v4"];
+const VER=11,STORE="ascend-v11",OLD=["ascend-v10","ascend-v9","ascend-v8","ascend-v7","ascend-v6","ascend-v5","ascend-v4"];
 const isSave=sv=>!!sv&&typeof sv==="object"&&!(sv.ver>VER)&&Number.isFinite(sv.lvl)&&sv.stats&&typeof sv.stats==="object"&&Object.keys(STATS).every(k=>Number.isFinite(sv.stats[k]))&&Array.isArray(sv.quests)&&sv.quests.length>0;
 // build the new state aside and only swap it in if it loads cleanly
 function adopt(sv){if(!isSave(sv))return false;const prev=S;try{S=fresh();load(sv);return true}catch(e){S=prev;return false}}
@@ -857,7 +909,7 @@ function pull(){let sv=null;try{const raw=localStorage.getItem(STORE);if(raw===n
   if(!sv||sv.rev===S.rev)return;const ui={tab:S.tab,test:S.test,cat:S.cat};if(adopt(sv)){saveBlocked=false;Object.assign(S,ui)}}
 // every change runs read-latest -> change -> save under one cross-tab lock, so two open copies can't overwrite each other
 const LOCKS=!!(navigator.locks&&navigator.locks.request);
-function act(fn){let ran=false;const run=()=>{ran=true;pull();fn();if(settleGate()){save();render(true)}schedSync()};if(!LOCKS||!storageOK)return run();
+function act(fn){let ran=false;const run=()=>{ran=true;pull();fn();const g=settleGate(),t=checkTitles();if(g||t){save();render(true)}schedSync()};if(!LOCKS||!storageOK)return run();
   navigator.locks.request("ascend-state",run).catch(e=>{if(!ran)run();else console.error(e)})} // locks refused (sandboxed frame): run unlocked
 function rollover(){const n=now(),t=dkey(n),wk=mondayKey(n);
   if(!S.bossStat)S.bossStat=weakest();
@@ -865,10 +917,10 @@ function rollover(){const n=now(),t=dkey(n),wk=mondayKey(n);
   if(S.day===t){save();return}
   const dq=todayQ();
   if(dq.length&&(!S.restDay||S.restDay!==S.day)){const lg={};for(const q of dq)lg[q.id]=S.done[q.id]?1:0;S.qlog[S.day]=lg} // rest days and unscheduled quests don't count against a quest
-  const rested=S.restDay===S.day||!dq.length,missed=!rested&&!dq.every(q=>S.done[q.id]);S.hist[S.day]=rested?2:missed?0:1;S.restDay=null;gateDay(S.day,S.hist[S.day]);
+  const rested=S.restDay===S.day||!dq.length,missed=!rested&&!dq.every(q=>S.done[q.id]);S.hist[S.day]=rested?2:missed?0:1;S.restDay=null;gateDay(S.day,S.hist[S.day]);titleDay(S.day,S.hist[S.day],dq);
   S.statHist[S.day]=Object.fromEntries(Object.keys(STATS).map(k=>[k,eff(k)]));{const ks=Object.keys(S.statHist).sort();for(const k of ks.slice(0,-90))delete S.statHist[k]}S.done={};S.cnt={};S.od={};if(S.questsNext){S.quests=S.questsNext;S.questsNext=null}
   // days the app was never opened are missed days too, each finalized once (a day already logged is never rewritten)
-  let gap=0;if(S.day<t)for(const d=new Date(S.day+"T12:00");d.setDate(d.getDate()+1),dkey(d)<t&&gap<400;){const k=dkey(d);if(k in S.hist)continue;const kq=Q().filter(q=>sched(q,k));if(!kq.length){S.hist[k]=2;gateDay(k,2);continue}S.hist[k]=0;gateDay(k,0);S.qlog[k]=Object.fromEntries(kq.map(q=>[q.id,0]));gap++}
+  let gap=0;if(S.day<t)for(const d=new Date(S.day+"T12:00");d.setDate(d.getDate()+1),dkey(d)<t&&gap<400;){const k=dkey(d);if(k in S.hist)continue;const kq=Q().filter(q=>sched(q,k));if(!kq.length){S.hist[k]=2;gateDay(k,2);continue}S.hist[k]=0;gateDay(k,0);titleDay(k,0,kq);S.qlog[k]=Object.fromEntries(kq.map(q=>[q.id,0]));gap++}
   {const ks=Object.keys(S.qlog).sort();for(const k of ks.slice(0,-30))delete S.qlog[k]}
   const nMiss=(missed?1:0)+gap;if(nMiss)S.penalty=PENALTY;
   S.day=t;S.adjNotes=adapt();save();
@@ -913,7 +965,7 @@ const PKEY="ascend-party-key",PCACHE="ascend-party-cache";
 const partyKey=make=>{try{let k=localStorage.getItem(PKEY);if(!k&&make){const a=new Uint8Array(32);crypto.getRandomValues(a);k=[...a].map(b=>b.toString(16).padStart(2,"0")).join("");localStorage.setItem(PKEY,k)}return k}catch(e){return null}};
 let party={parties:[],at:0};try{const c=JSON.parse(localStorage.getItem(PCACHE)||"null");if(c&&Array.isArray(c.parties))party=c}catch(e){}
 const totalXP=()=>{let t=S.xp;for(let l=1;l<S.lvl;l++)t+=xpNeed(l);return t};
-const pSummary=()=>({lvl:S.lvl,xp:totalXP(),tier:tierOf(S.lvl),streak:streak(),gates:Object.values(S.gateClears).reduce((a,b)=>a+b,0),red:S.m.red||0,awaken:S.awaken});
+const pSummary=()=>({title:tName(),lvl:S.lvl,xp:totalXP(),tier:tierOf(S.lvl),streak:streak(),gates:Object.values(S.gateClears).reduce((a,b)=>a+b,0),red:S.m.red||0,awaken:S.awaken});
 let pSeq=0;
 async function partyCall(body,make){const k=partyKey(make);if(!k)throw new Error(make?"This browser won't store the party key (private mode?).":"Join or create a party first.");const seq=++pSeq;
   let r;try{r=await fetch(PARTY_API,{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer "+k},body:JSON.stringify({name:S.name||"Hunter",...body}),signal:AbortSignal.timeout(12000)})}
@@ -931,7 +983,7 @@ function schedSync(ms=4000){if(!partyKey(false)||!party.parties.length)return;cl
 const ago=t=>{const m=Math.round((Date.now()-t)/6e4);return !t?"never":m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" d ago"};
 const codeField=()=>`<div class="qe" style="margin-top:12px;text-align:left"><label>Invite code<input id="pcode" maxlength="9" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="ABCD2345"></label></div>`;
 const partyNameField=()=>`<div class="qe" style="margin-top:12px;text-align:left"><label>Party name<input id="pname2" maxlength="24" placeholder="${esc((S.name||"Hunter")+"'s Party")}"></label></div>`;
-const PSHARE="Shared with your party only: your name, level, rank, total XP, streak and Gates cleared. Never your quests or stats.";
+const PSHARE="Shared with your party only: your name, title, level, rank, total XP, streak and Gates cleared. Never your quests or stats.";
 function partyCard(){
   if(!party.parties.length)return `<div class="card glowcard pjoin" style="--c:var(--hl)"><p>Compete with friends.</p><small>Only people with your invite code can see you. ${PSHARE}</small>
     <div class="acts"><button class="btn chamf sysbtn" data-party="create">Create party</button><button class="btn chamf ghost" data-party="join">Join with code</button></div></div>`;
@@ -939,7 +991,7 @@ function partyCard(){
     <div class="syshead"><span class="chip">[ PARTY ]</span><button class="pcode" data-pshare="${esc(p.code)}" title="Tap to share the invite code" aria-label="Invite code ${esc(p.code)}, tap to share">${esc(p.code.slice(0,4))}-${esc(p.code.slice(4))}</button></div>
     <h2 class="systitle">${esc(p.name)}</h2>
     <ol class="plist">${p.members.map((m,i)=>`<li class="${m.me?"me":""}${m.lvl?"":" ns"}"><span class="pn">${i+1}</span>${m.lvl?badge(Math.min(m.tier,LAST),30):'<span class="pb0 pghost"></span>'}
-      <span class="pw"><b>${esc(m.name)}${m.me?' <em>YOU</em>':""}${m.awaken?' <em class="aw">II</em>':""}</b><small>${m.lvl?`Lv ${m.lvl} · ${m.streak}d streak · ${m.gates} gates`:"not synced yet"}</small></span>
+      <span class="pw"><b>${esc(m.name)}${m.me?' <em>YOU</em>':""}${m.awaken?' <em class="aw">II</em>':""}</b><small>${m.lvl?`${m.title?`<em class="pt">${esc(m.title)}</em> · `:""}Lv ${m.lvl} · ${m.streak}d streak`:"not synced yet"}</small></span>
       <span class="px">${m.lvl?`${m.xp.toLocaleString("en-US")}<small>XP</small>`:"—"}</span></li>`).join("")}</ol>
     <div class="acts"><button class="btn chamf sysbtn" data-pshare="${esc(p.code)}">Invite</button><button class="btn chamf ghost pleave" data-pleave="${esc(p.code)}">Leave</button></div>
     ${i===party.parties.length-1&&party.parties.length<5?`<button class="btn chamf ghost pmore" data-party="join">Join another party</button>`:""}</section>`).join("")}
@@ -992,7 +1044,6 @@ function adapt(){const notes=[],days=Object.keys(S.qlog).sort();
   return notes}
 const ovr=()=>Math.round(Object.keys(STATS).reduce((a,k)=>a+eff(k),0)/5);
 const allDone=()=>todayQ().every(q=>S.done[q.id]);
-const BOSSES={str:"Iron Warden",vit:"Sleepless Wraith",agi:"Swift Stalker",int:"Hollow Scholar",per:"Mirror Shade"};
 const weakest=()=>Object.keys(STATS).reduce((a,k)=>eff(k)<eff(a)?k:a,"str");
 const bossK=()=>S.bossStat||weakest(); // fixed for the week, chosen from the weakest stat when the boss spawns
 const progDay=()=>Math.min(60,Math.round((new Date(now().toDateString())-new Date(S.prog+"T00:00"))/864e5)+1);
@@ -1061,7 +1112,7 @@ const offL=offQ(),off=!todayQ().length&&!restToday();
 const rows=qrows(todayQ())+(offL.length?`<div class="optq"><div class="optsh">OPTIONAL TODAY · NO PENALTY</div>${qrows(offL)}</div>`:"");
 return `<h1 class="title">Home.</h1>
 <div class="herorow"><div class="halo">${badge(t,104)}</div>
-<div><div class="lvl ${lvPop?'pop':''}">Lv. ${S.lvl}</div><div class="rk">${rn.toUpperCase()}${S.awaken?` <span class="awk">2ND AWAKENING</span>`:""}</div><div class="cls">${S.awaken?"The Twice-Awakened":"The Awakened"}${S.rest?` · <b style="color:var(--accent)">${S.rest}</b> rest day${S.rest>1?"s":""}`:""}</div>
+<div><div class="lvl ${lvPop?'pop':''}">Lv. ${S.lvl}</div><div class="rk">${rn.toUpperCase()}${S.awaken?` <span class="awk">2ND AWAKENING</span>`:""}</div><div class="cls"><span class="ttlp">${esc(tName())}</span>${S.rest?` · <b style="color:var(--accent)">${S.rest}</b> rest day${S.rest>1?"s":""}`:""}</div>
 <div class="bar" style="--c:var(--hl)"><i id="xpbar" style="width:${xpPct()}%"></i></div><div class="barlbl"><span style="color:var(--hl)">${S.xp} / ${xpNeed(S.lvl)} XP</span><span>${S.debt?`<b style="color:var(--danger)">OWES ${S.debt} XP</b>`:`${xpNeed(S.lvl)-S.xp} to Lv. ${S.lvl+1}`}</span></div></div></div>
 <div class="week">${days}</div>
 ${sh("Today",`<button class="link" data-grid="1" style="font:inherit;letter-spacing:inherit;color:var(--hl)">DAY ${progDay()} / 60 →</button> · ${td.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}).toUpperCase()}`)}
@@ -1086,7 +1137,7 @@ const nodes=keys.map((k,i)=>{const[ox,oy]=pt(i,R),[x,y]=pt(i,R*eff(k)/cap),[lx,l
 return `<h1 class="title">Status.</h1>
 <section class="sys" aria-label="Player status">
   <div class="syshead"><span class="chip">[ STATUS ]</span><span class="clock" style="font-size:24px;font-weight:700;color:var(--fg)"><span style="font-size:13px;color:var(--hl)">OVR </span>${ovr()}</span></div>
-  <dl class="sysid"><div><dt>NAME</dt><dd>${esc(pName())}</dd></div><div><dt>LEVEL</dt><dd>${S.lvl}</dd></div><div><dt>RANK</dt><dd>${RANKS[tierOf(S.lvl)][0]}${S.awaken?" II":""}</dd></div><div><dt>TITLE</dt><dd class="ttl">${S.awaken?"Twice-Awakened":"The Awakened"}</dd></div></dl>
+  <dl class="sysid"><div><dt>NAME</dt><dd>${esc(pName())}</dd></div><div><dt>LEVEL</dt><dd>${S.lvl}</dd></div><div><dt>RANK</dt><dd>${RANKS[tierOf(S.lvl)][0]}${S.awaken?" II":""}</dd></div><div><dt>TITLE</dt><dd class="ttl">${esc(tName())}</dd></div></dl>
   <svg class="radar" viewBox="0 0 330 320" role="img" aria-label="Stat radar">
   ${[.2,.4,.6,.8,1].map(f=>`<polygon points="${keys.map((_,i)=>pt(i,R*f).join(",")).join(" ")}" fill="none" stroke="var(--fg)" stroke-opacity="${f===1?.35:.1}" stroke-width="${f===1?1.5:1}"/>`).join("")}
   ${keys.map((_,i)=>`<line x1="${cx}" y1="${cy}" x2="${pt(i,R)[0]}" y2="${pt(i,R)[1]}" stroke="var(--fg)" stroke-opacity=".08"/>`).join("")}
@@ -1144,13 +1195,21 @@ return `<div class="card glowcard ach ${got?'got':''} ${rd?'ready':''}" style="-
 
 me(){const t=tierOf(S.lvl),nx=RANKS[Math.min(LAST,t+1)],toGo=t<LAST?RANK_AT[t+1]-S.lvl:0;
 return `<h1 class="title">Profile.</h1>
-<div class="herorow" style="grid-template-columns:auto 1fr">${av("agi",72,esc(pName()[0]))}<div><div class="lvl" style="font-size:34px;display:flex;align-items:center;gap:10px">${esc(pName())}<button class="btn chamf ghost" data-rename="1" style="min-height:30px;padding:0 10px;font-size:11px">Rename</button></div><div class="cls" style="margin:0">${esc(pHandle())} · OVR ${ovr()}</div></div></div>
+<div class="herorow" style="grid-template-columns:auto 1fr">${av("agi",72,esc(pName()[0]))}<div><div class="lvl" style="font-size:34px;display:flex;align-items:center;gap:10px">${esc(pName())}<button class="btn chamf ghost" data-rename="1" style="min-height:30px;padding:0 10px;font-size:11px">Rename</button></div><div class="cls" style="margin:0"><span class="ttlp">${esc(tName())}</span> · OVR ${ovr()}</div></div></div>
 ${sh("Hunter rank",t<LAST?`${toGo} level${toGo>1?"s":""} to ${nx[0]}`:"the final rank")}
 <div class="ladder">${RANKS.map(([n],i)=>{const cur=i===t,lock=i>t;return `
 ${i?`<div class="pips" aria-hidden="true">${"<i></i>".repeat(3)}</div>`:""}
 <div class="rung ${cur?'cur':''} ${lock?'lock':''}"><div style="display:grid;place-items:center">${badge(i,56+i*5)}</div>
 <div><div class="meta" style="${cur?'color:var(--hl)':''}">${cur?'CURRENT RANK':lock?'RE-ASSESSMENT AT LV. '+RANK_AT[i]:'CLEARED'}</div>
 <div class="n">${n}</div><div class="meta">${i<LAST?`LV. ${RANK_AT[i]}–${RANK_AT[i+1]-1}`:`LV. ${RANK_AT[i]}+`}</div>${cur&&t<LAST?`<div class="bar" style="--c:var(--hl);margin-top:6px;max-width:200px"><i style="width:${rankProg()*100}%"></i></div>`:""}</div></div>`}).join("")}</div>
+${sh("Titles",`${TITLES.filter(t=>tEarned(t[0])).length} / ${TITLES.length} EARNED`)}
+<div class="tlist">${(()=>{const pct=t=>{const[c,g]=t[3]();return Math.min(1,c/g)};
+  const earned=TITLES.filter(t=>tEarned(t[0])),locked=TITLES.filter(t=>!tEarned(t[0])).sort((a,b)=>pct(b)-pct(a)),shown=showAllTitles?locked:locked.slice(0,3);
+  const tdate=k=>new Date(k+"T12:00").toLocaleDateString("en-US",{month:"short",day:"numeric"});
+  return earned.map(([id,name,how])=>{const on=S.title===id||(id==="awakened"&&!earned.some(t=>t[0]===S.title));
+    return `<button class="card tcard ${on?"on":""}" data-title="${id}" aria-pressed="${on}"><span><b>${esc(name)}</b><small>${esc(how)}${S.titles[id]?` · ${tdate(S.titles[id])}`:""}</small></span><span class="tst">${on?"EQUIPPED":"EQUIP"}</span></button>`}).join("")+
+  shown.map(([id,name,how,f,lbl])=>{const[c,g]=f();return `<div class="card tcard lock"><span><b>${esc(name)}</b><small>${esc(how)}</small></span><span class="tst">${lbl?lbl():`${Math.min(c,g)} / ${g}`}</span><span class="bar tbar2" style="--c:var(--hl)"><i style="width:${Math.min(100,c/g*100)}%"></i></span></div>`}).join("")+
+  (locked.length>3?`<button class="btn chamf ghost tmore" data-tmore="1">${showAllTitles?"Show fewer":`Show ${locked.length-3} more`}</button>`:"")})()}</div>
 ${sh("Theme","SETTINGS")}<div class="themes" role="group" aria-label="Theme">${SKINS.map(([k,n,g])=>`<button class="skin" data-s="${k}" aria-pressed="${(document.documentElement.dataset.skin||"hunter")===k}"><span class="sw" style="background:linear-gradient(90deg,${g})"></span><span><b>${n}</b></span></button>`).join("")}</div>
 ${partyKey(false)?`${sh("Party data")}<div class="card glowcard" style="--c:var(--danger);display:grid;gap:10px"><small style="color:var(--muted)">Your party membership and shared summary live on the party server.</small><button class="btn chamf ghost" data-pforget="1">Delete my party data</button></div>`:""}
 ${sh("Backup")}<div class="card glowcard" style="--c:var(--hl);display:grid;gap:10px"><small style="color:var(--muted)">Progress lives in this browser. Copy a backup now and then, or after clearing site data restore it from a .json file.</small>
@@ -1266,7 +1325,7 @@ function closeNote(i=0){clearInterval(typer);$("#ov").hidden=true;screenEl.inert
 const canAwaken=()=>!S.awaken&&tierOf(S.lvl)===LAST;
 function offerAwakening(){notify({chip:"[ SECOND AWAKENING ]",title:"Awaken again?",hero:true,center:true,burst:"var(--accent)",
   body:"You stand at the peak the System can measure.\nYour stats stay exactly as they are.\nTheir ceiling rises from 99 to 150.\nOnly training can take you past 99.",
-  actions:[{label:"Awaken",acc:true,fn:()=>{if(!canAwaken())return;S.awaken=1;save();burst("var(--accent)");render(true);toast("SECOND AWAKENING · CEILING 150")}},{label:"Later"}]})}
+  actions:[{label:"Awaken",acc:true,fn:()=>{if(!canAwaken())return;S.awaken=1;S.titles.twice=S.day;S.title="twice";save();burst("var(--accent)");render(true);toast("SECOND AWAKENING · CEILING 150")}},{label:"Later"}]})}
 function gainXP(n){if(n<0){S.xp+=n;if(S.xp<0){S.debt+=-S.xp;S.xp=0}return} // levels never drop; XP taken back below 0 is owed instead, so complete/undo can't farm levels
   {const pay=Math.min(S.debt,n);S.debt-=pay;n-=pay}
   const t0=tierOf(S.lvl);S.xp+=n;let lv=0;let gotRest=0;while(S.xp>=xpNeed(S.lvl)){S.xp-=xpNeed(S.lvl);S.lvl++;lv++;if(S.lvl%5===0&&S.rest<3){S.rest++;gotRest++}}
@@ -1331,7 +1390,7 @@ function setDone(q,on){const before=allDone(),prev=S.done[q.id];if(!!prev===on)r
     if(on){slamId=q.id;toast(S.done[q.id]===2?`+${q.xp} XP · ${STATS[q.s].toUpperCase()} +1`:`+${q.xp} XP · ${STATS[q.s].toUpperCase()} TRAINING ${S.train[q.s]%TRAIN}/${TRAIN}`)}
     gainXP(q.xp*n);
     if(!S.bossDown){const dmg=(q.s===bossK()?15:5)*n;S.boss=Math.max(0,Math.min(100,S.boss-dmg))}
-    if(S.boss===0&&!S.bossDown){S.bossDown=true;burst("var(--danger)");notify({chip:"[ WEEKLY BOSS ]",title:"BOSS DEFEATED",hero:true,center:true,extra:`<div class="lvsub">${BOSSES[bossK()]}</div><span class="ptchip">+150 XP</span>`,actions:[{label:"Collect"}]});gainXP(150)}
+    if(S.boss===0&&!S.bossDown){S.bossDown=true;S.m.kills=S.m.kills||{};S.m.kills[bossK()]=(S.m.kills[bossK()]||0)+1;burst("var(--danger)");notify({chip:"[ WEEKLY BOSS ]",title:"BOSS DEFEATED",hero:true,center:true,extra:`<div class="lvsub">${BOSSES[bossK()]}</div><span class="ptchip">+150 XP</span>`,actions:[{label:"Collect"}]});gainXP(150)}
     if(after&&!before){const xp=todayQ().reduce((a,x)=>a+x.xp,0);
       burst("var(--hl)");notify({chip:"[ QUEST COMPLETE ]",title:"DAILY QUEST CLEARED",hero:true,center:true,
         extra:`<div class="lvsub">HUNTER CONDITIONING</div><div class="statpips">${Object.keys(STATS).map(k=>hex(k,22)).join("")}</div>
@@ -1425,6 +1484,8 @@ function onButton(b,d){
       actions:[{label:"Stay"},{label:"Leave",fn:()=>partyCall({op:"leave",code:c}).then(()=>toast("LEFT PARTY")).catch(e=>toast(e.message.toUpperCase()))}]});return}
   if(d.pforget){notify({chip:"[ PARTY ]",tone:"danger",title:"Delete party data?",body:"Removes you from every party and deletes your data on the party server.\nYour progress on this phone is untouched.",
       actions:[{label:"Keep"},{label:"Delete",fn:()=>partyCall({op:"forget"}).then(()=>{try{localStorage.removeItem(PKEY);localStorage.removeItem(PCACHE)}catch(e){}party={parties:[],at:0};render(true);toast("PARTY DATA DELETED")}).catch(e=>toast(e.message.toUpperCase()))}]});return}
+  if(d.tmore){showAllTitles=!showAllTitles;render(true);return}
+  if(d.title){if(tEarned(d.title)){S.title=d.title;save();render(true);toast("TITLE EQUIPPED")}return}
   if(d.penrules){penRules();return}
   if(d.awaken){if(canAwaken())offerAwakening();return}
   if(d.start||d.retake){S.test={i:0,a:[]};advancing=false;S.tab="test";render();return}
@@ -1441,7 +1502,7 @@ function onButton(b,d){
   if(d.tlog){const q=Q().find(x=>x.id===d.tlog),el=$("#tin-"+d.tlog);if(!q||!el)return;const t=parseT(el.value);
     if(!t){toast("ENTER TIME AS MM:SS");el.focus();return}
     const dist=Math.max(q.n,S.cnt[q.id]||0); // log the extra distance first, then the time: pace and Gate miles use what you covered
-    dropRun(q);const b=runTier(tKind,q.u,t/dist);S.runs.push({d:S.day,q:q.id,k:tKind,n:dist,u:q.u,t,b,m:1});addMiles(toMi(dist,q.u));S.runs=S.runs.slice(-500);
+    dropRun(q);const b=runTier(tKind,q.u,t/dist);S.runs.push({d:S.day,q:q.id,k:tKind,n:dist,u:q.u,t,b,m:1});if(b===2)S.m.pb=(S.m.pb||0)+1;addMiles(toMi(dist,q.u));S.runs=S.runs.slice(-500);
     if(!S.done[q.id])setDone(q,true);
     if(b){addTrain(q.s,b);gainXP(runXP(q,b))}save();render(true);
     toast(b===2?`NEW BEST ${tKind.toUpperCase()} PACE ${mmss(t/dist)}/${q.u} · +${runXP(q,b)} XP · +2 TRAINING`:b?`FASTER THAN YOUR AVERAGE · +${runXP(q,b)} XP · +1 TRAINING`:`${tKind.toUpperCase()} LOGGED · ${mmss(t)}`);return}
@@ -1456,7 +1517,7 @@ function onButton(b,d){
     actions:[{label:"Save",fn:()=>{setNameFromField();render();toast("NAME UPDATED")}},{label:"Cancel"}]});return}
   if(d.edit){openEditor();return}
   if(d.qe){editorAct(d.qe,b);return}
-  if(d.pen){S.penalty=null;gainXP(10);toast("PENALTY QUEST CLEARED · +10 XP");save();render(true);return}
+  if(d.pen){if(!S.penalty)return;S.penalty=null;S.m.advOn=1;S.m.adv=0;gainXP(10);toast("PENALTY QUEST CLEARED · +10 XP");save();render(true);return}
   if(d.rest==="use"){useRest();return}
   if(d.rest==="undo"){if(!restToday())return;S.rest=Math.min(3,S.rest+1);S.restDay=null;save();render(true);toast("REST DAY CANCELLED");return}
   if(d.claim||d.claimall){const list=ACH.filter(a=>ready(a)&&(d.claimall||a[0]===d.claim));if(!list.length)return;let xp=0;
