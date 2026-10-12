@@ -18,6 +18,7 @@
 /* Layout: pitch + demo controls on the left, one live phone on the right; skins swap the token set. */
 :root{
   --bg:#05070b; --panel:#0b0e14; --panel2:#11151d; --line:#1c2230; --fg:#eef2f8; --muted:#8b95a7; --accent:#4c8dff; --hl:#4c8dff; --danger:#ff4a3d;
+  --rar1:#98a2b3; --rar2:#2fd39a; --rar3:#8b5cff; --rar4:#ffbe3d;
   --glow:1; --phone:#000; --phonebg:#000; --grain:.10; --r:16px; --tshadow:none; --sysbg:rgba(8,12,20,.96);
   --str:#ff4d3a; --vit:#2fd39a; --agi:#3fb6ff; --int:#8b5cff; --per:#f2c230;
   --f-display:"Instrument Serif",Georgia,serif; --f-body:"Hanken Grotesk",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,monospace;
@@ -26,6 +27,7 @@
 }
 [data-skin="hunter"]{
   --bg:#141a21; --panel:rgba(30,37,46,.92); --panel2:rgba(48,57,68,.9); --line:rgba(160,180,198,.22); --fg:#ffffff; --muted:#aab6c2; --accent:#f6a43a; --hl:#62d8e6;
+  --rar1:#9aa8b6; --rar2:#4fe0a4; --rar3:#b99bff; --rar4:#ffd34a;
   --phone:#1a2028; --sysbg:rgba(14,20,28,.96);
   --phonebg:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='48' viewBox='0 0 28 48'%3E%3Cpath d='M14 0 28 8v16L14 32 0 24V8zM14 32v16' fill='none' stroke='%2362d8e6' stroke-opacity='.06'/%3E%3C/svg%3E"),repeating-radial-gradient(circle at 60% 18%,rgba(255,255,255,.012) 0 2px,transparent 2px 16px),radial-gradient(circle at 60% 18%,#27303a 0,#141a21 55%,#0c1015 100%);
   --glow:.5; --grain:0; --r:3px; --tshadow:0 1px 3px rgba(0,0,0,.5);
@@ -34,11 +36,13 @@
 }
 [data-skin="ember"]{
   --bg:#120b07; --panel:#1a110b; --panel2:#24170f; --line:#3a2617; --fg:#f6e8d6; --muted:#b39a82; --accent:#f0a630; --hl:#f0a630;
+  --rar1:#9c8368; --rar2:#7fc77a; --rar3:#b07ad8; --rar4:#ffe08a;
   --phone:#0d0805; --phonebg:#0d0805; --glow:.7; --grain:.14; --sysbg:rgba(20,12,7,.96);
   --str:#d8483a; --vit:#7fc77a; --agi:#5aa7d8; --int:#b07ad8; --per:#f0c84a;
 }
 [data-skin="daylight"]{
   --bg:#e9e6df; --panel:#ffffff; --panel2:#f4f2ed; --line:#dcd7cc; --fg:#17181c; --muted:#5f5d59; --accent:#1f4fd8; --hl:#1f4fd8; --danger:#c8241b;
+  --rar1:#5f6670; --rar2:#0d7a53; --rar3:#6a3fd6; --rar4:#8a6200;
   --phone:#faf9f6; --phonebg:#faf9f6; --glow:0; --grain:0; --sysbg:rgba(255,255,255,.98);
   --str:#d1302a; --vit:#0f8a5f; --agi:#1f6cb8; --int:#6a3fd6; --per:#8f6e00;
   color-scheme:light;
@@ -265,10 +269,49 @@ button{font:inherit;color:inherit}
 .xpv{color:var(--hl)}
 .adjm{font-size:9px;color:var(--accent);margin-right:4px;vertical-align:2px}
 .focus{font-size:10px;letter-spacing:.12em;color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 60%,transparent);padding:0 4px;margin-left:4px}
+.relx{font-style:normal;font-family:var(--f-mono);font-size:10px;letter-spacing:.08em;color:var(--c);border:1px solid color-mix(in srgb,var(--c) 60%,transparent);padding:0 5px;margin-left:6px;white-space:nowrap;text-shadow:none}
+.relx .hex{vertical-align:-1px;margin-right:3px}
+/* streak */
+.strk{display:grid;grid-template-columns:auto auto 1fr auto;align-items:center;gap:4px 10px;margin:14px 0 0;padding:10px 12px;
+  background:var(--sysbg);border:1px solid color-mix(in srgb,var(--hl) 22%,transparent);border-radius:2px;text-shadow:none}
+[data-skin="daylight"] .strk{border-color:color-mix(in srgb,var(--hl) 55%,transparent);background:color-mix(in srgb,var(--hl) 4%,var(--phone))}
+.strk .sfl{display:grid;place-items:center}
+.strk .sn{font-family:var(--f-display);font-size:26px;font-weight:700;line-height:1;color:var(--fg);font-variant-numeric:tabular-nums}
+.strk .sl{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;color:var(--muted)}
+.strk .sb{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;color:var(--muted);white-space:nowrap;align-self:center}
+.strk .sb.rec{color:var(--hl)}
+.strk .sbar{grid-column:1/-1;display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;margin-top:10px}
+.strk .srail{position:relative;height:2px;background:color-mix(in srgb,var(--muted) 28%,transparent)}
+.strk .srail i{position:absolute;inset:0 auto 0 0;background:var(--hl)}
+.strk .srail b{position:absolute;top:-3px;width:2px;height:8px;background:color-mix(in srgb,var(--muted) 55%,transparent);transform:translateX(-1px)}
+.strk .srail b.hit{background:var(--hl)}
+.strk .srail b:last-child{transform:translateX(-2px)}
+.strk .sbar span{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;color:var(--muted);white-space:nowrap}
+.strk.off,.strk.lost{border-color:var(--line);border-style:dashed;padding:9px 12px}
+.strk.off .sn{display:none}
+.strk.off .hex,.strk.lost .hex{filter:none}
+.strk.off .sl{font-size:12px;letter-spacing:.1em}
+.strk.lost .sn{color:var(--muted)}
+.strk.risk{border-color:color-mix(in srgb,var(--danger) 55%,transparent)}.strk.risk .sl{color:var(--danger)}
+/* relics */
+.relics{display:grid;gap:8px}
+.relic{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r);color:var(--c)}
+.relic b{display:block;font-size:14px;color:var(--fg)}
+.relic .rrar{font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;color:var(--c);margin:0 0 1px}
+.relic small{display:block;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.3}
+.relic .rn{font-family:var(--f-mono);font-size:16px;font-variant-numeric:tabular-nums;color:var(--c)}
+.relic.none{opacity:.5;border-style:dashed}
+[data-skin="daylight"] .relic.none{opacity:1}
+[data-skin="daylight"] .relic.none b,[data-skin="daylight"] .relic.none small{color:var(--muted)}
+[data-skin="daylight"] .relic.none .rrar{color:color-mix(in srgb,var(--c) 75%,var(--muted))}
+[data-skin="daylight"] .relic .hex path{fill-opacity:.18}
+.relnote{margin:10px 0 0;font-size:12px;color:var(--muted);line-height:1.5}
 .xpfloat{position:absolute;left:48px;top:2px;font-family:var(--f-mono);font-size:14px;font-weight:700;color:var(--hl);pointer-events:none;animation:floatup .7s ease-out forwards;text-shadow:0 0 8px var(--hl)}
 @keyframes floatup{to{transform:translateY(-18px);opacity:0}}
 .goal{font-family:var(--f-mono);font-size:14px;font-variant-numeric:tabular-nums;color:var(--muted);letter-spacing:.04em}
-.qrow.done .qmain{opacity:.6}
+.qrow.done .q{color:var(--muted)}
+.qrow.done .x,.qrow.done .xpv{color:var(--muted)}
+.qrow.done .hex,.qrow.done .goal{opacity:.55}
 .qrow.pen .q{color:var(--danger)}
 .stamp{margin:0;transform:rotate(-8deg);border:2px solid var(--hl);color:var(--hl);border-radius:50%;width:46px;height:46px;display:grid;place-items:center;font:700 12px/1 "Barlow Condensed",sans-serif;letter-spacing:.08em;pointer-events:none;box-shadow:inset 0 0 0 2px var(--sysbg),inset 0 0 0 3px color-mix(in srgb,var(--hl) 55%,transparent);text-shadow:none}
 .stamp.slam{animation:slam .22s cubic-bezier(.3,1.5,.5,1)}
@@ -611,6 +654,7 @@ button{font:inherit;color:inherit}
 .acts .btn{flex:1}
 .lvhero{font-family:var(--f-display);font-size:44px;font-weight:700;letter-spacing:.04em;margin:4px 0 0;line-height:1}
 .lvsub{font-family:var(--f-mono);font-size:20px;color:var(--hl);letter-spacing:.08em;margin:4px 0 10px}
+.ptchip.rar{color:var(--hl);border-color:var(--hl)}
 .ptchip{display:inline-block;font-family:var(--f-mono);font-size:14px;font-weight:700;letter-spacing:.14em;color:var(--accent);border:1px solid var(--accent);padding:5px 12px}
 .glist{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:4px;font-size:14px;text-align:left}
 .glist li{display:flex;justify-content:space-between;gap:10px}
@@ -618,7 +662,9 @@ button{font:inherit;color:inherit}
 .glist .gq{display:flex;gap:8px;align-items:center}
 .glitch{animation:glitch .5s steps(1) 2}
 @keyframes glitch{0%,60%{text-shadow:2px 0 #ff2a6d,-2px 0 #62d8e6}0%{clip-path:inset(0 0 60% 0);transform:translateX(-3px)}20%{clip-path:inset(40% 0 20% 0);transform:translateX(3px)}40%{clip-path:inset(10% 0 70% 0)}60%{clip-path:inset(70% 0 0 0);transform:translateX(-2px)}80%,100%{clip-path:inset(0);transform:none;text-shadow:none}}
-.lvhero{text-shadow:0 0 18px color-mix(in srgb,var(--hl) 55%,transparent)}
+.lvhero{text-shadow:0 0 calc(18px*var(--glow)) color-mix(in srgb,var(--hl) 55%,transparent)}
+.relbig{display:grid;place-items:center;margin:6px 0}
+.relbig .hex path{fill-opacity:.2}
 .lvbar{font-family:var(--f-display);font-size:40px;font-weight:700;letter-spacing:.06em;text-align:center;color:var(--accent);margin:4px 0}
 
 .toast{position:absolute;left:12px;right:12px;bottom:76px;text-align:center;background:var(--phone)!important;box-shadow:0 -8px 20px rgba(0,0,0,.45);transform:translate(0,12px);transition:transform .45s cubic-bezier(.2,.9,.3,1.3);background:var(--sysbg);border:1px solid var(--hl);color:var(--fg);padding:9px 14px;font-family:var(--f-mono);font-size:13px;letter-spacing:.1em;z-index:9;white-space:nowrap}
@@ -792,6 +838,52 @@ let selGate=null,showAllTitles=false;
 const focusPin=()=>{const p=$(".gpin.sel");if(p)p.focus({preventScroll:true})};
 const LOCK='<svg width="9" height="9" viewBox="0 0 10 10" aria-hidden="true"><rect x="1.5" y="4.5" width="7" height="5" rx="1" fill="currentColor"/><path d="M3 4.5V3a2 2 0 0 1 4 0v1.5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>';
 // in-app theme picker (Profile); same four looks as the desktop preview panel
+// --- Relics: every completed quest rolls for a drop. Cosmetic on purpose - a relic is worth no XP, so the
+// level curve is untouched. The roll is seeded by (install, System day, quest), so complete -> undo -> complete
+// always lands on the same result and can't fish for a better one; undoing hands the relic back.
+// [id, name, lore, colour, rarity]
+const DROPS=[["c","Mana Crystal","Condensed mana, the kind every Gate leaves behind.","rar1","COMMON",
+    '<path d="M12 6.8l3.6 4.7-3.6 5.7-3.6-5.7z"/><path d="M8.4 11.5h7.2"/>'], // a faceted gem
+  ["u","Elixir Shard","A fragment of something a healer once carried out of a dungeon.","rar2","UNCOMMON",
+    '<path d="M12 7c2.5 3.1 3.9 4.9 3.9 6.6a3.9 3.9 0 0 1-7.8 0C8.1 11.9 9.5 10.1 12 7Z"/>'], // a drop of elixir
+  ["r","Rune of Ascent","The System\'s own notation, etched into stone by no hand you can name.","rar3","RARE",
+    '<path d="M12 6.6v10.8M8.6 9.2h6.8M12 15.4l3.4-3.4M12 15.4l-3.4-3.4"/>'], // a stave with two branches
+  ["l","Monarch\'s Fragment","A shard of a Monarch\'s power. The System does not issue these lightly.","rar4","LEGENDARY",
+    '<path d="M7.6 16.4l-.7-7.6 3.2 2.9L12 7.2l1.9 4.5 3.2-2.9-.4 4.3-2.6 3.2z"/>']]; // a crown
+const DROP_P=[.15,.06,.02,.005]; // chance per completion, same order; ~23% of completions drop something
+const dropDef=t=>DROPS.find(d=>d[0]===t);
+const lootN=()=>DROPS.reduce((a,d)=>a+(S.loot[d[0]]||0),0);
+const h32=v=>{let h=2166136261;for(let i=0;i<v.length;i++){h^=v.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0)/4294967296};
+const rollDrop=q=>{const r=h32(S.seed+"|"+S.day+"|"+q.id);let p=0;
+  for(let i=DROPS.length-1;i>=0;i--){p+=DROP_P[i];if(r<p)return DROPS[i][0]}return null};
+// ceremony scales with rarity: common and uncommon just leave their chip on the row, rare and
+// legendary stop the screen in their own colour.
+function grantDrop(q){
+  if(!(q.id in S.drops)){if(S.rolls>=MAXQ)return;S.rolls++;S.drops[q.id]=rollDrop(q)} // misses are recorded too
+  const t=S.drops[q.id],d=t&&dropDef(t);if(!d)return;
+  S.loot[t]=Math.min(99999,(S.loot[t]||0)+1);
+  if(t==="c"||t==="u")return;
+  notify({chip:"[ "+d[4]+" DROP ]",title:d[1].toUpperCase(),hero:true,center:true,hue:"var(--"+d[3]+")",burst:"var(--"+d[3]+")",body:d[2],
+    extra:'<div class="relbig">'+hex(d[3],72,d[5])+'</div>',actions:[{label:"Take it"}]})}
+function takeDrop(q){const t=S.drops[q.id];if(!t||!dropDef(t))return;S.loot[t]=Math.max(0,(S.loot[t]||0)-1)} // the roll stays recorded: redoing must not buy another one
+
+// --- Streak: the number that hurts to lose. Milestones pay out once each; a missed day resets the ladder
+// (rollover clears sMile) so climbing back is worth something again. Rest days keep a run, same as streak().
+const SMILE=[3,7,14,30,60,100,150,200,365];
+// consecutive finalized days ending yesterday. Reads only S.hist, so load() may call it during startup
+// (streak() can't be called there: allDone() is a const defined further down and is still in its TDZ).
+const histRun=()=>{let n=0;const d=new Date(now());for(;;){d.setDate(d.getDate()-1);if(S.hist[dkey(d)])n++;else break}return n};
+function bestStreak(){const ks=Object.keys(S.hist).filter(k=>S.hist[k]).sort();let best=0,run=0,prev=null;
+  for(const k of ks){run=prev&&k===addDays(prev,1)?run+1:1;prev=k;if(run>best)best=run}
+  return Math.max(best,streak())}
+function checkStreak(){if(!clearedToday())return false; // a milestone is only collected on a day you actually cleared
+  const n=streak(),m=SMILE.filter(x=>x<=n).pop();if(!m||m<=S.sMile)return false;
+  S.sMile=m;const pay=m*5,net=Math.max(0,pay-S.debt);gainXP(pay);
+  notify({chip:"[ STREAK ]",title:m+" DAYS",hero:true,center:true,burst:"var(--accent)",
+    body:m>=100?"A hundred days without a break.\nThe System has stopped expecting you to fail.":"Unbroken. The System logs the chain.",
+    extra:'<div class="lvsub">CONSECUTIVE DAYS CLEARED</div><span class="ptchip">+'+net+' XP</span>'+(net<pay?'<div class="lvsub" style="font-size:13px;color:var(--muted)">'+(pay-net)+' XP cleared your debt</div>':''),actions:[{label:"Accept"}]});
+  return true}
+const STK_GLYPH='<path d="M8 13.5l4-4 4 4"/><path d="M8 17.5l4-4 4 4"/>';
 const SKINS=[["hunter","Hunter System","#2b333d 40%,#1a2028 40% 60%,#f6a43a 60% 80%,#62d8e6 80%"],["neon","Neon Hex","#05070b 40%,#3478ff 40% 60%,#2fd39a 60% 80%,#8b5cff 80%"],
   ["ember","Ember Forge","#120b07 40%,#f0a630 40% 60%,#d8483a 60% 80%,#7fc77a 80%"],["daylight","Daylight","#faf9f6 40%,#1f4fd8 40% 60%,#0f9a6a 60% 80%,#d1302a 80%"]];
 const RANKS=[["E-Rank"],["D-Rank"],["C-Rank"],["B-Rank"],["A-Rank"],["S-Rank"],["National Level"],["Monarch"]];
@@ -822,6 +914,9 @@ const TITLES=[
   ["unbroken","Unbroken","Clear 50 days of a 60-day program.",()=>[progClears(),50]],
   ["gatebreaker","Gatebreaker","Clear 5 Gates.",()=>[Object.values(S.gateClears).reduce((a,b)=>a+b,0),5]],
   ["redgate","Red Gate Survivor","Survive a Red Gate.",()=>[S.m.red||0,1]],
+  ["unrelenting","Unrelenting","Clear 100 days in a row.",()=>[bestStreak(),100]],
+  ["collector","Relic Collector","Collect 25 relics.",()=>[lootN(),25]],
+  ["chosen","Monarch's Chosen","Find a Monarch's Fragment.",()=>[S.loot.l||0,1]],
   ...Object.keys(BOSSES).map(k=>["bane_"+k,`${BOSSES[k]}'s Bane`,`Defeat the ${BOSSES[k]}.`,()=>[(S.m.kills||{})[k]||0,1]]),
   ["heir","Heir to the Throne","Reach S-Rank.",()=>[Math.min(tierOf(S.lvl),5),5],()=>`${"EDCBAS"[Math.min(tierOf(S.lvl),5)]} → S`], // optional 5th: progress label
   ["twice","Twice-Awakened","Accept the Second Awakening.",()=>[S.awaken,1]]];
@@ -844,7 +939,7 @@ function fresh(){const t=now();
   quests:DEFAULT_QUESTS.map(q=>({...q})),questsNext:null,cnt:{},onboarded:false,statHist:{},
   done:{},day:dkey(t),hist:{},seen:null,penalty:null,boss:100,bossDown:false,bossStat:null,wk:mondayKey(t),prog:dkey(t),
   ap:{first:0,str50:0,vit30:0,agi30:0,int40:0,per100:0,clear10:0,water25:0,lvl20:1},claimed:{},
-  titles:{},title:"awakened",od:{},awaken:0,debt:0,rev:"",m:{miles:0},gate:null,gateCd:null,gateClears:{},tab:"home",cat:"all"}}
+  titles:{},title:"awakened",od:{},awaken:0,debt:0,rev:"",m:{miles:0},gate:null,gateCd:null,gateClears:{},seed:Date.now().toString(36)+Math.random().toString(36).slice(2,10),loot:{},drops:{},rolls:0,sMile:0,tab:"home",cat:"all"}}
 // demo data: mid-program hunter, used by "Load sample data"
 function sample(){const t=now(),h={};for(let i=1;i<=17;i++){const d=new Date(t);d.setDate(t.getDate()-i);h[dkey(d)]=1}for(const i of[wd(t)-3,9]){const d=new Date(t);d.setDate(t.getDate()-i);if(i>0)h[dkey(d)]=0}
   const pr=new Date(t);pr.setDate(pr.getDate()-17);
@@ -853,12 +948,13 @@ function sample(){const t=now(),h={};for(let i=1;i<=17;i++){const d=new Date(t);
   return {...fresh(),name:S.name,onboarded:true,statHist:sh,lvl:14,xp:62,rest:2,train:{str:2,vit:1,agi:3,int:0,per:2},base:"Sep 23",baseKey:dkey(pr),stats:{str:60,vit:69,agi:70,int:60,per:80},done:{sleep:2},cnt:{sleep:1},hist:h,boss:62,bossStat:"str",prog:dkey(pr),
   ap:{first:0,str50:26,vit30:29,agi30:12,int40:39,per100:64,clear10:15,water25:25,lvl20:14}}}
 let S=fresh();
-const KEEP=["runs","lvl","xp","rest","restDay","base","baseKey","stats","train","qlog","adj","adjNotes","done","day","hist","seen","penalty","ap","claimed","boss","bossDown","bossStat","wk","prog","quests","questsNext","cnt","onboarded","statHist","name","awaken","debt","rev","od","titles","title","m","gate","gateCd","gateClears"];
+const KEEP=["runs","lvl","xp","rest","restDay","base","baseKey","stats","train","qlog","adj","adjNotes","done","day","hist","seen","penalty","ap","claimed","boss","bossDown","bossStat","wk","prog","quests","questsNext","cnt","onboarded","statHist","name","awaken","debt","rev","od","titles","title","m","gate","gateCd","gateClears","seed","loot","drops","rolls","sMile"];
 function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typeof v==="number"&&Number.isFinite(v),key=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v);
   for(const k of ["lvl","xp","rest","boss","debt"])if(num(sv[k]))S[k]=sv[k];S.awaken=sv.awaken===1?1:0;
   S.rest=Math.max(0,Math.min(3,Math.round(S.rest)));S.debt=Math.max(0,Math.round(S.debt));S.rev=typeof sv.rev==="string"&&sv.rev.length<=40?sv.rev:"";
   for(const k of ["stats","train","qlog","adj","adjNotes","ap"])if(sv[k]&&typeof sv[k]==="object")for(const x in D[k])if(num(sv[k][x]))S[k][x]=sv[k][x];
-  for(const k of ["done","hist","claimed"])if(sv[k]&&typeof sv[k]==="object")S[k]=Object.fromEntries(Object.entries(sv[k]).filter(([a,v])=>/^[\w-]{1,20}$/.test(a)&&num(v)));
+  for(const k of ["done","claimed"])if(sv[k]&&typeof sv[k]==="object")S[k]=Object.fromEntries(Object.entries(sv[k]).filter(([a,v])=>/^[\w-]{1,20}$/.test(a)&&num(v)));
+  S.hist={};if(sv.hist&&typeof sv.hist==="object")for(const[a,v]of Object.entries(sv.hist))if(key(a)&&dkey(new Date(a+"T12:00"))===a&&(v===0||v===1||v===2))S.hist[a]=v; // feeds streak XP now: ISO keys and 0/1/2 only
   for(const k of ["day","seen","wk","prog","baseKey","restDay"])if(key(sv[k]))S[k]=sv[k];
   S.qlog={};if(sv.qlog&&typeof sv.qlog==="object")for(const[d,v]of Object.entries(sv.qlog).slice(-30))
     if(key(d)&&v&&typeof v==="object")S.qlog[d]=Object.fromEntries(Object.entries(v).filter(([a,x])=>/^[a-z0-9]{1,12}$/.test(a)&&(x===0||x===1)));
@@ -873,6 +969,13 @@ function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typ
   S.done=Object.fromEntries(Object.entries(S.done).filter(([k,v])=>ids.has(k)&&(v===1||v===2)));
   S.cnt={};if(sv.cnt&&typeof sv.cnt==="object")for(const q of S.quests){const v=sv.cnt[q.id];if(num(v)){const st=stepOf(q);S.cnt[q.id]=Math.max(0,Math.min(cntMax(q),Math.round(v/st)*st))}}
   S.od={};if(sv.od&&typeof sv.od==="object")for(const q of S.quests){const v=sv.od[q.id];if(v===1||v===2)S.od[q.id]=v}
+  if(typeof sv.seed==="string"&&/^[a-z0-9]{6,40}$/.test(sv.seed))S.seed=sv.seed;
+  S.loot={};if(sv.loot&&typeof sv.loot==="object")for(const d of DROPS){const v=sv.loot[d[0]];if(Number.isInteger(v)&&v>0)S.loot[d[0]]=Math.min(99999,v)}
+  S.drops={};if(sv.drops&&typeof sv.drops==="object")for(const q of S.quests){const t=sv.drops[q.id];if(t===null||DROPS.some(d=>d[0]===t))S.drops[q.id]=t}
+  S.rolls=Number.isInteger(sv.rolls)&&sv.rolls>0?Math.min(MAXQ,sv.rolls):0;
+  // a save from before relics has no sMile: start the ladder at the run already earned, so updating
+  // doesn't silently hand every existing player the biggest milestone they've ever passed
+  S.sMile=SMILE.includes(sv.sMile)?sv.sMile:(sv.sMile===undefined?SMILE.filter(x=>x<=histRun()).pop()||0:0);
   for(const q of S.quests)if(S.done[q.id]&&!(S.cnt[q.id]>=q.n))S.cnt[q.id]=q.n; // legacy saves: done implies full progress (overdrive keeps its count)
   S.name=cleanPlayer(sv.name);
   S.runs=Array.isArray(sv.runs)?sv.runs.filter(r=>r&&key(r.d)&&/^[a-z0-9]{1,12}$/.test(r.q)&&(r.k==="run"||r.k==="ruck")&&num(r.n)&&r.n>0&&r.n<=999&&(r.u==="MI"||r.u==="KM")&&Number.isInteger(r.t)&&r.t>0&&r.t<86400&&[0,1,2].includes(r.b)).slice(-500).map(r=>({d:r.d,q:r.q,k:r.k,n:r.n,u:r.u,t:r.t,b:r.b,...(r.m===1?{m:1}:{})})):[];
@@ -894,7 +997,7 @@ function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typ
     S.gate={id:g.id,start:g.start,until:g.until,run:g.run,failed:g.failed,red:g.red===true,base:Object.fromEntries(GBASE.map(k=>[k,num(g.base[k])&&g.base[k]>=0?g.base[k]:S.ap[k]]))}}
 let storageOK=true,saveBlocked=false;
 // accept stored/restored data only if it has the basic Ascend shape; never fill a blank profile from junk
-const VER=11,STORE="ascend-v11",OLD=["ascend-v10","ascend-v9","ascend-v8","ascend-v7","ascend-v6","ascend-v5","ascend-v4"];
+const VER=12,STORE="ascend-v12",OLD=["ascend-v11","ascend-v10","ascend-v9","ascend-v8","ascend-v7","ascend-v6","ascend-v5","ascend-v4"];
 const isSave=sv=>!!sv&&typeof sv==="object"&&!(sv.ver>VER)&&Number.isFinite(sv.lvl)&&sv.stats&&typeof sv.stats==="object"&&Object.keys(STATS).every(k=>Number.isFinite(sv.stats[k]))&&Array.isArray(sv.quests)&&sv.quests.length>0;
 // build the new state aside and only swap it in if it loads cleanly
 function adopt(sv){if(!isSave(sv))return false;const prev=S;try{S=fresh();load(sv);return true}catch(e){S=prev;return false}}
@@ -911,7 +1014,7 @@ function pull(){let sv=null;try{const raw=localStorage.getItem(STORE);if(raw===n
   if(!sv||sv.rev===S.rev)return;const ui={tab:S.tab,test:S.test,cat:S.cat};if(adopt(sv)){saveBlocked=false;Object.assign(S,ui)}}
 // every change runs read-latest -> change -> save under one cross-tab lock, so two open copies can't overwrite each other
 const LOCKS=!!(navigator.locks&&navigator.locks.request);
-function act(fn){let ran=false;const run=()=>{ran=true;pull();fn();const g=settleGate(),t=checkTitles();if(g||t){save();render(true)}schedSync()};if(!LOCKS||!storageOK)return run();
+function act(fn){let ran=false;const run=()=>{ran=true;pull();fn();const g=settleGate(),m=checkStreak(),t=checkTitles();if(g||m||t){save();render(true)}schedSync()};if(!LOCKS||!storageOK)return run();
   navigator.locks.request("ascend-state",run).catch(e=>{if(!ran)run();else console.error(e)})} // locks refused (sandboxed frame): run unlocked
 function rollover(){const n=now(),t=dkey(n),wk=mondayKey(n);
   if(!S.bossStat)S.bossStat=weakest();
@@ -920,11 +1023,11 @@ function rollover(){const n=now(),t=dkey(n),wk=mondayKey(n);
   const dq=todayQ();
   if(dq.length&&(!S.restDay||S.restDay!==S.day)){const lg={};for(const q of dq)lg[q.id]=S.done[q.id]?1:0;S.qlog[S.day]=lg} // rest days and unscheduled quests don't count against a quest
   const rested=S.restDay===S.day||!dq.length,missed=!rested&&!dq.every(q=>S.done[q.id]);S.hist[S.day]=rested?2:missed?0:1;S.restDay=null;gateDay(S.day,S.hist[S.day]);titleDay(S.day,S.hist[S.day],dq);
-  S.statHist[S.day]=Object.fromEntries(Object.keys(STATS).map(k=>[k,eff(k)]));{const ks=Object.keys(S.statHist).sort();for(const k of ks.slice(0,-90))delete S.statHist[k]}S.done={};S.cnt={};S.od={};if(S.questsNext){S.quests=S.questsNext;S.questsNext=null}
+  S.statHist[S.day]=Object.fromEntries(Object.keys(STATS).map(k=>[k,eff(k)]));{const ks=Object.keys(S.statHist).sort();for(const k of ks.slice(0,-90))delete S.statHist[k]}S.done={};S.cnt={};S.od={};S.drops={};S.rolls=0;if(S.questsNext){S.quests=S.questsNext;S.questsNext=null}
   // days the app was never opened are missed days too, each finalized once (a day already logged is never rewritten)
   let gap=0;if(S.day<t)for(const d=new Date(S.day+"T12:00");d.setDate(d.getDate()+1),dkey(d)<t&&gap<400;){const k=dkey(d);if(k in S.hist)continue;const kq=Q().filter(q=>sched(q,k));if(!kq.length){S.hist[k]=2;gateDay(k,2);continue}S.hist[k]=0;gateDay(k,0);titleDay(k,0,kq);S.qlog[k]=Object.fromEntries(kq.map(q=>[q.id,0]));gap++}
   {const ks=Object.keys(S.qlog).sort();for(const k of ks.slice(0,-30))delete S.qlog[k]}
-  const nMiss=(missed?1:0)+gap;if(nMiss)S.penalty=PENALTY;
+  const nMiss=(missed?1:0)+gap;if(nMiss){S.penalty=PENALTY;S.sMile=0} // a broken streak re-earns its milestones
   S.day=t;S.adjNotes=adapt();save();
   if(nMiss)notify({chip:"[ WARNING ]",tone:"danger",title:"Daily Quest failed.",body:(nMiss===1&&missed?"Yesterday's Daily Quest was not completed.":nMiss===1?"1 Daily Quest was not completed.":`${nMiss} Daily Quests were not completed.`)+"\nPenalty Quest assigned."})}
 
@@ -1049,7 +1152,7 @@ const allDone=()=>todayQ().every(q=>S.done[q.id]);
 const weakest=()=>Object.keys(STATS).reduce((a,k)=>eff(k)<eff(a)?k:a,"str");
 const bossK=()=>S.bossStat||weakest(); // fixed for the week, chosen from the weakest stat when the boss spawns
 const progDay=()=>Math.min(60,Math.round((new Date(now().toDateString())-new Date(S.prog+"T00:00"))/864e5)+1);
-function streak(){let n=allDone()?1:0;const d=new Date(now());for(;;){d.setDate(d.getDate()-1);if(S.hist[dkey(d)])n++;else break}return n}
+function streak(){return (allDone()?1:0)+histRun()}
 function bossCard(compact){const k=bossK(),hp=Math.max(0,S.boss);return `<section class="sys boss" style="--bc:var(--${k})" aria-label="Weekly boss">
   <div class="syshead"><span class="chip">[ WEEKLY BOSS ]</span><span style="display:flex;gap:10px;align-items:center"><span class="clock">${hp?`HP ${hp}%`:"DEFEATED"}</span>${compact?`<button class="btn chamf sysbtn" data-go="quests" style="min-height:32px;padding:0 10px">View</button>`:""}</span></div>
   <div class="bossrow"><div class="bossmark">${hex(k,compact?40:52)}</div><div style="flex:1;min-width:0"><h2 class="systitle">${BOSSES[k]}</h2>
@@ -1067,7 +1170,7 @@ const GLYPH={
   agi:'<path d="M8 8.5l3.5 3.5L8 15.5M12.5 8.5l3.5 3.5-3.5 3.5"/>',
   int:'<path d="M12 9.5v6.5M12 9.5c-1.5-1-3.5-1-5-.4v6.5c1.5-.6 3.5-.6 5 .4M12 9.5c1.5-1 3.5-1 5-.4v6.5c-1.5-.6-3.5-.6-5 .4"/>',
   per:'<path d="M6.5 12c1.5-2.5 3.4-3.8 5.5-3.8s4 1.3 5.5 3.8c-1.5 2.5-3.4 3.8-5.5 3.8S8 14.5 6.5 12z"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>'};
-const hex=(c,s=26)=>`<svg class="hex" style="--c:var(--${c});--s:${s}px" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 20.5 7v10L12 21.8 3.5 17V7z" fill="currentColor" fill-opacity=".1" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>${GLYPH[c]?`<g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${GLYPH[c]}</g>`:""}</svg>`;
+const hex=(c,s=26,g=GLYPH[c])=>`<svg class="hex" style="--c:var(--${c});--s:${s}px" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 20.5 7v10L12 21.8 3.5 17V7z" fill="currentColor" fill-opacity=".1" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>${g?`<g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${g}</g>`:""}</svg>`;
 const av=(c,s,ch)=>`<span class="av" style="--s:${s}px;--c:var(--${c})"><span>${ch}</span></span>`;
 let gid=0;
 const BADGE=[["E","#27303a","#8b97a3"],["D","#b8794a","#f0b080"],["C","#9fb0c4","#eef3f8"],["B","#c99a2e","#ffe08a"],["A","#4a6fd0","#b8cbff"],["S","#c93a2e","#ffb199"],["NL","#1f6f8b","#9ff3ff"],["M","#3a1d6e","#c9a2ff"]];
@@ -1098,11 +1201,12 @@ const sh=(t,extra="")=>`<div class="sh">${t}${extra?` <span>${extra}</span>`:""}
 let slamId=null,openQ=null;
 const screens={
 home(){const t=tierOf(S.lvl),[rn]=RANKS[t],td=now(),wi=wd(td),late=left()<PEN_MS&&!allDone()&&!restToday();
+const stk=streak(),bst=bestStreak(),nextM=SMILE.find(x=>x>stk),prevM=SMILE.filter(x=>x<=stk).pop()||0,lost=!stk&&bst>0;
 const days="MTWTFSS".split("").map((d,i)=>{const x=new Date(td);x.setDate(td.getDate()+i-wi);const k=dkey(x);
   const st=k<S.prog?"pre":i<wi?(S.hist[k]===2?"rest":S.hist[k]?"done":"miss"):i===wi?(restToday()?"rest today":allDone()?"done today":"today"):"fut";
   return `<div class="day ${i===wi?'now':''}"><div class="dot ${st}" aria-label="${d}: ${st}">${st.startsWith("done")?"✓":st.startsWith("rest")?"R":st==="miss"?"✕":""}</div>${d}</div>`}).join("");
 const qrows=L=>L.map(q=>{const d=!!S.done[q.id],c=S.cnt[q.id]||0,open=openQ===q.id,nm=esc(q.q),u=q.u?" "+q.u:"";return `<div class="qrow ${d?'done':''}" style="--c:var(--${q.s})" data-row="${q.id}">
-  <button class="qmain" data-qopen="${q.id}" aria-expanded="${open}" aria-label="${nm}, ${c} of ${q.n}${u}. Log progress">${hex(q.s,24)}<span><span class="q">${nm}</span><br><span class="x"><span class="xpv">+${q.xp} XP</span>${S.od[q.id]?` <em class="odx">+${odXP(q)*S.od[q.id]}</em>`:""} · <abbr title="${STATS[q.s]}">${q.s.toUpperCase()}</abbr>${q.s===weakest()?` <span class="focus">FOCUS</span>`:""}</span></span>${d?(c>q.n?`<span class="goal odg">${c}/${q.n}${u}</span>`:""):`<span class="goal">${S.adj[q.id]===S.day&&!S.done[q.id]?"<span class=\"adjm\">▲▼</span>":""}[${c}/${q.n}${u}]</span>`}</button>
+  <button class="qmain" data-qopen="${q.id}" aria-expanded="${open}" aria-label="${nm}, ${c} of ${q.n}${u}. Log progress${S.drops[q.id]&&dropDef(S.drops[q.id])?`. Relic found: ${dropDef(S.drops[q.id])[1]}`:''}">${hex(q.s,24)}<span><span class="q">${nm}</span><br><span class="x"><span class="xpv">+${q.xp} XP</span>${S.od[q.id]?` <em class="odx">+${odXP(q)*S.od[q.id]}</em>`:""} · <abbr title="${STATS[q.s]}">${q.s.toUpperCase()}</abbr>${q.s===weakest()?` <span class="focus">FOCUS</span>`:""}${(d=>d?` <em class="relx" style="--c:var(--${d[3]})">${hex(d[3],11,null)}${esc(d[1].toUpperCase())}</em>`:"")(S.drops[q.id]&&dropDef(S.drops[q.id]))}</span></span>${d?(c>q.n?`<span class="goal odg">${c}/${q.n}${u}</span>`:""):`<span class="goal">${S.adj[q.id]===S.day&&!S.done[q.id]?"<span class=\"adjm\">▲▼</span>":""}[${c}/${q.n}${u}]</span>`}</button>
   <button class="qck" data-q="${q.id}" aria-pressed="${d}" aria-label="${nm}: ${d?'complete, undo':'mark complete'}">${d?`<span class="stamp ${slamId===q.id?'slam':''}">DONE</span>`:'<span class="qbox"></span>'}</button>
   ${open?`<div class="qstep"><button class="btn chamf ghost" data-step="${q.id}:-1" aria-label="Minus ${stepOf(q)}">−${stepOf(q)}</button><span class="cnt">${c} / ${q.n}${u}${c>q.n?` <em class="odt">OVERDRIVE${S.od[q.id]?" ×"+S.od[q.id]:""}</em>`:d&&canOD(q)?` <em class="odh">+${q.n/2}${u} = BONUS</em>`:""}</span><button class="btn chamf sysbtn" data-step="${q.id}:1" aria-label="Plus ${stepOf(q)}">+${stepOf(q)}</button></div>
   ${isDist(q)?(()=>{const tr=todayRun(q),bp=paces(tKind,q.u);return `<div class="qtime"><div class="seg" role="group"><button class="btn chamf" data-tkind="run" aria-pressed="${tKind==="run"}">Run</button><button class="btn chamf" data-tkind="ruck" aria-pressed="${tKind==="ruck"}">Ruck</button></div>
@@ -1117,6 +1221,10 @@ return `<h1 class="title">Home.</h1>
 <div><div class="lvl">Lv. ${lvUp?lvUp.lv:S.lvl}</div><div class="rk">${rn.toUpperCase()}${S.awaken?` <span class="awk">2ND AWAKENING</span>`:""}</div><div class="cls"><span class="ttlp">${esc(tName())}</span>${S.rest?` · <b style="color:var(--accent)">${S.rest}</b> rest day${S.rest>1?"s":""}`:""}</div>
 <div class="bar" style="--c:var(--hl)"><i id="xpbar" style="width:${lvUp?lvUp.from:xpPct()}%"></i></div><div class="barlbl">${lvUp?xpLbl(lvUp.lv,lvUp.xp,0):xpLbl(S.lvl,S.xp,S.debt)}</div></div></div>
 <div class="week">${days}</div>
+<div class="strk ${stk?(late?"risk":"on"):(bst?"lost":"off")}" role="group" aria-label="${stk?`Streak: ${stk} day${stk===1?"":"s"} in a row, best ${bst}${late?". At risk, not cleared today":""}`:bst?`Streak broken. Best run ${bst} days. Clear today to restart`:"No streak yet. Clear today to start one"}">
+  <span class="sfl">${hex(stk?(late?"danger":"hl"):"muted",26,STK_GLYPH)}</span><span class="sn">${lost?bst:stk}</span><span class="sl">${lost?"BEST RUN":stk?(late?"AT RISK · CLEAR TODAY":`DAY${stk===1?"":"S"} IN A ROW`):"CLEAR TODAY TO START A STREAK"}</span><span class="sb${stk&&stk===bst?" rec":""}">${lost?"CLEAR TODAY TO RESTART":!bst?"":stk&&stk===bst?"NEW BEST":`BEST ${bst}`}</span>
+  ${stk&&nextM?`<div class="sbar"><div class="srail"><i style="width:${(stk-prevM)/(nextM-prevM)*100}%"></i>${SMILE.filter(x=>x<=nextM).map(x=>`<b class="${x<=stk?"hit":""}" style="left:${x/nextM*100}%"></b>`).join("")}</div><span>${nextM-stk} DAY${nextM-stk===1?"":"S"} TO ${nextM}</span></div>`:""}
+</div>
 ${sh("Today",`<button class="link" data-grid="1" style="font:inherit;letter-spacing:inherit;color:var(--hl)">DAY ${progDay()} / 60 →</button> · ${td.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}).toUpperCase()}`)}
 <section class="sys ${late?'danger':''}" id="qpanel" aria-label="Daily quest"><span class="scanwrap" aria-hidden="true"><i></i></span>
   <div class="syshead"><span class="chip">[ DAILY QUEST ]</span><span style="display:flex;gap:10px;align-items:center"><span class="clock" id="qclock">${fmtLeft(left())} LEFT</span><button class="btn chamf ghost" data-edit="1" style="min-height:30px;padding:0 10px">Edit</button></span></div>
@@ -1212,6 +1320,9 @@ ${sh("Titles",`${TITLES.filter(t=>tEarned(t[0])).length} / ${TITLES.length} EARN
     return `<button class="card tcard ${on?"on":""}" data-title="${id}" aria-pressed="${on}"><span><b>${esc(name)}</b><small>${esc(how)}${S.titles[id]?` · ${tdate(S.titles[id])}`:""}</small></span><span class="tst">${on?"EQUIPPED":"EQUIP"}</span></button>`}).join("")+
   shown.map(([id,name,how,f,lbl])=>{const[c,g]=f();return `<div class="card tcard lock"><span><b>${esc(name)}</b><small>${esc(how)}</small></span><span class="tst">${lbl?lbl():`${Math.min(c,g)} / ${g}`}</span><span class="bar tbar2" style="--c:var(--hl)"><i style="width:${Math.min(100,c/g*100)}%"></i></span></div>`}).join("")+
   (locked.length>3?`<button class="btn chamf ghost tmore" data-tmore="1">${showAllTitles?"Show fewer":`Show ${locked.length-3} more`}</button>`:"")})()}</div>
+${sh("Relics",`${lootN()} FOUND`)}
+<div class="relics">${DROPS.map(([t,name,lore,c,rar,g])=>`<div class="relic ${S.loot[t]?"":"none"}" style="--c:var(--${c})">${hex(c,32,g)}<span><small class="rrar">${rar}</small><b>${esc(name)}</b><small>${esc(S.loot[t]?lore:"Not yet found.")}</small></span>${S.loot[t]?`<span class="rn">×${S.loot[t]}</span>`:""}</div>`).join("")}</div>
+<p class="relnote">Every completed quest rolls for a relic. The roll is fixed for that quest and day, and relics are worth no XP.</p>
 ${sh("Theme","SETTINGS")}<div class="themes" role="group" aria-label="Theme">${SKINS.map(([k,n,g])=>`<button class="skin" data-s="${k}" aria-pressed="${(document.documentElement.dataset.skin||"hunter")===k}"><span class="sw" style="background:linear-gradient(90deg,${g})"></span><span><b>${n}</b></span></button>`).join("")}</div>
 ${partyKey(false)?`${sh("Party data")}<div class="card glowcard" style="--c:var(--danger);display:grid;gap:10px"><small style="color:var(--muted)">Your party membership and shared summary live on the party server.</small><button class="btn chamf ghost" data-pforget="1">Delete my party data</button></div>`:""}
 ${sh("Backup")}<div class="card glowcard" style="--c:var(--hl);display:grid;gap:10px"><small style="color:var(--muted)">Progress lives in this browser. Copy a backup now and then, or after clearing site data restore it from a .json file.</small>
@@ -1317,7 +1428,7 @@ const queue=[];let typer=null,lastFocus=null;
 function notify(n){if($("#ov").hidden)lastFocus=document.activeElement;queue.push(n);if($("#ov").hidden)nextNote()}
 function nextNote(){const n=queue.shift();if(!n)return;
   const ov=$("#ov"),sys=ov.querySelector(".sys");
-  sys.className="sys"+(n.tone==="danger"?" danger":"")+(n.center?" center":"");
+  sys.className="sys"+(n.tone==="danger"?" danger":"")+(n.center?" center":"");sys.style.setProperty("--hl",n.hue||"");
   const T=$("#sysT");$("#sysC").textContent=n.chip||"[ NOTIFICATION ]";T.textContent=n.title;T.className=n.hero?"lvhero":"systitle";
   T.classList.toggle("glitch",!!n.glitch);$("#sysX").innerHTML=n.after?"":(n.extra||"");$("#sysX2").innerHTML=n.after?(n.extra||""):"";
   const w=$("#sysW");w.hidden=!n.warn;w.textContent=n.warn||"";
@@ -1393,7 +1504,7 @@ aud.addEventListener("pause",()=>{pplay.textContent="▶";pplay.setAttribute("ar
 $("#psheet label").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();$("#pfile").click()}});
 
 function setDone(q,on){const before=allDone(),prev=S.done[q.id];if(!!prev===on)return;const n=on?1:-1;
-    if(!on)dropRun(q);
+    if(!on){dropRun(q);takeDrop(q)}
     S.cnt[q.id]=on?q.n:Math.min(S.cnt[q.id]||0,q.n-stepOf(q));
     if(on)S.done[q.id]=1;else{delete S.done[q.id];applyOD(q)}
     if(on){S.train[q.s]=(S.train[q.s]||0)+1;if(S.train[q.s]%TRAIN===0&&S.stats[q.s]<STAT_MAX()){S.stats[q.s]++;S.done[q.id]=2}} // 2 = this check raised the stat
@@ -1403,6 +1514,7 @@ function setDone(q,on){const before=allDone(),prev=S.done[q.id];if(!!prev===on)r
     if(after&&!before){S.ap.clear10++;S.hist[S.day]=1}else if(before&&!after){S.ap.clear10--;delete S.hist[S.day]}
     if(on){slamId=q.id;toast(S.done[q.id]===2?`+${q.xp} XP · ${STATS[q.s].toUpperCase()} +1`:`+${q.xp} XP · ${STATS[q.s].toUpperCase()} TRAINING ${S.train[q.s]%TRAIN}/${TRAIN}`)}
     gainXP(q.xp*n);
+    if(on)grantDrop(q);
     if(!S.bossDown){const dmg=(q.s===bossK()?15:5)*n;S.boss=Math.max(0,Math.min(100,S.boss-dmg))}
     if(S.boss===0&&!S.bossDown){S.bossDown=true;S.m.kills=S.m.kills||{};S.m.kills[bossK()]=(S.m.kills[bossK()]||0)+1;burst("var(--danger)");notify({chip:"[ WEEKLY BOSS ]",title:"BOSS DEFEATED",hero:true,center:true,extra:`<div class="lvsub">${BOSSES[bossK()]}</div><span class="ptchip">+150 XP</span>`,actions:[{label:"Collect"}]});gainXP(150)}
     if(after&&!before){const xp=todayQ().reduce((a,x)=>a+x.xp,0);
