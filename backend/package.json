@@ -1,0 +1,8 @@
+{
+  "name": "ascend-party",
+  "private": true,
+  "type": "module",
+  "scripts": { "build": "node build.mjs" },
+  "dependencies": {},
+  "devDependencies": { "esbuild": "0.28.2" }
+}

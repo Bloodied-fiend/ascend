@@ -88,6 +88,27 @@ button{font:inherit;color:inherit}
 .optq{margin-top:10px;opacity:.85}
 .optsh{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--muted);padding:8px 0 4px;border-top:1px dashed var(--line)}
 .awk{display:inline-block;margin-left:6px;padding:1px 6px;font-size:10px;letter-spacing:.12em;vertical-align:middle;border:1px solid var(--accent);color:var(--accent)}
+.pjoin{display:grid;gap:10px}.pjoin p{margin:0;font-weight:600}.pjoin small{color:var(--muted);line-height:1.4}
+.pjoin .acts,.pboard .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pjoin .btn,.pboard .acts .btn{min-height:44px;justify-content:center}
+.pcode{all:unset;cursor:pointer;font-family:var(--f-mono);font-weight:700;letter-spacing:.14em;color:var(--hl);padding:4px 8px;border:1px dashed var(--hl)}
+.plist{list-style:none;margin:10px 0 12px;padding:0;display:grid;gap:2px}
+.plist li{display:grid;grid-template-columns:22px 30px 1fr auto;gap:10px;align-items:center;padding:8px 6px;border-top:1px solid var(--line)}
+.plist li.me{background:color-mix(in srgb,var(--hl) 10%,transparent)}
+.plist .pn{font-family:var(--f-mono);font-weight:700;color:var(--muted);text-align:center}
+.plist li:first-child .pn{color:var(--accent)}
+.plist .pb0{width:30px;height:30px}
+.plist .pw{min-width:0}.plist .pw b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plist .pw em{font-style:normal;font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;color:var(--hl);margin-left:4px}.plist .pw em.aw{color:var(--accent)}
+.plist small{display:block;font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:.06em}
+.plist .pw small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plist li{grid-template-columns:22px 30px 1fr 64px}
+.pghost{display:block;border:1.5px dashed var(--line);border-radius:50%;box-sizing:border-box}
+.plist li.ns{opacity:.6}
+.pcode{min-height:44px;display:inline-flex;align-items:center;padding:0 10px}
+.pboard .pmore{display:flex;width:100%;box-sizing:border-box;margin-top:8px;min-height:44px;justify-content:center}
+.plist .pw small{letter-spacing:0;font-family:var(--f-body);font-size:12px}
+.pleave{color:var(--muted)}
+.plist .px{font-family:var(--f-display);font-weight:700;font-size:20px;text-align:right;font-variant-numeric:tabular-nums}.plist .px small{text-align:right}
 .themes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .themes .skin{grid-template-columns:36px 1fr;gap:10px;min-height:44px;padding:8px 10px}
 .themes .sw{width:36px;height:24px;border-radius:calc(var(--r) / 2)}
@@ -660,7 +681,7 @@ const sched=(q,k)=>!q.days||q.days.includes(wdOf(k));
 const todayQ=()=>Q().filter(q=>sched(q,S.day));
 const offQ=()=>Q().filter(q=>!sched(q,S.day));
 const daysLabel=q=>!q.days?"Daily":q.days.length?q.days.map(i=>D2[i]).join(" "):"Optional only";
-const cleanPlayer=v=>typeof v==="string"?v.replace(/[<>\u0000-\u001f]/g,"").trim().slice(0,20):"";
+const cleanPlayer=v=>typeof v==="string"?v.replace(/[<>\u0000-\u001f]/g,"").trim().slice(0,20).toWellFormed():""; // no half emoji
 const pName=()=>S.name||"Hunter";
 const pHandle=()=>"@"+(pName().toLowerCase().replace(/[^a-z0-9]+/g,".").replace(/^\.|\.$/g,"")||"hunter");
 const nameField=v=>`<div class="qe" style="margin-top:12px;text-align:left"><label>Player name<input id="pname" maxlength="20" autocomplete="nickname" placeholder="Hunter"></label></div>`;
@@ -801,7 +822,7 @@ function pull(){let sv=null;try{const raw=localStorage.getItem(STORE);if(raw===n
   if(!sv||sv.rev===S.rev)return;const ui={tab:S.tab,test:S.test,cat:S.cat};if(adopt(sv)){saveBlocked=false;Object.assign(S,ui)}}
 // every change runs read-latest -> change -> save under one cross-tab lock, so two open copies can't overwrite each other
 const LOCKS=!!(navigator.locks&&navigator.locks.request);
-function act(fn){let ran=false;const run=()=>{ran=true;pull();fn();if(settleGate()){save();render(true)}};if(!LOCKS||!storageOK)return run();
+function act(fn){let ran=false;const run=()=>{ran=true;pull();fn();if(settleGate()){save();render(true)}schedSync()};if(!LOCKS||!storageOK)return run();
   navigator.locks.request("ascend-state",run).catch(e=>{if(!ran)run();else console.error(e)})} // locks refused (sandboxed frame): run unlocked
 function rollover(){const n=now(),t=dkey(n),wk=mondayKey(n);
   if(!S.bossStat)S.bossStat=weakest();
@@ -850,6 +871,43 @@ function settleGate(){if(!S.gate)return false;const g=gateDef(S.gate.id);
   if(S.gate.failed){closeGate("A day was missed. This Gate allows none.");return true}
   if(S.day>S.gate.until){closeGate("Time ran out.");return true}
   return false}
+// ---- Party leaderboard (backend/party.mjs on Neon). Nothing is sent until the player creates or joins a party.
+const PARTY_API="https://br-red-haze-b7b2z47p-party.compute.c-13.us-east-1.aws.neon.tech/";
+const PKEY="ascend-party-key",PCACHE="ascend-party-cache";
+// the key identifies this player to the server; it lives apart from progress, so backups and exports never carry it
+const partyKey=make=>{try{let k=localStorage.getItem(PKEY);if(!k&&make){const a=new Uint8Array(32);crypto.getRandomValues(a);k=[...a].map(b=>b.toString(16).padStart(2,"0")).join("");localStorage.setItem(PKEY,k)}return k}catch(e){return null}};
+let party={parties:[],at:0};try{const c=JSON.parse(localStorage.getItem(PCACHE)||"null");if(c&&Array.isArray(c.parties))party=c}catch(e){}
+const totalXP=()=>{let t=S.xp;for(let l=1;l<S.lvl;l++)t+=xpNeed(l);return t};
+const pSummary=()=>({lvl:S.lvl,xp:totalXP(),tier:tierOf(S.lvl),streak:streak(),gates:Object.values(S.gateClears).reduce((a,b)=>a+b,0),red:S.m.red||0,awaken:S.awaken});
+let pSeq=0;
+async function partyCall(body,make){const k=partyKey(make);if(!k)throw new Error(make?"This browser won't store the party key (private mode?).":"Join or create a party first.");const seq=++pSeq;
+  let r;try{r=await fetch(PARTY_API,{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer "+k},body:JSON.stringify({name:S.name||"Hunter",...body}),signal:AbortSignal.timeout(12000)})}
+  catch(e){throw new Error("Can't reach the party server. Try again when online.")}
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error&&j.error!=="server"?j.error[0].toUpperCase()+j.error.slice(1)+".":"Party server error. Try again.");
+  if(seq!==pSeq)return j; // a newer call is in flight; don't let this older answer overwrite it
+  party={parties:j.parties||[],at:Date.now()};try{localStorage.setItem(PCACHE,JSON.stringify(party))}catch(e){}
+  if(S.tab==="quests"&&$("#ov").hidden)render(true);return j}
+let syncT=null;
+// after any change (and on open), push this player's summary; debounced, silent on failure
+let lastSent="";
+function schedSync(ms=4000){if(!partyKey(false)||!party.parties.length)return;clearTimeout(syncT);
+  syncT=setTimeout(()=>{const sm=pSummary(),js=JSON.stringify(sm);if(navigator.onLine===false||(js===lastSent&&ms))return; // only real changes (opening the app always refreshes)
+    partyCall({op:"sync",summary:sm}).then(()=>{lastSent=js}).catch(()=>{})},ms)}
+const ago=t=>{const m=Math.round((Date.now()-t)/6e4);return !t?"never":m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" d ago"};
+const codeField=()=>`<div class="qe" style="margin-top:12px;text-align:left"><label>Invite code<input id="pcode" maxlength="9" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="ABCD2345"></label></div>`;
+const partyNameField=()=>`<div class="qe" style="margin-top:12px;text-align:left"><label>Party name<input id="pname2" maxlength="24" placeholder="${esc((S.name||"Hunter")+"'s Party")}"></label></div>`;
+const PSHARE="Shared with your party only: your name, level, rank, total XP, streak and Gates cleared. Never your quests or stats.";
+function partyCard(){
+  if(!party.parties.length)return `<div class="card glowcard pjoin" style="--c:var(--hl)"><p>Compete with friends.</p><small>Only people with your invite code can see you. ${PSHARE}</small>
+    <div class="acts"><button class="btn chamf sysbtn" data-party="create">Create party</button><button class="btn chamf ghost" data-party="join">Join with code</button></div></div>`;
+  return party.parties.map((p,i)=>`<section class="sys pboard" aria-label="Party ${esc(p.name)}">
+    <div class="syshead"><span class="chip">[ PARTY ]</span><button class="pcode" data-pshare="${esc(p.code)}" title="Tap to share the invite code" aria-label="Invite code ${esc(p.code)}, tap to share">${esc(p.code.slice(0,4))}-${esc(p.code.slice(4))}</button></div>
+    <h2 class="systitle">${esc(p.name)}</h2>
+    <ol class="plist">${p.members.map((m,i)=>`<li class="${m.me?"me":""}${m.lvl?"":" ns"}"><span class="pn">${i+1}</span>${m.lvl?badge(Math.min(m.tier,LAST),30):'<span class="pb0 pghost"></span>'}
+      <span class="pw"><b>${esc(m.name)}${m.me?' <em>YOU</em>':""}${m.awaken?' <em class="aw">II</em>':""}</b><small>${m.lvl?`Lv ${m.lvl} · ${m.streak}d streak · ${m.gates} gates`:"not synced yet"}</small></span>
+      <span class="px">${m.lvl?`${m.xp.toLocaleString("en-US")}<small>XP</small>`:"—"}</span></li>`).join("")}</ol>
+    <div class="acts"><button class="btn chamf sysbtn" data-pshare="${esc(p.code)}">Invite</button><button class="btn chamf ghost pleave" data-pleave="${esc(p.code)}">Leave</button></div>
+    ${i===party.parties.length-1&&party.parties.length<5?`<button class="btn chamf ghost pmore" data-party="join">Join another party</button>`:""}</section>`).join("")}
 const PEN_MS=3*3600e3; // warn when under 3h left
 const TEST=[
   ["str","How many push-ups can you do in one set, with good form?",["0–15","16–40","41–70","71 or more"]],
@@ -1036,7 +1094,7 @@ const detail=`<section class="sys gdet ${k}${red?" red":""}" aria-label="${g.nam
    :G?`<p class="warn">Clear or leave ${gateDef(G.id).name} first. One Gate at a time.</p>`
    :cd?`<p class="warn">The System is rescanning. Enter a Gate again tomorrow.</p>`
    :`<button class="btn chamf sysbtn" data-gate="${g.id}" style="margin-top:10px">Enter Gate</button>`}</section>`;
-return `<h1 class="title">Guild.</h1>`+sh("Weekly boss")+bossCard(false)+sh("Gate Dispatch",!G&&S.gateCd&&S.day<S.gateCd?"REOPENS TOMORROW":"TAP A GATE")+
+return `<h1 class="title">Guild.</h1>`+sh("Party",party.parties.length?`SYNCED ${ago(party.at).toUpperCase()}`:"")+partyCard()+sh("Weekly boss")+bossCard(false)+sh("Gate Dispatch",!G&&S.gateCd&&S.day<S.gateCd?"REOPENS TOMORROW":"TAP A GATE")+
 `<div class="gmap" role="radiogroup" aria-label="Gate map"><div class="gplane" aria-hidden="true"></div>
 <span class="ghud"><span>CLEARED <b>${Object.values(S.gateClears).reduce((a,b)=>a+b,0)}</b></span><span>ACTIVE <b>${G?1:0}/1</b></span></span>${pins}</div>`+detail},
 trophies(){const done=ACH.filter(a=>S.claimed[a[0]]).length,nReady=ACH.filter(ready).length;
@@ -1059,6 +1117,7 @@ ${i?`<div class="pips" aria-hidden="true">${"<i></i>".repeat(3)}</div>`:""}
 <div><div class="meta" style="${cur?'color:var(--hl)':''}">${cur?'CURRENT RANK':lock?'RE-ASSESSMENT AT LV. '+RANK_AT[i]:'CLEARED'}</div>
 <div class="n">${n}</div><div class="meta">${i<LAST?`LV. ${RANK_AT[i]}–${RANK_AT[i+1]-1}`:`LV. ${RANK_AT[i]}+`}</div>${cur&&t<LAST?`<div class="bar" style="--c:var(--hl);margin-top:6px;max-width:200px"><i style="width:${rankProg()*100}%"></i></div>`:""}</div></div>`}).join("")}</div>
 ${sh("Theme","SETTINGS")}<div class="themes" role="group" aria-label="Theme">${SKINS.map(([k,n,g])=>`<button class="skin" data-s="${k}" aria-pressed="${(document.documentElement.dataset.skin||"hunter")===k}"><span class="sw" style="background:linear-gradient(90deg,${g})"></span><span><b>${n}</b></span></button>`).join("")}</div>
+${partyKey(false)?`${sh("Party data")}<div class="card glowcard" style="--c:var(--danger);display:grid;gap:10px"><small style="color:var(--muted)">Your party membership and shared summary live on the party server.</small><button class="btn chamf ghost" data-pforget="1">Delete my party data</button></div>`:""}
 ${sh("Backup")}<div class="card glowcard" style="--c:var(--hl);display:grid;gap:10px"><small style="color:var(--muted)">Progress lives in this browser. Copy a backup now and then, or after clearing site data restore it from a .json file.</small>
 <div style="display:flex;gap:8px"><button class="btn chamf sysbtn" data-backup="1" style="flex:1">Copy backup</button><label class="btn chamf ghost" for="rfile" tabindex="0" style="flex:1">Restore file</label></div><button class="btn chamf ghost" data-demo="reset" style="justify-content:center;color:var(--danger);border-color:color-mix(in srgb,var(--danger) 50%,transparent)">Reset progress</button></div>
 `},
@@ -1289,7 +1348,7 @@ function editorAct(a,b){const L=workList().map(q=>({...q}));
     else{const q=L.find(x=>x.id===qeEdit);if(!q)return;Object.assign(q,v);withDays(q,dsel);S.adj[q.id]=S.day} // what it counts as is the player's explicit choice, kept through renames
     qeEdit=null;commit(L);toast(started()?"SAVED · APPLIES TOMORROW":"QUEST SAVED")}}
 document.addEventListener("submit",e=>e.preventDefault());
-document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="pname"){e.preventDefault();const b=$("#sysA [data-act='0']");if(b)b.click()}}); // Enter in the editor must not reload the page
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.target.id==="pname"||e.target.id==="pcode"||e.target.id==="pname2")){e.preventDefault();const b=$("#sysA [data-act='0']");if(b)b.click()}}); // Enter in the editor must not reload the page
 let advancing=false;
 document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("#ov").hidden){if(qeEdit){qeEdit=null;paintEditor()}else closeNote(-1)}else toggleSheet(false)});
 document.addEventListener("click",e=>{
@@ -1320,6 +1379,17 @@ function onButton(b,d){
     if(s===RT-1){const err=$("#rh-err");for(const[k,n,,u]of HABITS){const el=$("#rh-"+k);if(u==="time"){if(!/^\d{2}:\d{2}$/.test(el.value)){err.textContent="Set a lights-out time.";el.focus();return}T.r.h[k].t=el.value}
       else{const v=parseInt(el.value,10);if(!(v>=1&&v<=999)){err.textContent=`${n}: target must be 1 to 999.`;el.focus();return}T.r.h[k].n=v}}}
     T.i++;render();return}
+  if(d.party==="create"){notify({chip:"[ PARTY ]",title:"Create a party",body:PSHARE,extra:partyNameField(),after:true,onOpen:()=>{const f=$("#pname2");if(f)f.focus()},
+      actions:[{label:"Create",fn:()=>{const v=($("#pname2")||{}).value||"";partyCall({op:"create",party:v.trim()||(S.name||"Hunter")+"'s Party"},true).then(()=>{toast("PARTY CREATED · SHARE THE CODE");schedSync(0)}).catch(e=>toast(e.message.toUpperCase()))}},{label:"Cancel"}]});return}
+  if(d.party==="join"){notify({chip:"[ PARTY ]",title:"Join a party",body:PSHARE,extra:codeField(),after:true,onOpen:()=>{const f=$("#pcode");if(f)f.focus()},
+      actions:[{label:"Join",fn:()=>{const v=(($("#pcode")||{}).value||"").toUpperCase().replace(/[^A-Z0-9]/g,"");if(v.length!==8){toast("CODES ARE 8 CHARACTERS");return}
+        partyCall({op:"join",code:v},true).then(()=>{toast("JOINED");schedSync(0)}).catch(e=>toast(e.message.toUpperCase()))}},{label:"Cancel"}]});return}
+  if(d.pshare){const c=d.pshare,txt=`Join my Ascend party. Code: ${c.slice(0,4)}-${c.slice(4)}\nhttps://bloodied-fiend.github.io/ascend/`;
+    if(navigator.share)navigator.share({text:txt}).catch(()=>{});else navigator.clipboard.writeText(txt).then(()=>toast("INVITE COPIED")).catch(()=>toast("CODE "+c));return}
+  if(d.pleave){const c=d.pleave;notify({chip:"[ PARTY ]",tone:"danger",title:"Leave this party?",body:"You can rejoin later with the code.",
+      actions:[{label:"Stay"},{label:"Leave",fn:()=>partyCall({op:"leave",code:c}).then(()=>toast("LEFT PARTY")).catch(e=>toast(e.message.toUpperCase()))}]});return}
+  if(d.pforget){notify({chip:"[ PARTY ]",tone:"danger",title:"Delete party data?",body:"Removes you from every party and deletes your data on the party server.\nYour progress on this phone is untouched.",
+      actions:[{label:"Keep"},{label:"Delete",fn:()=>partyCall({op:"forget"}).then(()=>{try{localStorage.removeItem(PKEY);localStorage.removeItem(PCACHE)}catch(e){}party={parties:[],at:0};render(true);toast("PARTY DATA DELETED")}).catch(e=>toast(e.message.toUpperCase()))}]});return}
   if(d.awaken){if(canAwaken())offerAwakening();return}
   if(d.start||d.retake){S.test={i:0,a:[]};advancing=false;S.tab="test";render();return}
   if(d.a){if(advancing)return;advancing=true;const T=S.test;T.a[T.i]=+d.a;b.setAttribute("aria-pressed","true");
@@ -1369,7 +1439,7 @@ screenEl.addEventListener("scroll",()=>{const away=screenEl.scrollTop>24&&sheet.
 setInterval(tick,1000);
 let skin="hunter";try{skin=localStorage.getItem("ascend-skin")||"hunter"}catch(e){}
 document.documentElement.dataset.skin=skin;document.querySelectorAll(".skin").forEach(x=>x.setAttribute("aria-pressed",x.dataset.s===skin));
-act(()=>{rollover();render();arrival()});
+act(()=>{rollover();render();arrival()});schedSync(1500);
 function onboard(){notify({chip:"[ SYSTEM ]",title:"You have been chosen as a Player.",center:true,
     body:"The System will assign you a Daily Quest each day.\nComplete it to grow. Fail it and a Penalty Quest follows.\n\nFirst, the System must measure you.",
     extra:nameField(),after:true,onOpen:focusName,
@@ -1388,10 +1458,10 @@ $("#rfile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)
   let sv=null;try{sv=JSON.parse(await f.text())}catch(err){}e.target.value="";
   if(!isSave(sv)){toast("THAT FILE ISN'T AN ASCEND BACKUP");return}
   act(()=>{if(!adopt(sv)){toast("THAT FILE ISN'T AN ASCEND BACKUP");return}saveBlocked=false;rollover();save();render();toast("BACKUP RESTORED")})});
-document.addEventListener("visibilitychange",()=>{if(!document.hidden)tick()});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){tick();schedSync(500)}});
 if(!storageOK)setTimeout(()=>toast("WARNING · PROGRESS CAN'T BE SAVED HERE"),1500);
 if(saveBlocked)setTimeout(()=>notify({chip:"[ WARNING ]",tone:"danger",title:"Saved progress couldn't be read.",body:"Nothing has been overwritten. A copy was kept on this device.\nRestore a backup file from Profile, or reset to start fresh."}),1200);
-window.__ascend={get S(){return S},render,closeNote,sample:()=>{S=sample();rollover();save();render()}};
+window.__ascend={get S(){return S},render,closeNote,partyBoard:()=>partyCall({op:"board"}),sample:()=>{S=sample();rollover();save();render()}};
 })();
 </script>
 
