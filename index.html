@@ -1140,7 +1140,8 @@ const restToday=()=>S.restDay===S.day;
 // The System reviews each quest's last 7 logged days: hit 5+ -> raise ~10%, hit 3 or fewer -> ease off.
 // Binary quests (target under 5) stay fixed; each quest changes at most once a week.
 function adapt(){const notes=[],days=Object.keys(S.qlog).sort();
-  for(const q of Q()){const dist=q.u==="MI"||q.u==="KM";if(q.n<5&&!dist)continue; // small counts are yes/no; distances adjust in 0.5 stepsif(S.adj[q.id]&&daysSince(S.adj[q.id])<7)continue;
+  for(const q of Q()){const dist=q.u==="MI"||q.u==="KM";if(q.n<5&&!dist)continue; // small counts are yes/no; distances adjust in 0.5 steps
+    if(S.adj[q.id]&&daysSince(S.adj[q.id])<7)continue;
     const last=days.filter(d=>q.id in S.qlog[d]).slice(-7);if(last.length<7)continue;
     const hits=last.reduce((a,d)=>a+S.qlog[d][q.id],0);
     let step=Math.max(1,Math.round(q.n*0.1));if(q.n>=20)step=Math.max(5,Math.round(q.n*0.1/5)*5);if(dist)step=0.5;
@@ -1618,7 +1619,8 @@ function onButton(b,d){
   if(d.a){if(advancing)return;advancing=true;const T=S.test;T.a[T.i]=+d.a;b.setAttribute("aria-pressed","true");
     setTimeout(()=>{advancing=false;if(S.test!==T||S.tab!=="test")return;T.i++;render()},RM?0:180);return}
   if(d.back){if(S.test.i)S.test.i--;else S.tab="stats";render();return}
-  if(d.save){if(S.test.r)applyRoutine(S.test.r);{const r=results();for(const k in r){const top=score(12,k);S.stats[k]=r[k]<top?r[k]:Math.max(S.stats[k],r[k])}} // a top score keeps what training built past the test's max; a lower score is honestS.baseKey=dkey(now());S.base=now().toLocaleDateString("en-US",{month:"short",day:"numeric"});S.ap.first=1;
+  if(d.save){if(S.test.r)applyRoutine(S.test.r);{const r=results();for(const k in r){const top=score(12,k);S.stats[k]=r[k]<top?r[k]:Math.max(S.stats[k],r[k])}} // a top score keeps what training built past the test's max; a lower score is honest
+    S.baseKey=dkey(now());S.base=now().toLocaleDateString("en-US",{month:"short",day:"numeric"});S.ap.first=1;
     S.tab="stats";const first=!S.onboarded;S.onboarded=true;save();render();notify({chip:"[ ASSESSMENT ]",title:"Baseline recorded.",body:`Your overall rating is ${ovr()}.\nDaily quests raise your stats from here.`});
     if(first)notify({chip:"[ DAILY QUEST ]",title:"Set your Daily Quest.",body:"Six default quests are ready.\nKeep them, or shape them to your life.",
       actions:[{label:"Review quests",fn:()=>{S.tab="home";render();openEditor()}},{label:"Keep defaults",fn:()=>{S.tab="home";render();arrival()}}]});return}
