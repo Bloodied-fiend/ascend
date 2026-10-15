@@ -1499,6 +1499,10 @@ function burst(color){if(RM)return;const fx=$("#fx");fx.style.setProperty("--fxc
 // padding changes -- this is not a constant, and inheriting it as one is how it stops being true.
 const vLabel=v=>"1."+String(v).padStart(3,"0"); // 37 -> "1.037"; a major overhaul starts the 2.x line
 const PATCH=[
+  {v:38,d:"Oct 15, 2026",lines:[
+    "The System tears three times now before it settles.",
+    "Dismissing an update no longer restarts the tear.",
+    "The window stays see-through except while it is breaking."]},
   {v:37,d:"Oct 14, 2026",lines:[
     "The System now reports its own updates. You are reading the first one.",
     "Party totals no longer count XP that an undo took back.",
