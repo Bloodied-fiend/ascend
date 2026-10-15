@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Scholar's Knucklebone">
+<!-- Scholar's Knucklebone (INT / Hollow Scholar). A four-lobed knucklebone, soaked in
+     violet ink from the lower lobes up the shaft, with worn notation etched into the
+     face. The ink is doing double duty: it is the piece's story AND its guaranteed
+     dark mass, which is what lets a bone-coloured object survive daylight's #e9e6df
+     background. A clean white bone would have died there.
+     Notation marks are held within a narrow band of the bone value so that when they
+     go sub-pixel at 32px they average back to the plane instead of greying it. -->
+<defs>
+  <linearGradient id="sc-cont" x1="0.12" y1="0.03" x2="0.88" y2="0.97">
+    <stop offset="0" stop-color="#241d14"/>
+    <stop offset=".44" stop-color="#2e2619"/>
+    <stop offset=".78" stop-color="#4a4332"/>
+    <stop offset="1" stop-color="#6d6650"/>
+  </linearGradient>
+  <!-- bone. Lightest value lives only in the upper-left lobes, interior. -->
+  <linearGradient id="sc-bone" x1="0.16" y1="0.02" x2="0.86" y2="0.98">
+    <stop offset="0" stop-color="#f6efdd"/>
+    <stop offset=".14" stop-color="#e3d7bd"/>
+    <stop offset=".34" stop-color="#c2b394"/>
+    <stop offset=".56" stop-color="#9a8a6e"/>
+    <stop offset=".76" stop-color="#6f6250"/>
+    <stop offset=".92" stop-color="#4b4235"/>
+    <stop offset="1" stop-color="#393127"/>
+  </linearGradient>
+  <!-- ink: INT violet, pooling almost to black where it is thickest -->
+  <linearGradient id="sc-ink" x1="0.3" y1="0" x2="0.72" y2="1">
+    <stop offset="0" stop-color="#4a3480"/>
+    <stop offset=".24" stop-color="#2f1f5c"/>
+    <stop offset=".58" stop-color="#1a1038"/>
+    <stop offset="1" stop-color="#0a0618"/>
+  </linearGradient>
+  <linearGradient id="sc-inkrim" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#6a4fae"/>
+    <stop offset=".5" stop-color="#3d2a73"/>
+    <stop offset="1" stop-color="#241848"/>
+  </linearGradient>
+  <radialGradient id="sc-lobe" cx="0.34" cy="0.3" r="0.82">
+    <stop offset="0" stop-color="#fffaf0"/>
+    <stop offset=".3" stop-color="#e6dac0"/>
+    <stop offset=".64" stop-color="#b4a586"/>
+    <stop offset=".88" stop-color="#75684f"/>
+    <stop offset="1" stop-color="#4e4434"/>
+  </radialGradient>
+</defs>
+
+<g transform="rotate(-10 128 128) translate(128 128) scale(0.93) translate(-128 -128)">
+  <!-- 1. silhouette + contour -->
+  <path fill="url(#sc-cont)" d="M92 18 C72 18 58 32 58 52 C58 72 70 85 88 87 C97 96 97 112 95 132 C93 152 93 166 86 178 C68 182 56 196 56 214 C56 234 70 246 90 246 C106 246 118 236 123 222 L128 212 L133 222 C138 236 150 246 166 246 C186 246 200 234 200 214 C200 196 188 182 170 178 C163 166 163 152 161 132 C159 112 159 96 168 87 C186 85 198 72 198 52 C198 32 184 18 164 18 C148 18 136 28 131 42 L128 52 L125 42 C120 28 108 18 92 18 Z"/>
+
+  <!-- 2. bone body, inset from the contour -->
+  <path fill="url(#sc-bone)" d="M93 25 C76 25 65 37 65 53 C65 70 75 80 91 82 C102 93 102 112 100 132 C98 152 98 168 90 182 C74 186 63 197 63 213 C63 230 75 240 91 240 C104 240 114 231 118 219 L128 198 L138 219 C142 231 152 240 165 240 C181 240 193 230 193 213 C193 197 182 186 166 182 C158 168 158 152 156 132 C154 112 154 93 165 82 C181 80 191 70 191 53 C191 37 180 25 163 25 C150 25 140 34 136 46 L128 66 L120 46 C116 34 106 25 93 25 Z"/>
+
+  <!-- 3. lobe modelling: each condyle is its own little sphere -->
+  <ellipse cx="88" cy="52" rx="23" ry="26" fill="url(#sc-lobe)"/>
+  <ellipse cx="168" cy="52" rx="23" ry="26" fill="url(#sc-lobe)"/>
+  <ellipse cx="88" cy="212" rx="25" ry="27" fill="url(#sc-lobe)"/>
+  <ellipse cx="168" cy="212" rx="25" ry="27" fill="url(#sc-lobe)"/>
+  <!-- occlusion in the two notches, where the lobes meet the shaft -->
+  <path fill="#5b513e" d="M128 60 C124 48 121 38 117 32 C124 38 128 48 131 58 C134 48 138 38 144 32 C140 38 136 48 132 60 Z"/>
+  <path fill="#4a4132" d="M128 198 C124 210 121 222 117 230 C124 222 128 212 131 202 C134 212 138 222 144 230 C140 222 136 210 132 198 Z"/>
+  <path fill="#6d6149" d="M100 84 C104 100 104 116 102 134 L96 134 C98 116 98 100 94 84 Z"/>
+
+  <!-- 4. the ink. Starts as a soaked pool across the lower-right lobe and wicks up
+          the shaft, with a darker dried rim at its boundary. -->
+  <path fill="url(#sc-ink)" d="M193 206 C193 228 180 240 164 240 C151 240 142 232 137 220 L128 200 C134 186 140 168 142 148 C144 128 146 112 152 98 C156 110 156 126 157 142 C159 164 164 180 170 184 C184 188 193 196 193 206 Z"/>
+  <path fill="url(#sc-inkrim)" d="M152 98 C156 110 156 126 157 142 C159 164 164 180 170 184 L166 188 C159 180 154 164 152 142 C150 124 150 110 148 100 Z"/>
+  <path fill="#0a0618" d="M150 214 C160 214 170 220 176 230 C168 236 156 236 148 230 Z"/>
+  <!-- a second, older splash on the upper-left lobe -->
+  <path fill="url(#sc-ink)" d="M74 36 C84 32 94 34 100 42 C94 48 82 50 72 46 Z"/>
+  <path fill="#6a4fae" d="M74 36 C83 32 93 34 99 41 L96 42 C90 37 82 35 74 38 Z"/>
+  <!-- run-off droplet down the shaft -->
+  <path fill="#190f34" d="M110 150 C114 150 116 154 115 160 C114 166 111 169 108 168 C105 167 104 162 105 157 Z"/>
+
+  <!-- 5. worn notation etched into the shaft. 120px-tier detail: every mark is a
+          filled shape, never a hairline stroke, and sits ~12% off the plane it is on. -->
+  <g fill="#6e624b">
+    <path d="M100 100 L124 100 L124 105 L100 105 Z"/>
+    <path d="M100 114 L118 114 L118 119 L100 119 Z"/>
+    <path d="M98 128 L126 128 L126 133 L98 133 Z"/>
+    <path d="M97 142 L114 142 L114 147 L97 147 Z"/>
+    <path d="M96 156 L122 156 L122 161 L96 161 Z"/>
+    <path d="M95 170 L110 170 L110 175 L95 175 Z"/>
+  </g>
+  <g fill="#8d7f63">
+    <path d="M100 105 L124 105 L124 107 L100 107 Z"/>
+    <path d="M98 133 L126 133 L126 135 L98 135 Z"/>
+    <path d="M96 161 L122 161 L122 163 L96 163 Z"/>
+  </g>
+  <!-- a chevron and a tally group, the "notation" reading at 120px -->
+  <path fill="#5f5440" d="M103 88 L112 80 L121 88 L117 88 L112 84 L107 88 Z"/>
+  <path fill="#5f5440" d="M104 182 L108 182 L108 196 L104 196 Z M112 182 L116 182 L116 196 L112 196 Z M120 182 L124 182 L124 196 L120 196 Z"/>
+  <path fill="#2a1f52" d="M136 120 L146 120 L146 125 L136 125 Z M136 134 L144 134 L144 139 L136 139 Z"/>
+
+  <!-- 6. pits and wear on the lobes -->
+  <ellipse cx="78" cy="60" rx="6" ry="5" fill="#6b5f49"/>
+  <ellipse cx="77" cy="59" rx="5" ry="4" fill="#9d8f71"/>
+  <ellipse cx="178" cy="60" rx="5" ry="4" fill="#5d5341"/>
+  <ellipse cx="80" cy="224" rx="7" ry="5" fill="#574d3c"/>
+
+  <!-- 7. key speculars, interior to the silhouette on every lobe -->
+  <path fill="#fffdf4" d="M72 34 C80 29 90 29 97 34 C88 34 79 38 73 45 Z"/>
+  <path fill="#fdf7e6" d="M152 34 C160 29 170 29 177 34 C168 34 159 38 153 45 Z"/>
+  <path fill="#fdf7e6" d="M70 194 C78 188 88 188 95 193 C86 193 77 198 71 206 Z"/>
+  <path fill="#f3ead5" d="M99 90 C101 104 101 118 100 130 L95 130 C96 118 96 104 94 90 Z"/>
+  <!-- cool fill light on the lower-right outline, the one band that keeps the dark
+       contour from closing the whole perimeter on the near-black skins -->
+  <path fill="#8d8a74" d="M191 206 C193 224 182 238 166 240 L165 234 C178 231 187 221 186 206 Z"/>
+  <path fill="#7d7a66" d="M186 56 C185 70 178 79 167 82 L166 77 C175 74 180 67 181 56 Z"/>
+</g>
+</svg>

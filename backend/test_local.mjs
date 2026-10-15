@@ -47,10 +47,12 @@ try {
   const [s2] = await call(E, { op: "join", code: "ZZZZZZZZ" });
   const [s3] = await call(E, { op: "bogus" });
   check("unknown key: sync stores nothing; bad op rejected", s === 200 && b.parties.length === 0 && s2 === 404 && s3 === 400, [s, b, s2, s3]);
+} catch (e) {
+  res.push("FAIL test threw " + (e && e.stack || e));   // a throw used to be swallowed by the exit(0) in finally
 } finally {
   for (const k of [A, B, C, E]) await call(k, { op: "forget" });
   const [, b] = await call(A, { op: "board" });   // A re-registers on this call; forget again
   await call(A, { op: "forget" });
   console.log(res.join("\n"));
-  process.exit(0);
+  process.exit(res.some(r => r.startsWith("FAIL")) ? 1 : 0);
 }

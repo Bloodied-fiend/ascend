@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Wraith's Hollow Eye">
+<!-- Wraith's Hollow Eye (VIT / Sleepless Wraith). A cold eye-stone in a carved socket
+     ring, a lid of smoke curling over the top, tendrils below.
+     The one deliberate omission: the pupil has NO catchlight. Every other sphere in
+     this set gets one. Nothing is behind this one.
+     Smoke is drawn as opaque tapered licks, not an alpha fade, so the app's
+     alpha-masked sweep crosses it at the same strength as the stone. -->
+<defs>
+  <!-- outer contour of the ring: a torus lit from upper-left is in shadow at its
+       outermost upper-left edge and crests just inside, so the dark-edge rule and
+       the physics agree here -->
+  <linearGradient id="wr-cont" x1="0.12" y1="0.04" x2="0.88" y2="0.98">
+    <stop offset="0" stop-color="#0b100e"/>
+    <stop offset=".5" stop-color="#121a17"/>
+    <stop offset=".84" stop-color="#2f433c"/>
+    <stop offset="1" stop-color="#4d6a60"/>
+  </linearGradient>
+  <!-- stone body. Deliberately mid-to-dark cold jade-slate, not pale: a pale stone
+       would sit within a hair of daylight's #e9e6df background. Range here is
+       L~22 to L~78, all of it inside the contour. -->
+  <linearGradient id="wr-stone" x1="0.1" y1="0.02" x2="0.9" y2="1">
+    <stop offset="0" stop-color="#cfddd6"/>
+    <stop offset=".12" stop-color="#a6bbb2"/>
+    <stop offset=".3" stop-color="#6f8880"/>
+    <stop offset=".52" stop-color="#4e645c"/>
+    <stop offset=".54" stop-color="#445851"/>
+    <stop offset=".78" stop-color="#28352f"/>
+    <stop offset="1" stop-color="#1b2521"/>
+  </linearGradient>
+  <!-- socket interior: the lip casts back across the upper-left of the recess -->
+  <linearGradient id="wr-socket" x1="0.18" y1="0" x2="0.82" y2="1">
+    <stop offset="0" stop-color="#070b09"/>
+    <stop offset=".45" stop-color="#0e1613"/>
+    <stop offset=".8" stop-color="#1f2b26"/>
+    <stop offset="1" stop-color="#32433c"/>
+  </linearGradient>
+  <!-- iris: luminous ring, dead-black core. This ring is the piece's whole rescue
+       on the near-black skins. -->
+  <radialGradient id="wr-iris" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#000000"/>
+    <stop offset=".34" stop-color="#03100b"/>
+    <stop offset=".42" stop-color="#0a3527"/>
+    <stop offset=".58" stop-color="#2fd39a"/>
+    <stop offset=".72" stop-color="#8ff0c7"/>
+    <stop offset=".84" stop-color="#1d5e46"/>
+    <stop offset="1" stop-color="#06120e"/>
+  </radialGradient>
+  <linearGradient id="wr-smoke" x1="0.2" y1="1" x2="0.8" y2="0">
+    <stop offset="0" stop-color="#859990"/>
+    <stop offset=".02" stop-color="#859990"/>
+    <stop offset=".42" stop-color="#5a6c66"/>
+    <stop offset=".76" stop-color="#3a4843"/>
+    <stop offset="1" stop-color="#28332f"/>
+  </linearGradient>
+  <linearGradient id="wr-smoke2" x1="0.8" y1="1" x2="0.3" y2="0">
+    <stop offset="0" stop-color="#768881"/>
+    <stop offset=".03" stop-color="#768881"/>
+    <stop offset=".5" stop-color="#4b5b55"/>
+    <stop offset="1" stop-color="#2a3531"/>
+  </linearGradient>
+</defs>
+
+<g transform="rotate(-4 128 128)">
+  <!-- 1. smoke, behind the stone. Opaque tapered licks: they have to hold an edge in
+          silhouette at 32px or the piece reads as a plain disc. -->
+  <path fill="url(#wr-smoke)" d="M58 96 C30 74 34 36 74 14 C57 44 58 70 88 86 C77 88 66 92 58 96 Z"/>
+  <path fill="url(#wr-smoke2)" d="M104 58 C105 32 118 14 136 8 C125 28 123 48 129 64 C120 60 112 58 104 58 Z"/>
+  <path fill="url(#wr-smoke2)" d="M152 58 C170 34 196 28 212 38 C190 42 174 56 166 76 C162 69 157 63 152 58 Z"/>
+  <path fill="url(#wr-smoke)" d="M86 198 C74 218 79 238 97 248 C84 234 87 218 101 207 Z"/>
+  <path fill="url(#wr-smoke2)" d="M168 194 C186 208 189 228 176 242 C185 224 178 209 161 202 Z"/>
+  <path fill="url(#wr-smoke)" d="M196 150 C218 152 230 166 230 182 C222 168 210 162 194 162 Z"/>
+
+  <!-- 2. the stone ring -->
+  <circle cx="128" cy="130" r="88" fill="url(#wr-cont)"/>
+  <circle cx="128" cy="130" r="80" fill="url(#wr-stone)"/>
+
+  <!-- carved facets around the setting. Each wedge is >=14 units wide so it survives
+       the 72px read; at 32px they merge into the ring's own gradient. -->
+  <path fill="#1d2823" d="M128 50 L136 54 L128 58 L120 54 Z"/>
+  <path fill="#1d2823" d="M184 86 L190 94 L181 94 L177 88 Z"/>
+  <path fill="#1d2823" d="M72 86 L79 88 L75 94 L66 94 Z"/>
+  <path fill="#303f39" d="M196 140 L204 142 L196 150 L190 144 Z"/>
+  <path fill="#1d2823" d="M60 140 L66 144 L60 150 L52 142 Z"/>
+  <path fill="#303f39" d="M128 202 L136 206 L128 210 L120 206 Z"/>
+
+  <!-- 3. socket recess -->
+  <circle cx="128" cy="130" r="64" fill="url(#wr-socket)"/>
+  <!-- occlusion crescent cast by the upper-left lip into the socket -->
+  <path fill="#050807" d="M128 66 A64 64 0 0 0 68 148 A54 54 0 0 1 128 78 Z"/>
+
+  <!-- 4. the eye -->
+  <circle cx="128" cy="130" r="50" fill="#060c0a"/>
+  <circle cx="128" cy="130" r="47" fill="url(#wr-iris)"/>
+  <!-- lens rim: a 5-unit band, sub-pixel at 32px but sitting on the dark socket
+       edge where a slight lift is harmless -->
+  <circle cx="128" cy="130" r="49" fill="none" stroke="#9fe4c8" stroke-width="5"/>
+  <circle cx="128" cy="130" r="53" fill="none" stroke="#0b1512" stroke-width="5"/>
+  <!-- pupil: flat, dead, no highlight anywhere on it -->
+  <circle cx="128" cy="130" r="17" fill="#000000"/>
+
+  <!-- 5. key speculars on the ring crest, kept interior so nothing near-white ever
+          touches the silhouette edge -->
+  <path fill="#f4faf7" d="M78 84 C92 68 108 58 126 54 L124 62 C109 66 95 75 84 89 Z"/>
+  <path fill="#c3d6ce" d="M67 101 C70 95 73 90 77 85 L83 91 C79 96 76 101 73 107 Z"/>
+  <!-- lower-right fill light along the outer edge: the band that stops the dark
+       contour running the full circumference on neon/ember -->
+  <path fill="#718d82" d="M186 176 C176 190 162 201 146 208 L144 200 C159 193 172 183 181 170 Z"/>
+  <path fill="#4e665d" d="M200 140 C200 150 198 160 194 169 L187 164 C190 156 192 148 193 139 Z"/>
+
+  <!-- 6. chips in the stone, for wear -->
+  <path fill="#121a17" d="M160 60 L172 66 L166 74 L155 68 Z"/>
+  <path fill="#7d948b" d="M160 60 L172 66 L170 68 L159 63 Z"/>
+  <path fill="#121a17" d="M54 160 L64 168 L56 174 L48 166 Z"/>
+</g>
+</svg>

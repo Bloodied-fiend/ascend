@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Shade's Mirror Shard">
+<!-- Shade's Mirror Shard (PER / Mirror Shade). A sliver of silvered glass holding a
+     reflection that is not the viewer's: a hooded figure, turned slightly off the
+     shard's own axis so it reads as an independent image rather than a decal.
+     Two gold eye-points are the only warm colour on the piece.
+     Daylight problem and the answer: glass wants to be light, and light glass on
+     #e9e6df is invisible. So the FACE carries the dark mass (the reflection is a
+     night image), the perimeter bevel is held at a mid grey around L~48 rather than
+     white, and the near-white fracture speculars are inset bands, never the outline.
+     That inversion - dark face, mid edge, interior white - is what makes the same
+     file work on #05070b and #e9e6df. -->
+<defs>
+  <!-- perimeter bevel: mid grey, deliberately NOT white. Darkens toward the
+       upper-left where the key rolls off, lifts to a cool fill lower-right. -->
+  <linearGradient id="sd-cont" x1="0.1" y1="0.02" x2="0.9" y2="0.98">
+    <stop offset="0" stop-color="#4a525c"/>
+    <stop offset=".3" stop-color="#5e6873"/>
+    <stop offset=".62" stop-color="#7c8795"/>
+    <stop offset=".84" stop-color="#58626e"/>
+    <stop offset="1" stop-color="#39414b"/>
+  </linearGradient>
+  <!-- the glass face: a cold night field the reflection sits in -->
+  <linearGradient id="sd-face" x1="0.2" y1="0" x2="0.8" y2="1">
+    <stop offset="0" stop-color="#39455a"/>
+    <stop offset=".3" stop-color="#232c3c"/>
+    <stop offset=".64" stop-color="#121826"/>
+    <stop offset="1" stop-color="#080b14"/>
+  </linearGradient>
+  <!-- horizon band behind the figure, so the hood silhouettes instead of smearing -->
+  <linearGradient id="sd-sky" x1="0.5" y1="0" x2="0.5" y2="1">
+    <stop offset="0" stop-color="#1b2433"/>
+    <stop offset=".45" stop-color="#7c8ca4"/>
+    <stop offset=".7" stop-color="#4a566d"/>
+    <stop offset="1" stop-color="#141a28"/>
+  </linearGradient>
+  <!-- tarnish where the silvering has lifted off the back -->
+  <linearGradient id="sd-tarnish" x1="0.1" y1="0.1" x2="0.9" y2="0.9">
+    <stop offset="0" stop-color="#5a4a36"/>
+    <stop offset=".45" stop-color="#3a2f22"/>
+    <stop offset="1" stop-color="#1b1710"/>
+  </linearGradient>
+  <linearGradient id="sd-edge" x1="0" y1="0" x2="0.6" y2="1">
+    <stop offset="0" stop-color="#ffffff"/>
+    <stop offset=".4" stop-color="#e6eef8"/>
+    <stop offset=".78" stop-color="#9fb0c4"/>
+    <stop offset="1" stop-color="#5d6a7a"/>
+  </linearGradient>
+  <radialGradient id="sd-eye" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#fff7d8"/>
+    <stop offset=".45" stop-color="#f2c230"/>
+    <stop offset=".8" stop-color="#8a6204"/>
+    <stop offset="1" stop-color="#2a1e05"/>
+  </radialGradient>
+  <!-- the face image is clipped to the shard so the reflection can be composed
+       freely and still stop dead at the fracture -->
+  <clipPath id="sd-clip">
+    <path d="M98 30 L156 41 L178 90 L157 153 L136 226 L116 150 L86 100 Z"/>
+  </clipPath>
+</defs>
+
+<g transform="rotate(7 128 128)">
+  <!-- 1. silhouette + mid-grey perimeter bevel -->
+  <path fill="url(#sd-cont)" d="M92 20 L158 32 L184 86 L160 156 L136 236 L112 150 L78 96 Z"/>
+
+  <!-- 2. the glass face, inset so the bevel shows as a band all the way round -->
+  <path fill="url(#sd-face)" d="M98 30 L156 41 L178 90 L157 153 L136 226 L116 150 L86 100 Z"/>
+
+  <!-- 3. the reflection, clipped to the face -->
+  <g clip-path="url(#sd-clip)">
+    <!-- horizon -->
+    <path fill="url(#sd-sky)" d="M86 96 L178 96 L178 150 L86 150 Z"/>
+    <path fill="#0d121d" d="M86 128 L178 128 L178 230 L86 230 Z"/>
+    <!-- far ridge -->
+    <path fill="#2c3647" d="M86 128 L104 116 L120 126 L140 110 L158 124 L178 114 L178 132 L86 132 Z"/>
+    <!-- hooded figure. Deliberately off the shard's axis - it is not looking out of
+         the glass the way a reflection of the holder would. -->
+    <path fill="#05070a" d="M128 92 C142 92 150 104 150 118 C150 126 153 132 158 137 C166 144 172 156 174 172 L174 230 L84 230 L84 176 C86 158 93 145 102 138 C108 133 110 126 110 118 C110 104 114 92 128 92 Z"/>
+    <!-- hood opening: a void inside the void, one value lighter so the head reads -->
+    <path fill="#101521" d="M128 100 C139 100 144 108 144 118 C144 128 138 136 128 136 C118 136 112 128 112 118 C112 108 117 100 128 100 Z"/>
+    <path fill="#05070a" d="M128 104 C136 104 140 110 140 118 C140 126 135 132 128 132 C121 132 116 126 116 118 C116 110 120 104 128 104 Z"/>
+    <!-- the eyes. ~9 units: they fuse into a single gold glint at 32px, which is the
+         intended small-size read. -->
+    <ellipse cx="121" cy="117" rx="5" ry="4" fill="url(#sd-eye)"/>
+    <ellipse cx="135" cy="117" rx="5" ry="4" fill="url(#sd-eye)"/>
+    <ellipse cx="121" cy="117" rx="2" ry="2" fill="#fffbe8"/>
+    <ellipse cx="135" cy="117" rx="2" ry="2" fill="#fffbe8"/>
+    <!-- shoulder rim light, picked out of the horizon -->
+    <path fill="#55637c" d="M102 138 C96 144 91 153 88 164 L84 176 L84 186 C87 166 93 150 104 141 Z"/>
+    <path fill="#55637c" d="M158 137 C165 144 170 155 173 170 L174 186 C171 164 165 148 155 140 Z"/>
+    <path fill="#8e9db5" d="M112 106 C116 101 122 99 128 99 L128 103 C123 103 118 105 115 109 Z"/>
+
+    <!-- 4. tarnish: the silvering lifted off the lower-right back of the shard -->
+    <path fill="url(#sd-tarnish)" d="M150 168 C162 176 168 194 164 216 L136 226 L142 186 Z"/>
+    <path fill="#6b5a40" d="M150 168 C158 173 164 182 166 194 L162 194 C159 183 154 175 148 171 Z"/>
+    <path fill="#241d14" d="M152 196 C158 202 160 212 158 220 L148 224 L150 202 Z"/>
+  </g>
+
+  <!-- 5. fracture speculars: inset bands along the two edges the key light catches.
+          Minimum 6 units wide, and they sit on an already-light bevel so losing them
+          at 32px costs sparkle, not contrast. -->
+  <path fill="url(#sd-edge)" d="M92 20 L158 32 L155 40 L97 29 Z"/>
+  <path fill="url(#sd-edge)" d="M92 20 L97 29 L89 95 L79 96 Z"/>
+  <path fill="#ffffff" d="M93 22 L150 32 L149 35 L94 25 Z"/>
+  <path fill="#cfd9e6" d="M158 32 L184 86 L176 88 L154 40 Z"/>
+  <!-- lower-right fill: keeps the bottom half of the outline alive on near-black -->
+  <path fill="#8e9aab" d="M184 86 L160 156 L152 152 L176 86 Z"/>
+  <path fill="#5f6a7a" d="M160 156 L136 236 L132 212 L153 152 Z"/>
+  <!-- the one edge left dark on purpose: the lower-left fracture reads as the back
+       of the glass and anchors the shape on daylight -->
+  <path fill="#2b313a" d="M112 150 L136 236 L130 222 L107 152 Z"/>
+  <path fill="#232931" d="M86 100 L112 150 L107 152 L81 102 Z"/>
+
+  <!-- 6. internal cracks. Few and short on purpose: every one of them lightens the
+          dark face, which is the piece's whole daylight budget. -->
+  <path fill="#9fb0c4" d="M116 60 L148 96 L145 99 L113 63 Z"/>
+  <path fill="#7a899c" d="M148 96 L168 104 L167 108 L146 100 Z"/>
+  <path fill="#7a899c" d="M116 60 L104 74 L101 72 L113 57 Z"/>
+  <path fill="#6d7b8d" d="M127 168 L140 196 L137 197 L124 169 Z"/>
+  <!-- chip out of the right edge -->
+  <path fill="#1b212a" d="M174 108 L182 104 L170 128 L166 122 Z"/>
+  <path fill="#aebccd" d="M174 108 L182 104 L180 110 L173 112 Z"/>
+</g>
+</svg>

@@ -124,6 +124,8 @@ button{font:inherit;color:inherit}
 [data-skin="daylight"] .goal.odg{color:#b45309}
 .clock{white-space:nowrap}
 .syshead .btn{margin-right:8px} /* clear the window's corner bracket */
+/* (0,5,0): :has() takes the specificity of its most specific argument, so this beats .overlay .sys.center .syshead (0,4,0) despite being declared ~500 lines earlier. */
+.sys.center .syshead:has(.clock:not([hidden])){justify-content:space-between}
 [data-skin="daylight"] .clock,[data-skin="ember"] .clock,[data-skin="daylight"] .qrow .x,[data-skin="ember"] .qrow .x{letter-spacing:.02em}
 .odt{font-style:normal;font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--accent)}
 .odt,.odh{display:block;margin:2px 0 0;text-align:center;white-space:nowrap}
@@ -660,9 +662,37 @@ button{font:inherit;color:inherit}
 .glist li{display:flex;justify-content:space-between;gap:10px}
 .glist>li>span:last-child{font-family:var(--f-mono);color:var(--hl)}
 .glist .gq{display:flex;gap:8px;align-items:center}
+.glitch,.sys.gl{--ab1:#ff2a6d;--ab2:#62d8e6}
+[data-skin="daylight"] .glitch,[data-skin="daylight"] .sys.gl{--ab2:#0096b4} /* 3.52:1 on white, within .1 of the magenta, so both halves carry equal weight */
 .glitch{animation:glitch .5s steps(1) 2}
-@keyframes glitch{0%,60%{text-shadow:2px 0 #ff2a6d,-2px 0 #62d8e6}0%{clip-path:inset(0 0 60% 0);transform:translateX(-3px)}20%{clip-path:inset(40% 0 20% 0);transform:translateX(3px)}40%{clip-path:inset(10% 0 70% 0)}60%{clip-path:inset(70% 0 0 0);transform:translateX(-2px)}80%,100%{clip-path:inset(0);transform:none;text-shadow:none}}
+.sys.gl{animation:sysgl .62s steps(1) 1}
+/* the RGB split is cyan/magenta on every skin: chromatic aberration is the colour, not a theme choice */
+@keyframes sysgl{0%{transform:translate(-4px,2px);filter:drop-shadow(3px 0 var(--ab1)) drop-shadow(-3px 0 var(--ab2));background-color:var(--sysbg)}
+  16%{transform:translate(5px,-2px) skewX(-1.2deg);clip-path:inset(0 0 44% 0)}
+  32%{transform:translate(-3px,1px);filter:drop-shadow(-4px 0 var(--ab1)) drop-shadow(4px 0 var(--ab2));clip-path:inset(26% 0 20% 0)}
+  48%{transform:translate(2px,0) skewX(.9deg);clip-path:inset(64% 0 0 0)}
+  64%{transform:none;clip-path:none;filter:none;background-color:var(--sysbg)}
+  72%{opacity:.5}
+  100%{transform:none;clip-path:none;filter:none;opacity:1}}
+.sys.pn{background:color-mix(in srgb,var(--sysbg) 80%,transparent);backdrop-filter:blur(10px) saturate(1.15);-webkit-backdrop-filter:blur(10px) saturate(1.15)}
+[data-skin="daylight"] .sys.pn{background:color-mix(in srgb,var(--sysbg) 92%,transparent)} /* white panel over a dark scrim greys out fast; at 80% the chip/date measure 4.05 and fail AA */
+@supports not (backdrop-filter:blur(1px)){.sys.pn{background:var(--sysbg)}} /* no blur, no translucency: unreadable without it */
+.pnscan{position:absolute;inset:0;pointer-events:none;border-radius:2px;overflow:hidden}
+.pnscan::before{content:"";position:absolute;left:0;right:0;height:42%;
+  background:linear-gradient(transparent,color-mix(in srgb,var(--hl) 22%,transparent),transparent);
+  animation:pnsweep .62s linear 1 forwards}
+@keyframes pnsweep{from{transform:translateY(-120%)}to{transform:translateY(240%)}}
+/* .glist > li > span:last-child paints the VALUE column (mono, --hl). A note is content, not chrome:
+   --hl is the System's frame colour, and 34ch of mono turns four entries into eleven ragged lines. */
+.glist.pnl{gap:0;margin:12px 0 0;border-top:1px solid var(--line)}
+.glist.pnl li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding:10px 0;border-bottom:1px solid var(--line)}
+.glist.pnl li::before{content:"";width:6px;height:6px;margin-top:.5em;background:var(--hl);transform:rotate(45deg)} /* a rotated square: the app's glyph language is hexes and chamfers */
+.glist.pnl .gq{display:block;text-align:left;font-family:var(--f-body);font-size:14px;line-height:1.55;color:var(--fg)}
+@keyframes glitch{0%,60%{text-shadow:2px 0 var(--ab1),-2px 0 var(--ab2)}0%{clip-path:inset(0 0 60% 0);transform:translateX(-3px)}20%{clip-path:inset(40% 0 20% 0);transform:translateX(3px)}40%{clip-path:inset(10% 0 70% 0)}60%{clip-path:inset(70% 0 0 0);transform:translateX(-2px)}80%,100%{clip-path:inset(0);transform:none;text-shadow:none}}
 .lvhero{text-shadow:0 0 calc(18px*var(--glow)) color-mix(in srgb,var(--hl) 55%,transparent)}
+/* .lvhero's .04em tracking is tuned for LEVEL UP / BOSS DEFEATED. A version numeral wants the opposite:
+   tracking pads the gaps around the decimal, which is the mark that makes this 1.037 and not 1 037. */
+#ov .sys.pn .lvhero{font-size:56px;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
 .relbig{display:grid;place-items:center;margin:6px 0}
 .relbig .hex path{fill-opacity:.2}
 .lvbar{font-family:var(--f-display);font-size:40px;font-weight:700;letter-spacing:.06em;text-align:center;color:var(--accent);margin:4px 0}
@@ -671,7 +701,7 @@ button{font:inherit;color:inherit}
 .toast:not(.show){opacity:0;visibility:hidden;transition:transform .3s,opacity .2s,visibility 0s .3s}
 .toast.show{transform:translate(0,0);opacity:1;visibility:visible}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}
-  .overlay .sys{animation:fadein .2s ease!important}.fx{display:none}.rb .sweep{display:none}}
+  .overlay .sys{animation:fadein .2s ease!important}.fx{display:none}.rb .sweep{display:none}.pnscan{display:none}}
 @keyframes fadein{from{opacity:0}}
 @media (max-width:460px){.stage{padding:0;gap:0;display:block}.pitch{display:none}.phone{width:100%;height:100dvh;min-height:0;border:0;border-radius:0}}
 
@@ -729,7 +759,7 @@ html.app .player{top:calc(18px + env(safe-area-inset-top,0px))}
     <nav class="tabs" id="tabs" aria-label="Sections"></nav>
     <div class="overlay" id="ov" hidden>
       <div class="sys" role="dialog" aria-modal="true" aria-labelledby="sysT">
-        <div class="syshead"><span class="chip" id="sysC"></span></div>
+        <div class="syshead"><span class="chip" id="sysC"></span><span class="clock" id="sysK" hidden></span></div>
         <h3 class="systitle" id="sysT"></h3>
         <div id="sysX"></div>
         <p class="typed" id="sysB"></p>
@@ -900,7 +930,8 @@ const wd=d=>(d.getDay()+6)%7; // Monday=0
 const pad=n=>String(n).padStart(2,"0");
 const mondayKey=d=>{const m=new Date(d);m.setDate(d.getDate()-wd(d));return dkey(m)};
 const BOSSES={str:"Iron Warden",vit:"Sleepless Wraith",agi:"Swift Stalker",int:"Hollow Scholar",per:"Mirror Shade"};
-// Titles: cosmetic, earned from real data, never taken away. New counters (pb/odn/adv/sleep/kills) start at install;
+// Titles: cosmetic, earned from real data, and never taken away except when the activity that earned
+// one is corrected in the same session (undoing the blow that killed a boss returns its Bane). New counters (pb/odn/adv/sleep/kills) start at install;
 // the rest (miles, Gates, Red Gates, program clears, rank, awakening) read data you already have.
 // [id, name, how to earn, () => [progress, goal]]
 const progClears=()=>{let n=0;for(let i=0;i<60;i++)if(S.hist[addDays(S.prog,i)]===1)n++;return n};
@@ -937,8 +968,8 @@ function fresh(){const t=now();
   return {runs:[],name:"",lvl:1,xp:0,rest:1,restDay:null,base:null,baseKey:null,qlog:{},adj:{},adjNotes:[],
   stats:{str:30,vit:30,agi:30,int:30,per:30},train:{str:0,vit:0,agi:0,int:0,per:0},
   quests:DEFAULT_QUESTS.map(q=>({...q})),questsNext:null,cnt:{},onboarded:false,statHist:{},
-  done:{},day:dkey(t),hist:{},seen:null,penalty:null,boss:100,bossDown:false,bossStat:null,wk:mondayKey(t),prog:dkey(t),
-  ap:{first:0,str50:0,vit30:0,agi30:0,int40:0,per100:0,clear10:0,water25:0,lvl20:1},claimed:{},
+  done:{},day:dkey(t),hist:{},seen:null,penalty:null,boss:100,bossDown:false,bkill:null,bossStat:null,wk:mondayKey(t),prog:dkey(t),
+  ap:{first:0,str50:0,vit30:0,agi30:0,int40:0,per100:0,clear10:0,water25:0,lvl20:1,pn:0},claimed:{},
   titles:{},title:"awakened",od:{},awaken:0,debt:0,rev:"",m:{miles:0},gate:null,gateCd:null,gateClears:{},seed:Date.now().toString(36)+Math.random().toString(36).slice(2,10),loot:{},drops:{},rolls:0,sMile:0,tab:"home",cat:"all"}}
 // demo data: mid-program hunter, used by "Load sample data"
 function sample(){const t=now(),h={};for(let i=1;i<=17;i++){const d=new Date(t);d.setDate(t.getDate()-i);h[dkey(d)]=1}for(const i of[wd(t)-3,9]){const d=new Date(t);d.setDate(t.getDate()-i);if(i>0)h[dkey(d)]=0}
@@ -951,7 +982,8 @@ let S=fresh();
 const KEEP=["runs","lvl","xp","rest","restDay","base","baseKey","stats","train","qlog","adj","adjNotes","done","day","hist","seen","penalty","ap","claimed","boss","bossDown","bossStat","wk","prog","quests","questsNext","cnt","onboarded","statHist","name","awaken","debt","rev","od","titles","title","m","gate","gateCd","gateClears","seed","loot","drops","rolls","sMile"];
 function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typeof v==="number"&&Number.isFinite(v),key=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v);
   for(const k of ["lvl","xp","rest","boss","debt"])if(num(sv[k]))S[k]=sv[k];S.awaken=sv.awaken===1?1:0;
-  S.rest=Math.max(0,Math.min(3,Math.round(S.rest)));S.debt=Math.max(0,Math.round(S.debt));S.rev=typeof sv.rev==="string"&&sv.rev.length<=40?sv.rev:"";
+  S.lvl=Math.max(1,Math.min(999,Math.round(S.lvl)));S.xp=Math.max(0,Math.min(99+8*S.lvl,Math.round(S.xp)));S.boss=Math.max(0,Math.min(100,Math.round(S.boss))); // a restored lvl of 1e308 is finite, so it passed isSave and then looped forever in totalXP/gainXP. xp is capped at xpNeed(lvl)-1 (inlined: xpNeed is in its TDZ here) so a restored 1e6 XP can't be laundered into 500 levels on the next tap
+  S.rest=Math.max(0,Math.min(3,Math.round(S.rest)));S.debt=Math.max(0,Math.min(1e6,Math.round(S.debt))); // a ceiling matters now that totalXP subtracts it: an unbounded debt froze the published total at 0 foreverS.rev=typeof sv.rev==="string"&&sv.rev.length<=40?sv.rev:"";
   for(const k of ["stats","train","qlog","adj","adjNotes","ap"])if(sv[k]&&typeof sv[k]==="object")for(const x in D[k])if(num(sv[k][x]))S[k][x]=sv[k][x];
   for(const k of ["done","claimed"])if(sv[k]&&typeof sv[k]==="object")S[k]=Object.fromEntries(Object.entries(sv[k]).filter(([a,v])=>/^[\w-]{1,20}$/.test(a)&&num(v)));
   S.hist={};if(sv.hist&&typeof sv.hist==="object")for(const[a,v]of Object.entries(sv.hist))if(key(a)&&dkey(new Date(a+"T12:00"))===a&&(v===0||v===1||v===2))S.hist[a]=v; // feeds streak XP now: ISO keys and 0/1/2 only
@@ -982,7 +1014,7 @@ function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typ
   S.onboarded=sv.onboarded===true||(sv.onboarded===undefined&&!!sv.base); // older saves with a baseline skip onboarding
   S.statHist={};if(sv.statHist&&typeof sv.statHist==="object")for(const[k,v]of Object.entries(sv.statHist).slice(-90))
     if(key(k)&&v&&typeof v==="object"&&Object.keys(STATS).every(x=>num(v[x])))S.statHist[k]=Object.fromEntries(Object.keys(STATS).map(x=>[x,v[x]]));
-  S.penalty=sv.penalty?PENALTY:null;S.bossDown=sv.bossDown===true;S.bossStat=STATS[sv.bossStat]?sv.bossStat:null;
+  S.penalty=sv.penalty?PENALTY:null;S.bossDown=sv.bossDown===true&&S.boss===0; // the pair has to be coherent: "dead" with HP left made an ordinary tap strip a real killS.bossStat=STATS[sv.bossStat]?sv.bossStat:null;
   if(sv.m&&num(sv.m.miles)&&sv.m.miles>=0)S.m.miles=sv.m.miles;
   if(sv.m)for(const k of ["red","pb","odn","adv","sleep"])if(Number.isInteger(sv.m[k])&&sv.m[k]>0)S.m[k]=sv.m[k];
   if(sv.m&&sv.m.advOn===1)S.m.advOn=1;
@@ -1069,7 +1101,9 @@ const PKEY="ascend-party-key",PCACHE="ascend-party-cache";
 // the key identifies this player to the server; it lives apart from progress, so backups and exports never carry it
 const partyKey=make=>{try{let k=localStorage.getItem(PKEY);if(!k&&make){const a=new Uint8Array(32);crypto.getRandomValues(a);k=[...a].map(b=>b.toString(16).padStart(2,"0")).join("");localStorage.setItem(PKEY,k)}return k}catch(e){return null}};
 let party={parties:[],at:0};try{const c=JSON.parse(localStorage.getItem(PCACHE)||"null");if(c&&Array.isArray(c.parties))party=c}catch(e){}
-const totalXP=()=>{let t=S.xp;for(let l=1;l<S.lvl;l++)t+=xpNeed(l);return t};
+const totalXP=()=>{let t=S.xp;for(let l=1;l<S.lvl;l++)t+=xpNeed(l);return Math.max(0,t-S.debt)}; // debt is XP already taken back; publishing it let an ordinary undo inflate the party board
+// lvl/tier come from the un-droppable level while xp is net of debt, so a teammate can see a level the
+// total no longer covers. Inherent to "levels never drop"; the board ranks by XP, which is now honest.
 const pSummary=()=>({title:tName(),lvl:S.lvl,xp:totalXP(),tier:tierOf(S.lvl),streak:streak(),gates:Object.values(S.gateClears).reduce((a,b)=>a+b,0),red:S.m.red||0,awaken:S.awaken});
 let pSeq=0;
 async function partyCall(body,make){const k=partyKey(make);if(!k)throw new Error(make?"This browser won't store the party key (private mode?).":"Join or create a party first.");const seq=++pSeq;
@@ -1321,6 +1355,8 @@ ${sh("Titles",`${TITLES.filter(t=>tEarned(t[0])).length} / ${TITLES.length} EARN
     return `<button class="card tcard ${on?"on":""}" data-title="${id}" aria-pressed="${on}"><span><b>${esc(name)}</b><small>${esc(how)}${S.titles[id]?` · ${tdate(S.titles[id])}`:""}</small></span><span class="tst">${on?"EQUIPPED":"EQUIP"}</span></button>`}).join("")+
   shown.map(([id,name,how,f,lbl])=>{const[c,g]=f();return `<div class="card tcard lock"><span><b>${esc(name)}</b><small>${esc(how)}</small></span><span class="tst">${lbl?lbl():`${Math.min(c,g)} / ${g}`}</span><span class="bar tbar2" style="--c:var(--hl)"><i style="width:${Math.min(100,c/g*100)}%"></i></span></div>`}).join("")+
   (locked.length>3?`<button class="btn chamf ghost tmore" data-tmore="1">${showAllTitles?"Show fewer":`Show ${locked.length-3} more`}</button>`:"")})()}</div>
+${sh("System",`VERSION ${vLabel(PATCH[0].v)}`)}
+<div class="tlist"><button class="card tcard" data-patch="1"><span><b>Patch notes</b><small>What changed in this build</small></span><span class="tst">VIEW</span></button></div>
 ${sh("Relics",`${lootN()} FOUND`)}
 <div class="relics">${DROPS.map(([t,name,lore,c,rar,g])=>`<div class="relic ${S.loot[t]?"":"none"}" style="--c:var(--${c})">${hex(c,32,g)}<span><small class="rrar">${rar}</small><b>${esc(name)}</b><small>${esc(S.loot[t]?lore:"Not yet found.")}</small></span>${S.loot[t]?`<span class="rn">×${S.loot[t]}</span>`:""}</div>`).join("")}</div>
 <p class="relnote">Every completed quest rolls for a relic. The roll is fixed for that quest and day, and relics are worth no XP.</p>
@@ -1424,13 +1460,31 @@ function burst(color){if(RM)return;const fx=$("#fx");fx.style.setProperty("--fxc
   clearTimeout(burst.t);burst.t=setTimeout(()=>fx.innerHTML="",1200)}
 
 // System notification queue
+// Patch notes, newest first. PATCH[0].v is this build's version and the value stored in S.ap.pn,
+// so appending an entry is the whole trigger for the update screen. Adding one is part of shipping.
+// Keep a release to 8 lines or fewer: the window caps at 772px on a 390x844 phone, 8 two-line entries
+// already reach 721px, and 12 push ACCEPT below the fold with no scroll affordance. The 51px of headroom
+// is one three-line entry. Merge or cut; do not let it scroll. Re-measure when the note type or the li
+// padding changes -- this is not a constant, and inheriting it as one is how it stops being true.
+const vLabel=v=>"1."+String(v).padStart(3,"0"); // 37 -> "1.037"; a major overhaul starts the 2.x line
+const PATCH=[
+  {v:37,d:"Oct 14, 2026",lines:[
+    "The System now reports its own updates. You are reading the first one.",
+    "Party totals no longer count XP that an undo took back.",
+    "Undoing the quest that killed a weekly boss now returns the kill, its title and the 150 XP.",
+    "A damaged or hand-edited save file can no longer freeze the System."]}];
+const patchNote=p=>({chip:"[ SYSTEM UPDATE ]",title:vLabel(p.v),hero:true,center:true,glitch:true,cls:"gl pn",
+  body:"The System has been patched.",after:true,onOpen:sfxGlitch,actions:[{label:"Accept",acc:true}],
+  clock:esc(p.d).toUpperCase(),extra:`<i class="pnscan" aria-hidden="true"></i>`+
+    `<ul class="glist pnl">${p.lines.map(l=>`<li><span class="gq">${esc(l)}</span></li>`).join("")}</ul>`});
 const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const queue=[];let typer=null,lastFocus=null;
 function notify(n){if($("#ov").hidden)lastFocus=document.activeElement;queue.push(n);if($("#ov").hidden)nextNote()}
 function nextNote(){const n=queue.shift();if(!n)return;
   const ov=$("#ov"),sys=ov.querySelector(".sys");
-  sys.className="sys"+(n.tone==="danger"?" danger":"")+(n.center?" center":"");sys.style.setProperty("--hl",n.hue||"");
-  const T=$("#sysT");$("#sysC").textContent=n.chip||"[ NOTIFICATION ]";T.textContent=n.title;T.className=n.hero?"lvhero":"systitle";
+  sys.className="sys"+(n.tone==="danger"?" danger":"")+(n.center?" center":"")+(n.cls?" "+n.cls:"");sys.style.setProperty("--hl",n.hue||"");
+  const T=$("#sysT");$("#sysC").textContent=n.chip||"[ NOTIFICATION ]";
+  const K=$("#sysK");K.hidden=!n.clock;K.textContent=n.clock||"";T.textContent=n.title;T.className=n.hero?"lvhero":"systitle";
   T.classList.toggle("glitch",!!n.glitch);$("#sysX").innerHTML=n.after?"":(n.extra||"");$("#sysX2").innerHTML=n.after?(n.extra||""):"";
   const w=$("#sysW");w.hidden=!n.warn;w.textContent=n.warn||"";
   const acts=n.actions||[{label:"Accept"}];
@@ -1472,6 +1526,33 @@ function tick(){if(dkey(now())!==S.day&&!rolling){rolling=true;act(()=>{rolling=
   const late=l<PEN_MS&&!allDone()&&!restToday();phone.classList.toggle("pz",late&&S.tab==="home");
   const p=$("#qpanel");if(p&&p.classList.contains("danger")!==late)render(true)}
 
+// Glitch sting for the update window. No audio file: the whole point is that it works offline on first open.
+let actx=null;
+function sfxGlitch(){if(!autoMusic)return; // "Play music on open" is the only audio preference the app has
+  try{actx=actx||new (window.AudioContext||window.webkitAudioContext)()}catch(e){return}
+  // On a real first open there has been no gesture yet, so the context is suspended and nothing can play.
+  // Wait for one on the window -- but never on ACCEPT: pointerdown precedes click, so arming this on the
+  // document meant the sting fired as the window was being dismissed, with the tear already gone. A sting
+  // over a dying window is worse than silence, so that gesture gets none.
+  if(actx.state==="suspended"){actx.resume().then(ring).catch(()=>{
+    const go=e=>{if(e.target.closest("#sysA"))return;actx.resume().then(()=>{ring();reglitch()}).catch(()=>{})};
+    $("#ov").addEventListener("pointerdown",go,{once:true})});return}
+  ring()}
+function ring(){const t=actx.currentTime;
+  const bp=actx.createBiquadFilter();bp.type="bandpass";bp.frequency.value=1800;bp.Q.value=.7;
+  const g=actx.createGain();g.gain.value=.22;bp.connect(g);g.connect(actx.destination);
+  const n=actx.createBufferSource(),buf=actx.createBuffer(1,Math.floor(actx.sampleRate*.35),actx.sampleRate),d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2.2); // torn-tape burst, decaying
+  n.buffer=buf;n.connect(bp);n.start(t);
+  for(const[f,at,dur]of[[880,0,.09],[622,.11,.13]]){ // two detuned square blips: the System's voice
+    const o=actx.createOscillator(),og=actx.createGain();o.type="square";
+    o.frequency.setValueAtTime(f,t+at);o.frequency.exponentialRampToValueAtTime(f*.5,t+at+dur);
+    og.gain.setValueAtTime(.0001,t+at);og.gain.exponentialRampToValueAtTime(.16,t+at+.012);
+    og.gain.exponentialRampToValueAtTime(.0001,t+at+dur);
+    o.connect(og);og.connect(actx.destination);o.start(t+at);o.stop(t+at+dur+.03)}
+  try{const v=aud.volume;aud.volume=Math.min(v,.25);setTimeout(()=>{aud.volume=v},460)}catch(e){}} // duck the soundtrack under it
+function reglitch(){const ov=$("#ov");if(ov.hidden)return;
+  for(const[el,c]of[[ov.querySelector(".sys"),"gl"],[$("#sysT"),"glitch"]]){el.classList.remove(c);void el.offsetWidth;el.classList.add(c)}}
 // Soundtrack: plays a file the viewer loads; nothing is uploaded anywhere
 const aud=$("#aud"),pplay=$("#pplay");
 const sheet=$("#psheet"),toggleSheet=open=>{sheet.hidden=!open;$("#pdim").hidden=!open;$("#pmore").setAttribute("aria-expanded",open)};
@@ -1516,8 +1597,16 @@ function setDone(q,on){const before=allDone(),prev=S.done[q.id];if(!!prev===on)r
     if(on){slamId=q.id;toast(S.done[q.id]===2?`+${q.xp} XP · ${STATS[q.s].toUpperCase()} +1`:`+${q.xp} XP · ${STATS[q.s].toUpperCase()} TRAINING ${S.train[q.s]%TRAIN}/${TRAIN}`)}
     gainXP(q.xp*n);
     if(on)grantDrop(q);
-    if(!S.bossDown){const dmg=(q.s===bossK()?15:5)*n;S.boss=Math.max(0,Math.min(100,S.boss-dmg))}
-    if(S.boss===0&&!S.bossDown){S.bossDown=true;S.m.kills=S.m.kills||{};S.m.kills[bossK()]=(S.m.kills[bossK()]||0)+1;burst("var(--danger)");notify({chip:"[ WEEKLY BOSS ]",title:"BOSS DEFEATED",hero:true,center:true,extra:`<div class="lvsub">${BOSSES[bossK()]}</div><span class="ptchip">+150 XP</span>`,actions:[{label:"Collect"}]});gainXP(150)}
+    // Undoing the blow that killed the boss takes the kill back; undoing any OTHER quest must not.
+    // Keyed on S.bkill (the killing quest + the HP it hit), never on the bossDown flag: a flag fires on
+    // siblings too, and HP is a clamped accumulator, so healing by this quest's damage conjures HP that
+    // overkill discarded. bkill is session-only by design -- after a reload there is nothing to key on, so
+    // an undo leaves the kill standing (pre-v37 behaviour) rather than destroying a real one.
+    const hp0=S.boss,kq=!!(S.bkill&&S.bkill.id===q.id);
+    if(n<0&&S.bossDown&&kq){const k=bossK();S.boss=S.bkill.hp;S.bkill=null;S.bossDown=false;
+      if((S.m.kills||{})[k]){S.m.kills[k]--;if(!S.m.kills[k]){delete S.m.kills[k];if(S.title==="bane_"+k)S.title="awakened";delete S.titles["bane_"+k]}gainXP(-150)}} // the XP goes back only with the kill it paid for
+    else if(!S.bossDown){const dmg=(q.s===bossK()?15:5)*n;S.boss=Math.max(0,Math.min(100,S.boss-dmg))}
+    if(S.boss===0&&!S.bossDown){S.bkill={id:q.id,hp:hp0};S.bossDown=true;S.m.kills=S.m.kills||{};S.m.kills[bossK()]=(S.m.kills[bossK()]||0)+1;burst("var(--danger)");notify({chip:"[ WEEKLY BOSS ]",title:"BOSS DEFEATED",hero:true,center:true,extra:`<div class="lvsub">${BOSSES[bossK()]}</div><span class="ptchip">+150 XP</span>`,actions:[{label:"Collect"}]});gainXP(150)}
     if(after&&!before){const xp=todayQ().reduce((a,x)=>a+x.xp,0);
       burst("var(--hl)");notify({chip:"[ QUEST COMPLETE ]",title:"DAILY QUEST CLEARED",hero:true,center:true,
         extra:`<div class="lvsub">HUNTER CONDITIONING</div><div class="statpips">${Object.keys(STATS).map(k=>hex(k,22)).join("")}</div>
@@ -1612,6 +1701,7 @@ function onButton(b,d){
   if(d.pforget){notify({chip:"[ PARTY ]",tone:"danger",title:"Delete party data?",body:"Removes you from every party and deletes your data on the party server.\nYour progress on this phone is untouched.",
       actions:[{label:"Keep"},{label:"Delete",fn:()=>partyCall({op:"forget"}).then(()=>{try{localStorage.removeItem(PKEY);localStorage.removeItem(PCACHE)}catch(e){}party={parties:[],at:0};render(true);toast("PARTY DATA DELETED")}).catch(e=>toast(e.message.toUpperCase()))}]});return}
   if(d.tmore){showAllTitles=!showAllTitles;render(true);return}
+  if(d.patch){notify(patchNote(PATCH[0]));return}
   if(d.title){if(tEarned(d.title)){S.title=d.title;save();render(true);toast("TITLE EQUIPPED")}return}
   if(d.penrules){penRules();return}
   if(d.awaken){if(canAwaken())offerAwakening();return}
@@ -1666,7 +1756,11 @@ screenEl.addEventListener("scroll",()=>{const away=screenEl.scrollTop>24&&sheet.
 setInterval(tick,1000);
 let skin="hunter";try{skin=localStorage.getItem("ascend-skin")||"hunter"}catch(e){}
 document.documentElement.dataset.skin=skin;document.querySelectorAll(".skin").forEach(x=>x.setAttribute("aria-pressed",x.dataset.s===skin));
-act(()=>{rollover();render();arrival()});schedSync(1500);
+act(()=>{rollover();render();
+  // a new player starts current: never announce a version they installed on
+  if(!S.onboarded)S.ap.pn=PATCH[0].v;
+  else if((S.ap.pn||0)<PATCH[0].v){S.ap.pn=PATCH[0].v;save();notify(patchNote(PATCH[0]))}
+  arrival()});schedSync(1500);
 function onboard(){notify({chip:"[ SYSTEM ]",title:"You have been chosen as a Player.",center:true,
     body:"The System will assign you a Daily Quest each day.\nComplete it to grow. Fail it and a Penalty Quest follows.\n\nFirst, the System must measure you.",
     extra:nameField(),after:true,onOpen:focusName,
@@ -1688,7 +1782,7 @@ $("#rfile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){tick();schedSync(500)}});
 if(!storageOK)setTimeout(()=>toast("WARNING · PROGRESS CAN'T BE SAVED HERE"),1500);
 if(saveBlocked)setTimeout(()=>notify({chip:"[ WARNING ]",tone:"danger",title:"Saved progress couldn't be read.",body:"Nothing has been overwritten. A copy was kept on this device.\nRestore a backup file from Profile, or reset to start fresh."}),1200);
-window.__ascend={get S(){return S},render,closeNote,partyBoard:()=>partyCall({op:"board"}),sample:()=>{S=sample();rollover();save();render()}};
+window.__ascend={get S(){return S},render,closeNote,totalXP,partyBoard:()=>partyCall({op:"board"}),sample:()=>{S=sample();rollover();save();render()}};
 })();
 </script>
 

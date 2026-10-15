@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Warden's Gear Tooth">
+<!-- Warden's Gear Tooth (STR / Iron Warden). Sheared involute gear tooth: forged steel,
+     one rivet, a stress fracture glowing at the root where it tore off the wheel.
+     Light: key upper-left, cool fill lower-right. No filters, no alpha gradients -
+     the whole piece is opaque so the app's alpha-masked specular sweep behaves like
+     it does on the rank badges. All ids are prefixed wd- in case five of these get
+     inlined into one document. -->
+<defs>
+  <!-- outer contour: dark where the key light rolls off (upper-left edge),
+       lifting to a cool fill on the lower-right so the silhouette never merges
+       into the near-black neon background -->
+  <linearGradient id="wd-cont" x1="0.14" y1="0.02" x2="0.9" y2="1">
+    <stop offset="0" stop-color="#11151a"/>
+    <stop offset=".46" stop-color="#1b212a"/>
+    <stop offset=".82" stop-color="#3b4654"/>
+    <stop offset="1" stop-color="#5a6877"/>
+  </linearGradient>
+  <!-- the bevel crest: full steel ramp, white end kept INSIDE the contour so it
+       never touches the daylight background -->
+  <linearGradient id="wd-rim" x1="0.08" y1="0" x2="0.92" y2="1">
+    <stop offset="0" stop-color="#f2f6fb"/>
+    <stop offset=".13" stop-color="#cdd8e4"/>
+    <stop offset=".33" stop-color="#97a5b4"/>
+    <stop offset=".56" stop-color="#64717f"/>
+    <stop offset=".78" stop-color="#3e4854"/>
+    <stop offset="1" stop-color="#2a323b"/>
+  </linearGradient>
+  <!-- recessed front face, the dark mass that carries the piece on daylight -->
+  <linearGradient id="wd-face" x1="0.2" y1="0" x2="0.78" y2="1">
+    <stop offset="0" stop-color="#424c58"/>
+    <stop offset=".34" stop-color="#2a313b"/>
+    <stop offset=".72" stop-color="#1a1f26"/>
+    <stop offset="1" stop-color="#242b34"/>
+  </linearGradient>
+  <linearGradient id="wd-groove" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0d1014"/>
+    <stop offset=".55" stop-color="#1d242c"/>
+    <stop offset="1" stop-color="#4e5b69"/>
+  </linearGradient>
+  <linearGradient id="wd-ember" x1="0.4" y1="1" x2="0.6" y2="0">
+    <stop offset="0" stop-color="#6e1608"/>
+    <stop offset=".3" stop-color="#e03b14"/>
+    <stop offset=".68" stop-color="#ff9b3a"/>
+    <stop offset="1" stop-color="#ffe9bd"/>
+  </linearGradient>
+  <radialGradient id="wd-rivet" cx="0.34" cy="0.28" r="0.82">
+    <stop offset="0" stop-color="#ffffff"/>
+    <stop offset=".2" stop-color="#d6e0ec"/>
+    <stop offset=".52" stop-color="#8793a2"/>
+    <stop offset=".82" stop-color="#4c5663"/>
+    <stop offset="1" stop-color="#2b323b"/>
+  </radialGradient>
+</defs>
+
+<g transform="rotate(-8 128 128) translate(128 128) scale(1.12) translate(-128 -120)">
+  <!-- 1. silhouette + dark contour -->
+  <path fill="url(#wd-cont)" d="M96 30 L160 30 C168 30 173 35 174 44 L187 116 C191 134 198 145 208 152 L204 190 L190 170 L180 204 L164 178 L150 208 L134 182 L118 210 L104 180 L90 202 L76 174 L62 196 L48 152 C58 145 65 134 69 116 L82 44 C83 35 88 30 96 30 Z"/>
+
+  <!-- 2. bevel crest -->
+  <path fill="url(#wd-rim)" d="M100 39 L156 39 C163 39 166 43 167 50 L180 117 C184 134 190 144 199 151 L196 180 L186 163 L178 192 L164 170 L151 196 L136 174 L121 198 L108 172 L94 192 L81 167 L68 186 L57 152 C66 145 72 134 76 117 L89 50 C90 43 93 39 100 39 Z"/>
+
+  <!-- 3. recessed face -->
+  <path fill="url(#wd-face)" d="M107 53 L149 53 C154 53 157 56 158 61 L170 118 C174 134 179 143 187 150 L185 168 L177 155 L171 178 L159 160 L148 182 L136 164 L124 184 L112 162 L100 180 L89 158 L78 174 L68 152 C76 145 81 134 85 118 L97 61 C98 56 101 53 107 53 Z"/>
+
+  <!-- 4. the root groove: where the tooth meets the wheel rim. Reads at 72px as the
+          line that turns a wedge into a machined part. -->
+  <path fill="url(#wd-groove)" d="M70 141 C76 145 80 148 85 150 L171 150 C176 148 180 145 186 141 L189 158 C182 155 177 153 171 162 L85 162 C79 153 74 155 67 158 Z"/>
+
+  <!-- 5. machining ridges on the face, held within ~6% of the face value so they
+          average out instead of shifting the plane when they go sub-pixel at 32px -->
+  <path fill="#171c23" d="M101 76 L155 76 L155 81 L100 81 Z"/>
+  <path fill="#303945" d="M100 81 L155 81 L155 83 L100 83 Z"/>
+  <path fill="#171c23" d="M97 110 L159 110 L159 115 L96 115 Z"/>
+  <path fill="#303945" d="M96 115 L159 115 L159 117 L96 117 Z"/>
+  <path fill="#171c23" d="M93 128 L163 128 L163 133 L92 133 Z"/>
+  <path fill="#303945" d="M92 133 L163 133 L163 135 L92 135 Z"/>
+
+  <!-- 6. stress fracture, root to mid-body, still hot. Tapered polygon rather than a
+          stroke so it cannot resolve below a pixel and turn to haze. -->
+  <path fill="url(#wd-ember)" d="M90 192 L99 188 L108 162 L116 160 L111 136 L120 132 L116 112 L122 108 L119 92 L112 97 L113 115 L105 119 L110 143 L101 147 L95 170 L87 175 Z"/>
+  <!-- secondary hairline on the opposite root, cold (already cooled) -->
+  <path fill="#0e1218" d="M169 186 L173 170 L167 158 L172 144 L168 142 L162 158 L168 170 L164 185 Z"/>
+
+  <!-- 7. rivet: raised dome, its own occlusion ring and cast shadow -->
+  <ellipse cx="131" cy="92" rx="25" ry="25" fill="#0f1319"/>
+  <ellipse cx="128" cy="89" rx="23" ry="23" fill="url(#wd-rivet)"/>
+  <path fill="#f6f9ff" d="M116 78 C121 73 131 71 138 74 C130 75 123 79 119 85 Z"/>
+  <ellipse cx="128" cy="89" rx="10" ry="10" fill="#39424e"/>
+  <ellipse cx="126" cy="87" rx="7" ry="7" fill="#1d232b"/>
+
+  <!-- 8. key speculars. These sit ON the already-bright bevel, so when they blur away
+          at 32px the value of that plane is unchanged - the piece only loses sparkle,
+          never contrast. -->
+  <path fill="#ffffff" d="M101 40 L155 40 L153 47 L103 47 Z"/>
+  <path fill="#eaf1fa" d="M91 54 L98 54 L85 118 L77 116 Z"/>
+  <path fill="#d7e2ef" d="M72 126 L80 128 L67 152 L60 146 Z"/>
+  <!-- lower-right fill light: the one band that keeps the dark contour from running
+       all the way round on the near-black skins -->
+  <path fill="#7f8e9e" d="M186 120 L191 139 C194 147 199 152 205 155 L203 170 C193 164 186 152 182 136 Z"/>
+  <path fill="#5f6d7c" d="M196 180 L198 196 L189 184 Z"/>
+</g>
+</svg>
