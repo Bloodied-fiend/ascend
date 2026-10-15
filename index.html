@@ -665,23 +665,79 @@ button{font:inherit;color:inherit}
 .glitch,.sys.gl{--ab1:#ff2a6d;--ab2:#62d8e6}
 [data-skin="daylight"] .glitch,[data-skin="daylight"] .sys.gl{--ab2:#0096b4} /* 3.52:1 on white, within .1 of the magenta, so both halves carry equal weight */
 .glitch{animation:glitch .5s steps(1) 2}
-.sys.gl{animation:sysgl .62s steps(1) 1}
+.sys.gl{animation:sysgl 1.8s steps(1) 1}
 /* the RGB split is cyan/magenta on every skin: chromatic aberration is the colour, not a theme choice */
-@keyframes sysgl{0%{transform:translate(-4px,2px);filter:drop-shadow(3px 0 var(--ab1)) drop-shadow(-3px 0 var(--ab2));background-color:var(--sysbg)}
-  16%{transform:translate(5px,-2px) skewX(-1.2deg);clip-path:inset(0 0 44% 0)}
-  32%{transform:translate(-3px,1px);filter:drop-shadow(-4px 0 var(--ab1)) drop-shadow(4px 0 var(--ab2));clip-path:inset(26% 0 20% 0)}
-  48%{transform:translate(2px,0) skewX(.9deg);clip-path:inset(64% 0 0 0)}
-  64%{transform:none;clip-path:none;filter:none;background-color:var(--sysbg)}
-  72%{opacity:.5}
+@keyframes sysgl{
+  /* Three bursts with calm between them: A 0-20%, B 37-59%, C 77-97% of 1.8s. Settle-then-break reads as
+     far more broken than continuous motion. steps(1) holds each stop ~50ms -- slow enough to read as
+     failure rather than as movement. 620ms of dead tail was cut; it was 26% of the runtime drawing nothing.
+     background-color is OPAQUE wherever a filter is live (drop-shadow composites behind the element, so on
+     a translucent panel a live filter floods the whole window) and hands the glass back at each calm, so
+     the see-through never arrives as an uncaused change after the motion has already stopped.
+     Opacity never drops below .45 on a stop that is also clipped: two subtractions at once reads as a
+     dropped frame rather than as a tear. */
+  0%{transform:translate(-5px,2px) skewX(-.6deg);filter:drop-shadow(4px 0 var(--ab1)) drop-shadow(-4px 0 var(--ab2));background-color:var(--sysbg)}
+  4%{transform:translate(7px,-3px);clip-path:inset(0 0 68% 0);background-color:var(--sysbg)}
+  8%{transform:translate(-8px,1px);clip-path:inset(12% 0 52% 0);filter:drop-shadow(-6px 0 var(--ab1)) drop-shadow(6px 0 var(--ab2));background-color:var(--sysbg)}
+  12%{transform:translate(4px,3px) skewX(1.6deg);clip-path:inset(38% 0 28% 0);opacity:.72;background-color:var(--sysbg)}
+  16%{transform:translate(-6px,-2px);clip-path:inset(58% 0 14% 0);filter:drop-shadow(5px 0 var(--ab2)) drop-shadow(-5px 0 var(--ab1));background-color:var(--sysbg)}
+  20%{transform:none;clip-path:none;filter:none;opacity:1;background-color:var(--pnbg)}
+  37%{transform:translate(9px,-1px);clip-path:inset(4% 0 74% 0);filter:drop-shadow(-7px 0 var(--ab1)) drop-shadow(7px 0 var(--ab2));background-color:var(--sysbg)}
+  41%{transform:translate(-9px,3px) skewX(-1.9deg);clip-path:inset(26% 0 44% 0);background-color:var(--sysbg)}
+  45%{transform:translate(5px,0);clip-path:inset(62% 0 10% 0);opacity:.5;filter:drop-shadow(6px 0 var(--ab1)) drop-shadow(-6px 0 var(--ab2));background-color:var(--sysbg)}
+  49%{transform:translate(-3px,-4px) skewX(1.3deg);clip-path:inset(8% 0 60% 0);opacity:1;background-color:var(--sysbg)}
+  53%{transform:translate(6px,2px);clip-path:inset(44% 0 26% 0);filter:drop-shadow(-4px 0 var(--ab2)) drop-shadow(4px 0 var(--ab1));background-color:var(--sysbg)}
+  59%{transform:none;clip-path:none;filter:none;opacity:1;background-color:var(--pnbg)}
+  77%{transform:translate(-4px,1px);clip-path:inset(72% 0 0 0);filter:drop-shadow(5px 0 var(--ab1)) drop-shadow(-5px 0 var(--ab2));background-color:var(--sysbg)}
+  81%{transform:translate(8px,-2px) skewX(-1.1deg);clip-path:inset(18% 0 50% 0);background-color:var(--sysbg)}
+  85%{transform:translate(-6px,0);clip-path:inset(48% 0 30% 0);opacity:.45;background-color:var(--sysbg)}
+  89%{transform:translate(3px,3px);clip-path:inset(0 0 86% 0);opacity:1;filter:drop-shadow(-3px 0 var(--ab1)) drop-shadow(3px 0 var(--ab2));background-color:var(--sysbg)}
+  93%{transform:translate(-2px,0);clip-path:inset(34% 0 38% 0);background-color:var(--sysbg)}
+  97%{transform:none;clip-path:none;filter:none;opacity:1;background-color:var(--pnbg)}
   100%{transform:none;clip-path:none;filter:none;opacity:1}}
-.sys.pn{background:color-mix(in srgb,var(--sysbg) 80%,transparent);backdrop-filter:blur(10px) saturate(1.15);-webkit-backdrop-filter:blur(10px) saturate(1.15)}
-[data-skin="daylight"] .sys.pn{background:color-mix(in srgb,var(--sysbg) 92%,transparent)} /* white panel over a dark scrim greys out fast; at 80% the chip/date measure 4.05 and fail AA */
+/* a harder title glitch, scoped to this window so LEVEL UP and BOSS DEFEATED keep the gentler one */
+#ov .sys.pn .lvhero.glitch{animation:pnhero 1.8s steps(1) 1}
+@keyframes pnhero{
+  0%{text-shadow:4px 0 var(--ab1),-4px 0 var(--ab2);transform:translateX(-6px) scaleX(1.04)}
+  5%{clip-path:inset(0 0 55% 0);transform:translateX(8px)}
+  10%{clip-path:inset(42% 0 22% 0);transform:translateX(-7px) scaleX(.96);text-shadow:-5px 0 var(--ab1),5px 0 var(--ab2)}
+  15%{clip-path:inset(70% 0 0 0);transform:translateX(5px)}
+  20%{clip-path:none;transform:none;text-shadow:none}
+  37%{clip-path:inset(18% 0 60% 0);transform:translateX(-9px);text-shadow:6px 0 var(--ab2),-6px 0 var(--ab1)}
+  44%{clip-path:inset(58% 0 14% 0);transform:translateX(7px) scaleX(1.05)}
+  51%{clip-path:inset(30% 0 40% 0);transform:translateX(-5px);text-shadow:-6px 0 var(--ab1),6px 0 var(--ab2)}
+  59%{clip-path:none;transform:none;text-shadow:none}
+  77%{clip-path:inset(62% 0 8% 0);transform:translateX(6px);text-shadow:5px 0 var(--ab1),-5px 0 var(--ab2)}
+  83%{clip-path:inset(10% 0 66% 0);transform:translateX(-8px) scaleX(.97)}
+  89%{clip-path:none;transform:none;opacity:.5}
+  93%{opacity:1;text-shadow:3px 0 var(--ab2),-3px 0 var(--ab1)}
+  97%{text-shadow:none;transform:none;clip-path:none}
+  100%{text-shadow:none;transform:none;clip-path:none;opacity:1}}
+/* the body takes a split on each burst too, so the tear is the whole window and not just its chrome */
+#ov .sys.pn.gl .glist.pnl .gq{animation:pnbody 1.8s steps(1) 1}
+@keyframes pnbody{
+  0%{text-shadow:2px 0 var(--ab1),-2px 0 var(--ab2);transform:translateX(3px)}
+  9%{text-shadow:-3px 0 var(--ab1),3px 0 var(--ab2);transform:translateX(-4px)}
+  20%{text-shadow:none;transform:none}
+  37%{text-shadow:3px 0 var(--ab2),-3px 0 var(--ab1);transform:translateX(5px)}
+  48%{text-shadow:-2px 0 var(--ab1),2px 0 var(--ab2);transform:translateX(-3px)}
+  59%{text-shadow:none;transform:none}
+  77%{text-shadow:2px 0 var(--ab1),-2px 0 var(--ab2);transform:translateX(-4px)}
+  87%{text-shadow:-3px 0 var(--ab2),3px 0 var(--ab1);transform:translateX(3px)}
+  97%{text-shadow:none;transform:none}
+  100%{text-shadow:none;transform:none}}
+.sys.pn{--pnbg:color-mix(in srgb,var(--sysbg) 80%,transparent);background:var(--pnbg);backdrop-filter:blur(10px) saturate(1.15);-webkit-backdrop-filter:blur(10px) saturate(1.15)}
+[data-skin="daylight"] .sys.pn{--pnbg:color-mix(in srgb,var(--sysbg) 92%,transparent)} /* white panel over a dark scrim greys out fast; at 80% the chip/date measure 4.05 and fail AA */
 @supports not (backdrop-filter:blur(1px)){.sys.pn{background:var(--sysbg)}} /* no blur, no translucency: unreadable without it */
 .pnscan{position:absolute;inset:0;pointer-events:none;border-radius:2px;overflow:hidden}
-.pnscan::before{content:"";position:absolute;left:0;right:0;height:42%;
-  background:linear-gradient(transparent,color-mix(in srgb,var(--hl) 22%,transparent),transparent);
-  animation:pnsweep .62s linear 1 forwards}
-@keyframes pnsweep{from{transform:translateY(-120%)}to{transform:translateY(240%)}}
+.pnscan::before{content:"";position:absolute;left:0;right:0;height:38%;
+  background:linear-gradient(transparent,color-mix(in srgb,var(--hl) 26%,transparent),transparent);
+  animation:pnsweep 1.8s steps(1) 1 forwards}
+.pnscan::after{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,color-mix(in srgb,var(--hl) 16%,transparent) 0 2px,transparent 2px 7px);
+  animation:pnbars 1.8s steps(1) 1 forwards}
+@keyframes pnsweep{0%{transform:translateY(-120%);opacity:1}10%{transform:translateY(60%)}20%{opacity:0}37%{opacity:1;transform:translateY(-80%)}48%{transform:translateY(120%)}59%{opacity:0}77%{opacity:1;transform:translateY(-40%)}88%{transform:translateY(160%)}97%{opacity:0}100%{opacity:0}}
+@keyframes pnbars{0%{opacity:.9;transform:translateY(0)}8%{opacity:0}13%{opacity:.7;transform:translateY(3px)}20%{opacity:0}37%{opacity:.8;transform:translateY(-2px)}45%{opacity:0}51%{opacity:.6;transform:translateY(3px)}59%{opacity:0}77%{opacity:.7;transform:translateY(-3px)}85%{opacity:0}90%{opacity:.5;transform:translateY(2px)}97%{opacity:0}100%{opacity:0}}
 /* .glist > li > span:last-child paints the VALUE column (mono, --hl). A note is content, not chrome:
    --hl is the System's frame colour, and 34ch of mono turns four entries into eleven ragged lines. */
 .glist.pnl{gap:0;margin:12px 0 0;border-top:1px solid var(--line)}
@@ -1535,22 +1591,31 @@ function sfxGlitch(){if(!autoMusic)return; // "Play music on open" is the only a
   // document meant the sting fired as the window was being dismissed, with the tear already gone. A sting
   // over a dying window is worse than silence, so that gesture gets none.
   if(actx.state==="suspended"){actx.resume().then(ring).catch(()=>{
-    const go=e=>{if(e.target.closest("#sysA"))return;actx.resume().then(()=>{ring();reglitch()}).catch(()=>{})};
+    const go=e=>{const r=$("#sysA").getBoundingClientRect(); // positional, not target-based: a clipped
+      // window hit-tests as #ov, so a target check lets a dismiss tap restart the whole animation
+      if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom)return;
+      actx.resume().then(()=>{ring();reglitch()}).catch(()=>{})};
     $("#ov").addEventListener("pointerdown",go,{once:true})});return}
   ring()}
-function ring(){const t=actx.currentTime;
-  const bp=actx.createBiquadFilter();bp.type="bandpass";bp.frequency.value=1800;bp.Q.value=.7;
-  const g=actx.createGain();g.gain.value=.22;bp.connect(g);g.connect(actx.destination);
-  const n=actx.createBufferSource(),buf=actx.createBuffer(1,Math.floor(actx.sampleRate*.35),actx.sampleRate),d=buf.getChannelData(0);
-  for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2.2); // torn-tape burst, decaying
+// One sting per visual burst. Offsets are the keyframe burst starts (0%, 28%, 58% of 2.4s) and are
+// scheduled on the AudioContext clock, not setTimeout, so they stay locked to the animation.
+const BURSTS=[0,.666,1.386]; // the keyframe burst starts: 0%, 37%, 77% of 1.8s
+function ring(){const t0=actx.currentTime;
+  BURSTS.forEach((off,i)=>sting(t0+off,i));
+  try{const v=aud.volume;aud.volume=Math.min(v,.22);setTimeout(()=>{aud.volume=v},1900)}catch(e){}} // duck the soundtrack under the whole run
+function sting(t,i){const dur=[.35,.26,.3][i],hz=[1800,2600,1200][i];
+  const bp=actx.createBiquadFilter();bp.type="bandpass";bp.frequency.value=hz;bp.Q.value=.7;
+  const g=actx.createGain();g.gain.value=[.22,.18,.2][i];bp.connect(g);g.connect(actx.destination);
+  const n=actx.createBufferSource(),buf=actx.createBuffer(1,Math.floor(actx.sampleRate*dur),actx.sampleRate),d=buf.getChannelData(0);
+  for(let k=0;k<d.length;k++)d[k]=(Math.random()*2-1)*Math.pow(1-k/d.length,2.2); // torn-tape burst, decaying
   n.buffer=buf;n.connect(bp);n.start(t);
-  for(const[f,at,dur]of[[880,0,.09],[622,.11,.13]]){ // two detuned square blips: the System's voice
+  const blips=[[[880,0,.09],[622,.11,.13]],[[1245,0,.06],[932,.08,.08]],[[740,0,.1],[494,.12,.16]]][i];
+  for(const[f,at,bd]of blips){ // detuned square blips: the System's voice, pitched differently each burst
     const o=actx.createOscillator(),og=actx.createGain();o.type="square";
-    o.frequency.setValueAtTime(f,t+at);o.frequency.exponentialRampToValueAtTime(f*.5,t+at+dur);
+    o.frequency.setValueAtTime(f,t+at);o.frequency.exponentialRampToValueAtTime(f*.5,t+at+bd);
     og.gain.setValueAtTime(.0001,t+at);og.gain.exponentialRampToValueAtTime(.16,t+at+.012);
-    og.gain.exponentialRampToValueAtTime(.0001,t+at+dur);
-    o.connect(og);og.connect(actx.destination);o.start(t+at);o.stop(t+at+dur+.03)}
-  try{const v=aud.volume;aud.volume=Math.min(v,.25);setTimeout(()=>{aud.volume=v},460)}catch(e){}} // duck the soundtrack under it
+    og.gain.exponentialRampToValueAtTime(.0001,t+at+bd);
+    o.connect(og);og.connect(actx.destination);o.start(t+at);o.stop(t+at+bd+.03)}}
 function reglitch(){const ov=$("#ov");if(ov.hidden)return;
   for(const[el,c]of[[ov.querySelector(".sys"),"gl"],[$("#sysT"),"glitch"]]){el.classList.remove(c);void el.offsetWidth;el.classList.add(c)}}
 // Soundtrack: plays a file the viewer loads; nothing is uploaded anywhere

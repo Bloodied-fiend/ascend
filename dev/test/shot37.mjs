@@ -59,6 +59,16 @@ try {
 
   // clip-path clips the OUTPUT of filter, so at 200ms the chromatic fringe is already cut away.
   // 0ms is the only frame that shows the split itself; one still cannot carry both.
+  // the tear is three bursts over 2.4s (A 0%, B 28%, C 58%) -- capture one frame inside each of the
+  // later two, or a review only ever sees burst A and cannot tell whether B and C actually fire
+  for (const [ms, name] of [[700, "burst2"], [1430, "burst3"]]) {
+    await ev(`(()=>{for(const[sel,n]of[["#ov .sys","sysgl"],["#sysT","pnhero"]]){
+      const node=document.querySelector(sel),a=node&&node.getAnimations().find(x=>x.animationName===n);
+      if(a){a.currentTime=${ms};a.pause()}}})()`);
+    await wait(250);
+    await shot(`${skin}-patch-${name}`);
+  }
+
   await ev(`(()=>{for(const[sel,name]of[["#ov .sys","sysgl"],["#sysT","glitch"]]){
     const node=document.querySelector(sel),a=node.getAnimations().find(x=>x.animationName===name);
     if(a){a.currentTime=0;a.pause()}}})()`);
