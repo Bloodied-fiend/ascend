@@ -649,8 +649,8 @@ button{font:inherit;color:inherit}
 .glist li{display:flex;justify-content:space-between;gap:10px}
 .glist>li>span:last-child{font-family:var(--f-mono);color:var(--hl)}
 .glist .gq{display:flex;gap:8px;align-items:center}
-.glitch,.sys.gl{--ab1:#ff2a6d;--ab2:#62d8e6}
-[data-skin="daylight"] .glitch,[data-skin="daylight"] .sys.gl{--ab2:#0096b4} /* 3.52:1 on white, within .1 of the magenta, so both halves carry equal weight */
+.glitch,.sys.gl{--ab1:#ff2a6d;--ab2:#62d8e6;--ab3:#39ff6a}
+[data-skin="daylight"] .glitch,[data-skin="daylight"] .sys.gl{--ab2:#0096b4;--ab3:#15a03c} /* 3.52:1 on white, within .1 of the magenta, so both halves carry equal weight */
 .glitch{animation:glitch .5s steps(1) 2}
 .sys.gl{animation:sysgl 1.8s steps(1) 1}
 /* the RGB split is cyan/magenta on every skin: chromatic aberration is the colour, not a theme choice */
@@ -717,6 +717,37 @@ button{font:inherit;color:inherit}
 [data-skin="daylight"] .sys.pn{--pnbg:color-mix(in srgb,var(--sysbg) 92%,transparent)} /* white panel over a dark scrim greys out fast; at 80% the chip/date measure 4.05 and fail AA */
 @supports not (backdrop-filter:blur(1px)){.sys.pn{background:var(--sysbg)}} /* no blur, no translucency: unreadable without it */
 .pnscan{position:absolute;inset:0;pointer-events:none;border-radius:2px;overflow:hidden}
+.pnscan b{position:absolute;left:-12%;right:-12%;height:var(--h);top:var(--y);background:var(--c);opacity:0;
+  mix-blend-mode:screen;animation:pnbar 1.8s steps(1) var(--d) 1}
+[data-skin="daylight"] .pnscan b{mix-blend-mode:multiply} /* screen on near-white is invisible */
+[data-skin="daylight"] .pnscan::after{background:repeating-linear-gradient(0deg,rgba(0,0,0,.10) 0 2px,transparent 2px 7px)} /* blue ruling on white reads as notebook paper */
+.pnscan{isolation:isolate} /* bound nine blended layers to this box instead of the whole stack */
+/* each bar jumps rather than slides: a datamosh band is a torn copy, not a moving object */
+@keyframes pnbar{
+  0%{opacity:.85;transform:translateX(-14%)}
+  5%{opacity:0}
+  9%{opacity:.7;transform:translateX(11%)}
+  14%{opacity:0}
+  18%{opacity:.9;transform:translateX(-7%)}
+  20%{opacity:0;transform:none}
+  37%{opacity:.8;transform:translateX(16%)}
+  42%{opacity:0}
+  47%{opacity:.95;transform:translateX(-18%)}
+  52%{opacity:0}
+  56%{opacity:.7;transform:translateX(6%)}
+  59%{opacity:0;transform:none}
+  77%{opacity:.85;transform:translateX(-11%)}
+  82%{opacity:0}
+  87%{opacity:.75;transform:translateX(13%)}
+  92%{opacity:0}
+  95%{opacity:.6;transform:translateX(-5%)}
+  97%{opacity:0;transform:none}
+  100%{opacity:0}}
+/* the corrupted System label: red-on-black failure text, the reference's DATA_CORRUPT register */
+.pncorrupt{--fail:var(--danger);color:var(--fail)!important;border-color:var(--fail)!important}
+[data-skin="daylight"] .pncorrupt{--fail:#a81508} /* ~5.0:1 on the light panel; --danger measures 3.70 there */
+.pnglyph{font-family:var(--f-mono)!important;letter-spacing:.02em!important;
+  display:inline-block;width:var(--pnw);overflow:hidden;white-space:nowrap;vertical-align:bottom}
 .pnscan::before{content:"";position:absolute;left:0;right:0;height:38%;
   background:linear-gradient(transparent,color-mix(in srgb,var(--hl) 26%,transparent),transparent);
   animation:pnsweep 1.8s steps(1) 1 forwards}
@@ -1497,8 +1528,18 @@ function burst(color){if(RM)return;const fx=$("#fx");fx.style.setProperty("--fxc
 // already reach 721px, and 12 push ACCEPT below the fold with no scroll affordance. The 51px of headroom
 // is one three-line entry. Merge or cut; do not let it scroll. Re-measure when the note type or the li
 // padding changes -- this is not a constant, and inheriting it as one is how it stops being true.
+// y%, height, colour, negative animation-delay. Irregular by design -- evenly spaced bars read as a
+// venetian blind rather than as corruption.
+const BARS=[[6,"5px","var(--ab1)",-.04],[14,"12px","var(--ab2)",-.31],[23,"3px","var(--ab3)",-.12],
+  [34,"8px","var(--ab2)",-.47],[45,"4px","var(--ab1)",-.19],[57,"16px","var(--ab3)",-.62],
+  [69,"6px","var(--ab1)",-.08],[78,"10px","var(--ab2)",-.38],[88,"3px","#fff",-.25]];
+const barHTML=()=>BARS.map(([y,h,c,d])=>`<b style="--y:${y}%;--h:${h};--c:${c};--d:${d}s"></b>`).join("");
 const vLabel=v=>"1."+String(v).padStart(3,"0"); // 37 -> "1.037"; a major overhaul starts the 2.x line
 const PATCH=[
+  {v:39,d:"Oct 15, 2026",lines:[
+    "The tear cuts the window into bands now instead of shaking the whole frame.",
+    "The System reports its own failure while it is breaking, then takes it back.",
+    "New audio: three bursts of broadband static, gated hard."]},
   {v:38,d:"Oct 15, 2026",lines:[
     "The System tears three times now before it settles.",
     "Dismissing an update no longer restarts the tear.",
@@ -1510,7 +1551,7 @@ const PATCH=[
     "A damaged or hand-edited save file can no longer freeze the System."]}];
 const patchNote=p=>({chip:"[ SYSTEM UPDATE ]",title:vLabel(p.v),hero:true,center:true,glitch:true,cls:"gl pn",
   body:"The System has been patched.",after:true,onOpen:sfxGlitch,actions:[{label:"Accept",acc:true}],
-  clock:esc(p.d).toUpperCase(),extra:`<i class="pnscan" aria-hidden="true"></i>`+
+  clock:esc(p.d).toUpperCase(),extra:`<i class="pnscan" aria-hidden="true">${barHTML()}</i>`+
     `<ul class="glist pnl">${p.lines.map(l=>`<li><span class="gq">${esc(l)}</span></li>`).join("")}</ul>`});
 const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const queue=[];let typer=null,lastFocus=null;
@@ -1530,7 +1571,7 @@ function nextNote(){const n=queue.shift();if(!n)return;
   if(!n.body)b.innerHTML="";else{b.innerHTML=`<span class="ghost" aria-hidden="true"></span><span class="out"></span>`;b.firstChild.textContent=n.body;const out=b.lastChild;
     if(RM)out.textContent=n.body;else{let i=0;typer=setInterval(()=>{out.textContent=n.body.slice(0,++i);if(i>=n.body.length)clearInterval(typer)},18)}}
   if(n.burst&&(queueBurst||n.chip==="[ RE-ASSESSMENT ]")){queueBurst=false;burst(n.burst)}
-  ov.hidden=false;if(n.onOpen)setTimeout(n.onOpen);screenEl.inert=true;$(".pitch").inert=true;$("#tabs").inert=true;$("#player").hidden=true;$("#sysA button").focus();
+  ov.hidden=false;if(n.gl!==false&&sys.classList.contains("gl"))setTimeout(corrupt);if(n.onOpen)setTimeout(n.onOpen);screenEl.inert=true;$(".pitch").inert=true;$("#tabs").inert=true;$("#player").hidden=true;$("#sysA button").focus();
 }
 let noteActs=[],queueBurst=false;
 function closeNote(i=0){clearInterval(typer);$("#ov").hidden=true;screenEl.inert=false;$(".pitch").inert=false;$("#tabs").inert=false;$("#player").hidden=S.tab==="test";
@@ -1580,23 +1621,61 @@ function sfxGlitch(){if(!autoMusic)return; // "Play music on open" is the only a
 // scheduled on the AudioContext clock, not setTimeout, so they stay locked to the animation.
 const BURSTS=[0,.666,1.386]; // the keyframe burst starts: 0%, 37%, 77% of 1.8s
 function ring(){const t0=actx.currentTime;
-  BURSTS.forEach((off,i)=>sting(t0+off,i));
-  try{const v=aud.volume;aud.volume=Math.min(v,.22);setTimeout(()=>{aud.volume=v},1900)}catch(e){}} // duck the soundtrack under the whole run
-function sting(t,i){const dur=[.35,.26,.3][i],hz=[1800,2600,1200][i];
-  const bp=actx.createBiquadFilter();bp.type="bandpass";bp.frequency.value=hz;bp.Q.value=.7;
-  const g=actx.createGain();g.gain.value=[.22,.18,.2][i];bp.connect(g);g.connect(actx.destination);
+  BURSTS.forEach((off,i)=>crunch(t0+off,i));
+  try{const v=aud.volume;aud.volume=Math.min(v,.18);setTimeout(()=>{aud.volume=v},1900)}catch(e){}} // duck the soundtrack under the whole run
+// Built from a measured reference (the clip Jaime sent, analysed by spectrogram + silencedetect):
+// 19 takes, each 0.6-1.9s, every one a FLAT vertical band from DC to 8kHz -- broadband noise, weighted
+// below 700Hz, square edges with no decay tail, and visible vertical striping inside the band, i.e. the
+// noise is chopped on and off during the burst. No curved tonal traces anywhere, so no sweeps and no
+// pitched blips: those read as a game sound effect and the reference is a signal being destroyed.
+const CHOP=[ // on/off gate pattern as fractions of the burst, square edges only
+  [[0,1],[.17,0],[.24,.9],[.41,0],[.47,1],[.68,.35],[.78,.95],[1,0]],
+  [[0,.95],[.22,0],[.3,1],[.52,.2],[.6,.9],[.85,0],[.9,.8],[1,0]],
+  [[0,1],[.12,.3],[.19,1],[.33,0],[.4,.85],[.56,0],[.63,1],[.88,.4],[1,0]]];
+function crunch(t,i){const dur=[.38,.3,.44][i],lvl=[.26,.22,.25][i];
+  // broadband noise with the weight at the bottom, matching the reference's bright sub-700Hz band
+  const ls=actx.createBiquadFilter();ls.type="lowshelf";ls.frequency.value=320;ls.gain.value=9;
+  const g=actx.createGain();ls.connect(g);g.connect(actx.destination);
+  // setValueAtTime only -- every edge is square. A ramp here would round off the thing that makes it
+  // sound digital rather than like wind.
+  for(const[at,v]of CHOP[i])g.gain.setValueAtTime(Math.max(.0001,v*lvl),t+dur*at);
+  g.gain.setValueAtTime(.0001,t+dur);
   const n=actx.createBufferSource(),buf=actx.createBuffer(1,Math.floor(actx.sampleRate*dur),actx.sampleRate),d=buf.getChannelData(0);
-  for(let k=0;k<d.length;k++)d[k]=(Math.random()*2-1)*Math.pow(1-k/d.length,2.2); // torn-tape burst, decaying
-  n.buffer=buf;n.connect(bp);n.start(t);
-  const blips=[[[880,0,.09],[622,.11,.13]],[[1245,0,.06],[932,.08,.08]],[[740,0,.1],[494,.12,.16]]][i];
-  for(const[f,at,bd]of blips){ // detuned square blips: the System's voice, pitched differently each burst
-    const o=actx.createOscillator(),og=actx.createGain();o.type="square";
-    o.frequency.setValueAtTime(f,t+at);o.frequency.exponentialRampToValueAtTime(f*.5,t+at+bd);
-    og.gain.setValueAtTime(.0001,t+at);og.gain.exponentialRampToValueAtTime(.16,t+at+.012);
-    og.gain.exponentialRampToValueAtTime(.0001,t+at+bd);
-    o.connect(og);og.connect(actx.destination);o.start(t+at);o.stop(t+at+bd+.03)}}
+  for(let k=0;k<d.length;k++)d[k]=Math.random()*2-1; // flat white noise; the shaping is all in the filter and the gate
+  n.buffer=buf;n.connect(ls);n.start(t);n.stop(t+dur);
+  // the sub thump under the onset: the reference's brightest energy sits at the very bottom of each band
+  const sb=actx.createOscillator(),sg=actx.createGain();sb.type="sine";
+  sb.frequency.setValueAtTime(95,t);sb.frequency.exponentialRampToValueAtTime(38,t+.1);
+  sg.gain.setValueAtTime(.26,t);sg.gain.setValueAtTime(.0001,t+.12); // square, like everything else here
+  sb.connect(sg);sg.connect(actx.destination);sb.start(t);sb.stop(t+.14);
+  // a second, shorter stutter after a short gap -- the reference does this once, at 42.5s, split by 190ms
+  if(i===2){const g2=actx.createGain();const ls2=actx.createBiquadFilter();
+    ls2.type="lowshelf";ls2.frequency.value=320;ls2.gain.value=9;ls2.connect(g2);g2.connect(actx.destination);
+    const t2=t+dur+.13,d2=.12;
+    g2.gain.setValueAtTime(.2,t2);g2.gain.setValueAtTime(.05,t2+d2*.5);g2.gain.setValueAtTime(.0001,t2+d2);
+    const n2=actx.createBufferSource(),b2=actx.createBuffer(1,Math.floor(actx.sampleRate*d2),actx.sampleRate),e2=b2.getChannelData(0);
+    for(let k=0;k<e2.length;k++)e2[k]=Math.random()*2-1;
+    n2.buffer=b2;n2.connect(ls2);n2.start(t2);n2.stop(t2+d2)}}
+// Corrupted text during each burst: the chip becomes a failure code and the hero shreds into block
+// glyphs, then both restore from the strings captured before the first swap. Scheduled on the same burst
+// offsets as the tear and the stings. Skipped entirely under reduced motion.
+const GLYPHS="\u2593\u2592\u2591\u2588\u258c\u2590\u2571\u2572\u00d7\u2261\u25a0\u00a7\u03a3\u2206";
+const FAILS=["[ SYSTEM FAILURE ]","[ DATA_CORRUPT ]","[ ERROR 0x004F ]"];
+const scram=t=>[...t].map(c=>c===" "?" ":Math.random()<.72?GLYPHS[Math.random()*GLYPHS.length|0]:c).join("");
+function corrupt(){if(RM)return;const C=$("#sysC"),T=$("#sysT"),c0=C.textContent,t0=T.textContent;
+  T.style.setProperty("--pnw",Math.ceil(T.getBoundingClientRect().width)+"px"); // measured BEFORE the first swap
+  let done=false;
+  const restore=()=>{if(done)return;C.textContent=c0;T.textContent=t0;C.classList.remove("pncorrupt");T.classList.remove("pnglyph")};
+  BURSTS.forEach((off,i)=>{const at=off*1000;
+    for(const d of [0,70,140]) setTimeout(()=>{if(done||$("#ov").hidden)return;
+      C.textContent=FAILS[i];C.classList.add("pncorrupt");T.textContent=scram(t0);T.classList.add("pnglyph")},at+d);
+    setTimeout(restore,at+210)});
+  // one guaranteed restore past the end of the run, so a dismissed window can never strand corrupted text
+  setTimeout(()=>{restore();done=true},1900)}
 function reglitch(){const ov=$("#ov");if(ov.hidden)return;
-  for(const[el,c]of[[ov.querySelector(".sys"),"gl"],[$("#sysT"),"glitch"]]){el.classList.remove(c);void el.offsetWidth;el.classList.add(c)}}
+  for(const[el,c]of[[ov.querySelector(".sys"),"gl"],[$("#sysT"),"glitch"]]){el.classList.remove(c);void el.offsetWidth;el.classList.add(c)}
+  for(const b of ov.querySelectorAll(".pnscan b")){b.style.animation="none";void b.offsetWidth;b.style.animation=""}
+  corrupt()}
 // Soundtrack: plays a file the viewer loads; nothing is uploaded anywhere
 const aud=$("#aud"),pplay=$("#pplay");
 const sheet=$("#psheet"),toggleSheet=open=>{sheet.hidden=!open;$("#pdim").hidden=!open;$("#pmore").setAttribute("aria-expanded",open)};
@@ -1826,6 +1905,6 @@ $("#rfile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){tick();schedSync(500)}});
 if(!storageOK)setTimeout(()=>toast("WARNING · PROGRESS CAN'T BE SAVED HERE"),1500);
 if(saveBlocked)setTimeout(()=>notify({chip:"[ WARNING ]",tone:"danger",title:"Saved progress couldn't be read.",body:"Nothing has been overwritten. A copy was kept on this device.\nRestore a backup file from Profile, or reset to start fresh."}),1200);
-window.__ascend={get S(){return S},render,closeNote,totalXP,partyBoard:()=>partyCall({op:"board"}),sample:()=>{S=sample();rollover();save();render()}};
+window.__ascend={get S(){return S},render,closeNote,totalXP,corrupt,partyBoard:()=>partyCall({op:"board"}),sample:()=>{S=sample();rollover();save();render()}};
 })();
 </script>

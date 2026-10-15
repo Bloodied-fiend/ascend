@@ -6,6 +6,7 @@
 //   patch-torn     the tear frozen at 32% of the keyframe, so the RGB split is judgeable in a still
 //   profile-system the Profile row that reopens the notes once dismissed
 import { spawn } from "node:child_process"; import { setTimeout as wait } from "node:timers/promises"; import fs from "node:fs";
+import crypto from "node:crypto";
 const [prof, url, outDir, skinArg] = process.argv.slice(2);
 const skin = skinArg || "hunter";
 fs.mkdirSync(outDir, { recursive: true });
@@ -25,7 +26,12 @@ try {
   await s("Page.navigate", { url });
   await wait(3000); // let the service worker install and do its one reload before any capture
 
-  const shot = async name => { const r = await s("Page.captureScreenshot", { format: "png" }); fs.writeFileSync(`${outDir}/${name}.png`, Buffer.from(r.result.data, "base64")); console.log("wrote", name) };
+  const shots = new Map();
+  const shot = async name => { const r = await s("Page.captureScreenshot", { format: "png" });
+    const buf = Buffer.from(r.result.data, "base64");
+    fs.writeFileSync(`${outDir}/${name}.png`, buf);
+    shots.set(name, crypto.createHash("md5").update(buf).digest("hex"));
+    console.log("wrote", name) };
 
   // a lived-in save one version behind, so the update screen fires on startup
   const save = await ev(`(()=>{const s=JSON.parse(JSON.stringify(__ascend.S));
@@ -46,14 +52,14 @@ try {
   // animationName/playState to getComputedStyle but applies NO keyframe values -- getAnimations() is
   // empty and the capture is pixel-identical to the settled one. Restart the class and drive the real
   // Animation object instead.
-  await ev(`(()=>{const el=document.getElementById("ov").querySelector(".sys");
+  await ev(`(()=>{const ov=document.getElementById("ov"),el=ov.querySelector(".sys");
     el.classList.remove("gl");void el.offsetWidth;el.classList.add("gl");
     const T=document.getElementById("sysT");T.classList.remove("glitch");void T.offsetWidth;T.classList.add("glitch");
-    for(const[node,name,t]of[[el,"sysgl",200],[T,"glitch",100]]){
-      const a=node.getAnimations().find(x=>x.animationName===name);
-      if(!a)throw new Error("no running animation: "+name);
-      a.currentTime=t;a.pause()}
-    return getComputedStyle(el).clipPath})()`);
+    for(const b of ov.querySelectorAll(".pnscan b")){b.style.animation="none";void b.offsetWidth;b.style.animation=""}
+    let found=0;
+    for(const node of [ov,...ov.querySelectorAll("*")])for(const a of node.getAnimations()){a.currentTime=200;a.pause();found++}
+    if(!found)throw new Error("no running animations to freeze");
+    return found})()`);
   await wait(300);
   await shot(`${skin}-patch-torn`);
 
@@ -62,9 +68,8 @@ try {
   // the tear is three bursts over 2.4s (A 0%, B 28%, C 58%) -- capture one frame inside each of the
   // later two, or a review only ever sees burst A and cannot tell whether B and C actually fire
   for (const [ms, name] of [[700, "burst2"], [1430, "burst3"]]) {
-    await ev(`(()=>{for(const[sel,n]of[["#ov .sys","sysgl"],["#sysT","pnhero"]]){
-      const node=document.querySelector(sel),a=node&&node.getAnimations().find(x=>x.animationName===n);
-      if(a){a.currentTime=${ms};a.pause()}}})()`);
+    await ev(`(()=>{const ov=document.getElementById("ov");
+      for(const el of [ov,...ov.querySelectorAll("*")])for(const a of el.getAnimations()){a.currentTime=${ms};a.pause()}})()`);
     await wait(250);
     await shot(`${skin}-patch-${name}`);
   }
@@ -75,6 +80,33 @@ try {
   await wait(300);
   await shot(`${skin}-patch-split`);
 
+  // the corrupted SYSTEM FAILURE text is timer-driven, not an animation, so it cannot be frozen --
+  // retrigger it and capture inside its ~210ms window
+  await ev(`(()=>{const ov=document.getElementById("ov");
+    for(const n of [ov,...ov.querySelectorAll("*")])for(const a of n.getAnimations())a.cancel();
+    __ascend.corrupt()})()`);
+  await wait(90);
+  await shot(`${skin}-patch-corrupt`);
+
+  // corruption and bars together. The bar animations are frozen at the first offset that actually has one
+  // on screen, searched rather than guessed, then the text corruption is retriggered over the held frame.
+  const barAt = await ev(`(()=>{const ov=document.getElementById("ov"),el=ov.querySelector(".sys");
+    // the corrupt capture cancels every animation, so they have to be replayed before anything can be sought
+    el.classList.remove("gl");void el.offsetWidth;el.classList.add("gl");
+    const T=document.getElementById("sysT");T.classList.remove("glitch");void T.offsetWidth;T.classList.add("glitch");
+    for(const b of ov.querySelectorAll(".pnscan b")){b.style.animation="none";void b.offsetWidth;b.style.animation=""}
+    const all=[ov,...ov.querySelectorAll("*")];
+    for(const t of [120,200,300,420,700,780,900,1430,1500,1560]){
+      for(const n of all)for(const a of n.getAnimations()){a.currentTime=t;a.pause()}
+      let on=0;for(const b of ov.querySelectorAll(".pnscan b"))if(parseFloat(getComputedStyle(b).opacity)>.05)on++;
+      if(on)return t+":"+on}
+    return "none"})()`);
+  if (barAt === "none") throw new Error("no frame in the run has a visible corruption bar");
+  await ev(`__ascend.corrupt()`);
+  await wait(90);
+  await shot(`${skin}-patch-both`);
+  console.log(`   (bars+corrupt at t=${barAt.split(":")[0]}ms, ${barAt.split(":")[1]} bar(s) visible)`);
+
   // dismissed, then reopened from Profile
   await ev(`(()=>{const el=document.getElementById("ov").querySelector(".sys");el.style.animation="";el.style.animationDelay="";
     for(let i=0;i<8;i++)__ascend.closeNote(-1)})()`); await wait(300);
@@ -83,6 +115,16 @@ try {
   await wait(400);
   await shot(`${skin}-profile-system`);
 
+  // Twice now a frozen-animation capture produced a plausible image that silently omitted the thing under
+  // review. Distinctness is the only guard that catches that automatically.
+  {
+    const seen = new Map();
+    for (const [name, h] of shots) {
+      if (seen.has(h)) throw new Error(`IDENTICAL CAPTURES: ${seen.get(h)} and ${name} -- a frame that should differ does not`);
+      seen.set(h, name);
+    }
+    console.log(`   ${shots.size} captures, all distinct`);
+  }
   if (errs.length) console.log("PAGE ERRORS:", errs.join(" | "));
   ws.close();
 } finally { c.kill() }
