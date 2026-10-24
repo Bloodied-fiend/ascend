@@ -2,6 +2,7 @@
 // Identity = an invisible per-player key the app keeps on the device; only its SHA-256 is stored here.
 // Parties are invite-code only: you see exactly the players who share a party with you.
 import { createHash, randomInt } from "node:crypto";
+import { sendPush } from "./push.mjs";
 
 // SQL over Neon's HTTPS endpoint with plain fetch: no driver, so the deployed bundle is a few KB
 const DB = process.env.DATABASE_URL, DB_HOST = DB && new URL(DB).hostname;
@@ -16,7 +17,12 @@ const pool = { query: sql };
 const ORIGINS = (process.env.ALLOWED_ORIGINS || "https://bloodied-fiend.github.io").split(",").map(s => s.trim());
 const LOCAL = process.env.ALLOW_LOCAL === "1"; // tests from http://127.0.0.1:<port>
 const MAX_PARTIES = 5, MAX_MEMBERS = 20, NEW_PLAYERS_PER_IP_DAY = 10, PER_KEY_PER_MIN = 30;
-const OPS = new Set(["board", "sync", "create", "join", "leave", "forget", "kick"]);
+const OPS = new Set(["board", "sync", "create", "join", "leave", "forget", "kick", "psub", "poff", "ptest"]);
+// Push identity is the same device key, but deliberately NOT tied to a player row: the daily nudge
+// has to work whether or not you are in a party, and an unknown key cannot create a player.
+const PUSH_OPS = new Set(["psub", "poff", "ptest"]);
+const VAPID = { publicKey: process.env.VAPID_PUBLIC, privateKey: process.env.VAPID_PRIVATE,
+  subject: process.env.VAPID_SUBJECT || "https://bloodied-fiend.github.io/ascend/" };
 const CODE_ABC = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I
 
 const SCHEMA = `
@@ -28,6 +34,7 @@ create index if not exists members_player on members(player_id);
 create index if not exists players_ip on players(ip, created_at);
 alter table summaries add column if not exists title text;
 alter table parties add column if not exists owner_id bigint references players(id) on delete set null;
+create table if not exists push_subs(key_hash text primary key, endpoint text not null, p256dh text not null, auth text not null, tz_off int not null default 0, nudge_min int, enabled boolean not null default true, created_at timestamptz not null default now(), last_sent timestamptz);
 update parties set owner_id = (select player_id from members where party_id = parties.id order by joined_at, player_id limit 1) where owner_id is null;`;
 let ready = null;
 const init = () => (ready ??= (async () => { for (const s of SCHEMA.split(";").map(x => x.trim()).filter(Boolean)) await sql(s); })().catch(e => { ready = null; throw e; }));
@@ -54,6 +61,38 @@ async function board(me) {
 const hits = new Map();
 const limited = k => { const now = Date.now(), h = hits.get(k); if (!h || now - h.t > 60e3) { hits.set(k, { t: now, n: 1 }); if (hits.size > 5000) hits.clear(); return false; } return ++h.n > PER_KEY_PER_MIN; };
 
+const asInt = (v, lo, hi, d) => (Number.isInteger(v) && v >= lo && v <= hi ? v : d);
+
+async function pushOp(b, kh) {
+  if (!VAPID.publicKey || !VAPID.privateKey) return [503, { error: "push not configured" }];
+  if (b.op === "poff") {
+    await pool.query("delete from push_subs where key_hash = $1", [kh]);
+    return [200, { push: false }];
+  }
+  if (b.op === "psub") {
+    const s = b.sub || {};
+    // a push endpoint is a URL the push service gave the browser; we never construct one ourselves
+    if (typeof s.endpoint !== "string" || !/^https:\/\/[^\s]{10,500}$/.test(s.endpoint)) return [400, { error: "endpoint" }];
+    if (typeof s.p256dh !== "string" || typeof s.auth !== "string"
+      || !/^[A-Za-z0-9_-]{20,200}$/.test(s.p256dh) || !/^[A-Za-z0-9_-]{10,100}$/.test(s.auth)) return [400, { error: "keys" }];
+    await pool.query(
+      `insert into push_subs(key_hash, endpoint, p256dh, auth, tz_off, nudge_min, enabled)
+       values($1,$2,$3,$4,$5,$6,true)
+       on conflict (key_hash) do update set endpoint=$2, p256dh=$3, auth=$4, tz_off=$5, nudge_min=$6, enabled=true`,
+      [kh, s.endpoint, s.p256dh, s.auth, asInt(b.tz, -840, 840, 0), asInt(b.nudge, 0, 1439, null)]);
+    return [200, { push: true }];
+  }
+  // ptest: prove the whole chain end to end -- keys, subscription, push service, service worker
+  const r = (await pool.query("select endpoint, p256dh, auth from push_subs where key_hash = $1 and enabled", [kh])).rows[0];
+  if (!r) return [404, { error: "not subscribed" }];
+  const status = await sendPush(r, { title: "ASCEND", body: "Notifications are working.", tag: "test" }, VAPID);
+  if (status === 404 || status === 410) { // the push service says this subscription is dead
+    await pool.query("delete from push_subs where key_hash = $1", [kh]);
+    return [410, { error: "subscription expired, re-enable notifications" }];
+  }
+  return [status >= 200 && status < 300 ? 200 : 502, { sent: status }];
+}
+
 async function handle(req, ip) {
   const key = (req.headers.get("authorization") || "").replace(/^Bearer /, "");
   if (!/^[a-f0-9]{64}$/.test(key)) return [401, { error: "key" }];
@@ -67,6 +106,7 @@ async function handle(req, ip) {
   if (limited(key)) return [429, { error: "slow down" }];
   await init();
   const kh = createHash("sha256").update(key).digest("hex");
+  if (PUSH_OPS.has(b.op)) return pushOp(b, kh);
   // find or register the player (new players are rate-limited per IP)
   let me = (await pool.query("select id from players where key_hash = $1", [kh])).rows[0]?.id;
   const name = cleanName(b.name);

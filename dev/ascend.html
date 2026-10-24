@@ -1793,7 +1793,7 @@ async function partyCall(body,make){const k=partyKey(make);if(!k)throw new Error
   catch(e){throw new Error("Can't reach the party server. Try again when online.")}
   const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error&&j.error!=="server"?j.error[0].toUpperCase()+j.error.slice(1)+".":"Party server error. Try again.");
   if(seq!==pSeq)return j; // a newer call is in flight; don't let this older answer overwrite it
-  party={parties:j.parties||[],at:Date.now()};try{localStorage.setItem(PCACHE,JSON.stringify(party))}catch(e){}
+  if(Array.isArray(j.parties)){party={parties:j.parties,at:Date.now()};try{localStorage.setItem(PCACHE,JSON.stringify(party))}catch(e){}} // ops that are not about parties (push) must not empty the board
   if(S.tab==="quests"&&$("#ov").hidden)render(true);return j}
 let syncT=null;
 // after any change (and on open), push this player's summary; debounced, silent on failure
@@ -1803,6 +1803,38 @@ function schedSync(ms=4000){if(!partyKey(false)||!party.parties.length)return;cl
     partyCall({op:"sync",summary:sm}).then(()=>{lastSent=js}).catch(()=>{})},ms)}
 const ago=t=>{const m=Math.round((Date.now()-t)/6e4);return !t?"never":m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" d ago"};
 const codeField=()=>`<div class="qe" style="margin-top:12px;text-align:left"><label>Invite code<input id="pcode" maxlength="9" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="ABCD2345"></label></div>`;
+// Web Push. The public half of the VAPID pair is meant to be public; the private half lives only in
+// the function's environment. userVisibleOnly is required by Chrome -- every push must show something.
+const VAPID_PUB="BJQBTibU7703FFTCNnjBSZoDcGCi1LX5Sv8Jnsgim7Jm4jAaVDfKrZ77khmqwD2g5R0GHgKXhjSmJcSE3vPbRxk";
+const pushOK=()=>"serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window;
+const b64ToBytes=s=>{const p=s.replace(/-/g,"+").replace(/_/g,"/"),pad="=".repeat((4-p.length%4)%4);
+  const raw=atob(p+pad),a=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)a[i]=raw.charCodeAt(i);return a};
+const bytesToB64=b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+let pushState=null; // null = unknown, true/false = subscribed or not
+async function pushRefresh(){if(!pushOK())return pushState=false;
+  try{const reg=await navigator.serviceWorker.ready;const s=await reg.pushManager.getSubscription();
+    return pushState=!!s&&Notification.permission==="granted"}catch(e){return pushState=false}}
+async function pushOn(){
+  if(!pushOK())return toast("THIS BROWSER CAN'T DO NOTIFICATIONS");
+  // must be called from the tap: Chrome rejects a permission request without a user gesture
+  let perm=Notification.permission;
+  if(perm!=="granted")perm=await Notification.requestPermission();
+  if(perm!=="granted")return toast(perm==="denied"?"NOTIFICATIONS BLOCKED IN BROWSER SETTINGS":"NOTIFICATIONS NOT ENABLED");
+  try{
+    const reg=await navigator.serviceWorker.ready;
+    const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64ToBytes(VAPID_PUB)});
+    const j=sub.toJSON().keys||{};
+    await partyCall({op:"psub",sub:{endpoint:sub.endpoint,p256dh:j.p256dh,auth:j.auth},tz:-new Date().getTimezoneOffset()},true);
+    pushState=true;render(true);toast("NOTIFICATIONS ON")
+  }catch(e){toast((e&&e.message||"COULDN'T SUBSCRIBE").toUpperCase())}}
+async function pushOff(){
+  try{const reg=await navigator.serviceWorker.ready;const s=await reg.pushManager.getSubscription();
+    if(s)await s.unsubscribe();
+    await partyCall({op:"poff"});pushState=false;render(true);toast("NOTIFICATIONS OFF")
+  }catch(e){toast((e&&e.message||"COULDN'T UNSUBSCRIBE").toUpperCase())}}
+async function pushTest(){
+  try{await partyCall({op:"ptest"});toast("TEST SENT")}
+  catch(e){toast((e&&e.message||"TEST FAILED").toUpperCase())}}
 const partyNameField=()=>`<div class="qe" style="margin-top:12px;text-align:left"><label>Party name<input id="pname2" maxlength="24" placeholder="${esc((S.name||"Hunter")+"'s Party")}"></label></div>`;
 const MAXP=5; // mirrors MAX_PARTIES in backend/party.mjs; the server rejects the 6th with a 409
 const PSHARE="Shared with your party only: your name, title, level, rank, total XP, streak and Gates cleared. Never your quests or stats.";
@@ -2111,6 +2143,10 @@ ${sh("Relics",`${lootN()} FOUND`)}
 <div class="relics">${DROPS.map(([t,name,lore,c,rar,g])=>`<div class="relic ${S.loot[t]?"":"none"}" style="--c:var(--${c})">${hex(c,32,g)}<span><small class="rrar">${rar}</small><b>${esc(name)}</b><small>${esc(S.loot[t]?lore:"Not yet found.")}</small></span>${S.loot[t]?`<span class="rn">×${S.loot[t]}</span>`:""}</div>`).join("")}</div>
 <p class="relnote">Every completed quest rolls for a relic. The roll is fixed for that quest and day, and relics are worth no XP.</p>
 ${sh("Theme","SETTINGS")}<div class="themes" role="group" aria-label="Theme">${SKINS.map(([k,n,g])=>`<button class="skin" data-s="${k}" aria-pressed="${(document.documentElement.dataset.skin||"hunter")===k}"><span class="sw" style="background:linear-gradient(90deg,${g})"></span><span><b>${n}</b></span></button>`).join("")}</div>
+${sh("Notifications")}<div class="card glowcard" style="--c:var(--hl);display:grid;gap:10px">
+  <small style="color:var(--muted)">${pushOK()?(Notification.permission==="denied"?"Blocked in your browser settings for this site. Re-allow it there first.":"A reminder on your phone when the Daily Quest is still open."):"This browser can't show notifications."}</small>
+  <div class="acts">${pushState?`<button class="btn chamf ghost" data-pushtest="1">Send test</button><button class="btn chamf ghost" data-pushoff="1">Turn off</button>`
+    :`<button class="btn chamf sysbtn" data-pushon="1"${pushOK()&&Notification.permission!=="denied"?"":" disabled"}>Turn on</button>`}</div></div>
 ${partyKey(false)?`${sh("Party data")}<div class="card glowcard" style="--c:var(--danger);display:grid;gap:10px"><small style="color:var(--muted)">Your party membership and shared summary live on the party server.</small><button class="btn chamf ghost" data-pforget="1">Delete my party data</button></div>`:""}
 ${sh("Backup")}<div class="card glowcard" style="--c:var(--hl);display:grid;gap:10px"><small style="color:var(--muted)">Progress lives in this browser. Copy a backup now and then, or after clearing site data restore it from a .json file.</small>
 <div style="display:flex;gap:8px"><button class="btn chamf sysbtn" data-backup="1" style="flex:1">Copy backup</button><label class="btn chamf ghost" for="rfile" tabindex="0" style="flex:1">Restore file</label></div></div>
@@ -2532,6 +2568,9 @@ function onButton(b,d){
       actions:[{label:"Cancel"},{label:"Remove",fn:()=>partyCall({op:"kick",code:c,id:Number(id)}).then(()=>{render(true);toast("REMOVED · NEW INVITE CODE")}).catch(e=>toast(e.message.toUpperCase()))}]});return}
   if(d.pleave){const c=d.pleave;notify({chip:"[ PARTY ]",tone:"danger",title:"Leave this party?",body:"You can rejoin later with the code.",
       actions:[{label:"Stay"},{label:"Leave",fn:()=>partyCall({op:"leave",code:c}).then(()=>toast("LEFT PARTY")).catch(e=>toast(e.message.toUpperCase()))}]});return}
+  if(d.pushon){pushOn();return}
+  if(d.pushoff){pushOff();return}
+  if(d.pushtest){pushTest();return}
   if(d.pforget){notify({chip:"[ PARTY ]",tone:"danger",title:"Delete party data?",body:"Removes you from every party and deletes your data on the party server.\nYour progress on this phone is untouched.",
       actions:[{label:"Keep"},{label:"Delete",fn:()=>partyCall({op:"forget"}).then(()=>{try{localStorage.removeItem(PKEY);localStorage.removeItem(PCACHE)}catch(e){}party={parties:[],at:0};render(true);toast("PARTY DATA DELETED")}).catch(e=>toast(e.message.toUpperCase()))}]});return}
   if(d.tmore){showAllTitles=!showAllTitles;render(true);return}
@@ -2594,6 +2633,7 @@ let skin="hunter";try{skin=localStorage.getItem("ascend-skin")||"hunter"}catch(e
 document.documentElement.dataset.skin=skin;document.querySelectorAll(".skin").forEach(x=>x.setAttribute("aria-pressed",x.dataset.s===skin));
 act(()=>{rollover();render();
   // a new player starts current: never announce a version they installed on
+  pushRefresh().then(v=>{if(v)render(true)});
   if(!S.onboarded)S.ap.pn=PATCH[0].v;
   else if((S.ap.pn||0)<PATCH[0].v){S.ap.pn=PATCH[0].v;save();notify(patchNote(PATCH[0]))}
   arrival()});schedSync(1500);
