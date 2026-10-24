@@ -1587,8 +1587,11 @@ const penRules=()=>notify({chip:"[ PENALTY QUEST ]",tone:"danger",title:"How pen
   extra:`<ul class="penl"><li>Stays until cleared · +10 XP</li><li>Never costs levels, stats or XP</li><li>Streak resets</li><li>Unopened days count as missed</li><li>Rest Days and off days never trigger it</li></ul>`,actions:[{label:"Got it"}]});
 
 let shift=0; // demo time offset in ms
-const DAY_START_H=4; // the System day runs 04:00 to 04:00
-const now=()=>new Date(Date.now()+shift-DAY_START_H*3600e3);
+const DAY_START_H=0; // target: the System day runs midnight to midnight (was 04:00 until 2026-10-24)
+let dayStart=DAY_START_H; // the boundary in force. A save written under the old one keeps it until the next
+                          // rollover: switching between 00:00 and 03:59 would advance the date mid-day and
+                          // close an unfinished evening as missed. New players start on the target.
+const now=()=>new Date(Date.now()+shift-dayStart*3600e3);
 const dkey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const wd=d=>(d.getDay()+6)%7; // Monday=0
 const pad=n=>String(n).padStart(2,"0");
@@ -1642,7 +1645,7 @@ function fresh(){const t=now();
   return {runs:[],name:"",lvl:1,xp:0,rest:1,restDay:null,base:null,baseKey:null,qlog:{},adj:{},adjNotes:[],
   stats:{str:30,vit:30,agi:30,int:30,per:30},train:{str:0,vit:0,agi:0,int:0,per:0},
   quests:DEFAULT_QUESTS.map(q=>({...q})),questsNext:null,cnt:{},onboarded:false,statHist:{},
-  done:{},day:dkey(t),hist:{},seen:null,penalty:null,boss:100,bossDown:false,bkill:null,bossStat:null,wk:mondayKey(t),prog:dkey(t),
+  dsh:DAY_START_H,done:{},day:dkey(t),hist:{},seen:null,penalty:null,boss:100,bossDown:false,bkill:null,bossStat:null,wk:mondayKey(t),prog:dkey(t),
   ap:{first:0,str50:0,vit30:0,agi30:0,int40:0,per100:0,clear10:0,water25:0,lvl20:1,pn:0},claimed:{},
   titles:{},title:"awakened",od:{},awaken:0,debt:0,rev:"",m:{miles:0},gate:null,gateCd:null,gateClears:{},seed:Date.now().toString(36)+Math.random().toString(36).slice(2,10),loot:{},drops:{},rolls:0,sMile:0,tab:"home",cat:"all"}}
 // demo data: mid-program hunter, used by "Load sample data"
@@ -1653,8 +1656,10 @@ function sample(){const t=now(),h={};for(let i=1;i<=17;i++){const d=new Date(t);
   return {...fresh(),name:S.name,onboarded:true,statHist:sh,lvl:14,xp:62,rest:2,train:{str:2,vit:1,agi:3,int:0,per:2},base:"Sep 23",baseKey:dkey(pr),stats:{str:60,vit:69,agi:70,int:60,per:80},done:{sleep:2},cnt:{sleep:1},hist:h,boss:62,bossStat:"str",prog:dkey(pr),
   ap:{first:0,str50:26,vit30:29,agi30:12,int40:39,per100:64,clear10:15,water25:25,lvl20:14}}}
 let S=fresh();
-const KEEP=["runs","lvl","xp","rest","restDay","base","baseKey","stats","train","qlog","adj","adjNotes","done","day","hist","seen","penalty","ap","claimed","boss","bossDown","bossStat","wk","prog","quests","questsNext","cnt","onboarded","statHist","name","awaken","debt","rev","od","titles","title","m","gate","gateCd","gateClears","seed","loot","drops","rolls","sMile"];
-function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typeof v==="number"&&Number.isFinite(v),key=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v);
+const KEEP=["dsh","runs","lvl","xp","rest","restDay","base","baseKey","stats","train","qlog","adj","adjNotes","done","day","hist","seen","penalty","ap","claimed","boss","bossDown","bossStat","wk","prog","quests","questsNext","cnt","onboarded","statHist","name","awaken","debt","rev","od","titles","title","m","gate","gateCd","gateClears","seed","loot","drops","rolls","sMile"];
+function load(sv){if(!sv||typeof sv!=="object")return;
+  dayStart=sv.dsh===0||sv.dsh===4?sv.dsh:4; S.dsh=dayStart; // absent => written before the midnight change, so 04:00
+  const D=fresh(),num=v=>typeof v==="number"&&Number.isFinite(v),key=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v);
   for(const k of ["lvl","xp","rest","boss","debt"])if(num(sv[k]))S[k]=sv[k];S.awaken=sv.awaken===1?1:0;
   S.lvl=Math.max(1,Math.min(999,Math.round(S.lvl)));S.xp=Math.max(0,Math.min(99+8*S.lvl,Math.round(S.xp)));S.boss=Math.max(0,Math.min(100,Math.round(S.boss))); // a restored lvl of 1e308 is finite, so it passed isSave and then looped forever in totalXP/gainXP. xp is capped at xpNeed(lvl)-1 (inlined: xpNeed is in its TDZ here) so a restored 1e6 XP can't be laundered into 500 levels on the next tap
   S.rest=Math.max(0,Math.min(3,Math.round(S.rest)));S.debt=Math.max(0,Math.min(1e6,Math.round(S.debt))); // a ceiling matters now that totalXP subtracts it: an unbounded debt froze the published total at 0 foreverS.rev=typeof sv.rev==="string"&&sv.rev.length<=40?sv.rev:"";
@@ -1735,7 +1740,8 @@ function rollover(){const n=now(),t=dkey(n),wk=mondayKey(n);
   let gap=0;if(S.day<t)for(const d=new Date(S.day+"T12:00");d.setDate(d.getDate()+1),dkey(d)<t&&gap<400;){const k=dkey(d);if(k in S.hist)continue;const kq=Q().filter(q=>sched(q,k));if(!kq.length){S.hist[k]=2;gateDay(k,2);continue}S.hist[k]=0;gateDay(k,0);titleDay(k,0,kq);S.qlog[k]=Object.fromEntries(kq.map(q=>[q.id,0]));gap++}
   {const ks=Object.keys(S.qlog).sort();for(const k of ks.slice(0,-30))delete S.qlog[k]}
   const nMiss=(missed?1:0)+gap;if(nMiss){S.penalty=PENALTY;S.sMile=0} // a broken streak re-earns its milestones
-  S.day=t;S.adjNotes=adapt();save();
+  S.day=t;if(dayStart!==DAY_START_H){dayStart=DAY_START_H}S.dsh=dayStart; // the day turned over cleanly: safe to adopt now
+  S.adjNotes=adapt();save();
   if(nMiss)notify({chip:"[ WARNING ]",tone:"danger",title:"Daily Quest failed.",body:(nMiss===1&&missed?"Yesterday's Daily Quest was not completed.":nMiss===1?"1 Daily Quest was not completed.":`${nMiss} Daily Quests were not completed.`)+"\nPenalty Quest assigned."})}
 
 const addDays=(k,n)=>{const d=new Date(k+"T12:00");d.setDate(d.getDate()+n);return dkey(d)};
@@ -2100,7 +2106,7 @@ ${sh("Titles",`${TITLES.filter(t=>tEarned(t[0])).length} / ${TITLES.length} EARN
   shown.map(([id,name,how,f,lbl])=>{const[c,g]=f();return `<div class="card tcard lock"><span><b>${esc(name)}</b><small>${esc(how)}</small></span><span class="tst">${lbl?lbl():`${Math.min(c,g)} / ${g}`}</span><span class="bar tbar2" style="--c:var(--hl)"><i style="width:${Math.min(100,c/g*100)}%"></i></span></div>`}).join("")+
   (locked.length>3?`<button class="btn chamf ghost tmore" data-tmore="1">${showAllTitles?"Show fewer":`Show ${locked.length-3} more`}</button>`:"")})()}</div>
 ${sh("System",`VERSION ${vLabel(PATCH[0].v)}`)}
-<div class="tlist"><button class="card tcard" data-patch="1"><span><b>Patch notes</b><small>What changed in this build</small></span><span class="tst">VIEW</span></button></div>
+<div class="tlist"><button class="card tcard" data-patch="1"><span><b>Patch notes</b><small>This build, and every one before it</small></span><span class="tst">VIEW</span></button></div>
 ${sh("Relics",`${lootN()} FOUND`)}
 <div class="relics">${DROPS.map(([t,name,lore,c,rar,g])=>`<div class="relic ${S.loot[t]?"":"none"}" style="--c:var(--${c})">${hex(c,32,g)}<span><small class="rrar">${rar}</small><b>${esc(name)}</b><small>${esc(S.loot[t]?lore:"Not yet found.")}</small></span>${S.loot[t]?`<span class="rn">×${S.loot[t]}</span>`:""}</div>`).join("")}</div>
 <p class="relnote">Every completed quest rolls for a relic. The roll is fixed for that quest and day, and relics are worth no XP.</p>
@@ -2219,6 +2225,10 @@ const BARS=[[6,"5px","var(--ab1)",-.04],[14,"12px","var(--ab2)",-.31],[23,"3px",
 const barHTML=()=>BARS.map(([y,h,c,d])=>`<b style="--y:${y}%;--h:${h};--c:${c};--d:${d}s"></b>`).join("");
 const vLabel=v=>"1."+String(v).padStart(3,"0"); // 37 -> "1.037"; a major overhaul starts the 2.x line
 const PATCH=[
+  {v:44,d:"Oct 24, 2026",lines:[
+    "The System day now runs midnight to midnight instead of 04:00 to 04:00.",
+    "The change waits for your next clean rollover, so no day in progress is cut short.",
+    "Patch notes go backwards now. Open them and tap Older."]},
   {v:43,d:"Oct 24, 2026",lines:[
     "Your run time stays put. Switching Run/Ruck or changing the distance no longer wipes what you typed."]},
   {v:42,d:"Oct 24, 2026",lines:[
@@ -2244,8 +2254,10 @@ const PATCH=[
     "Party totals no longer count XP that an undo took back.",
     "Undoing the quest that killed a weekly boss now returns the kill, its title and the 150 XP.",
     "A damaged or hand-edited save file can no longer freeze the System."]}];
-const patchNote=p=>({chip:"[ SYSTEM UPDATE ]",title:vLabel(p.v),hero:true,center:true,glitch:true,cls:"gl pn",
-  body:"The System has been patched.",after:true,onOpen:sfxGlitch,actions:[{label:"Accept",acc:true}],
+const patchNote=(p,i)=>({chip:"[ SYSTEM UPDATE ]",title:vLabel(p.v),hero:true,center:true,glitch:true,cls:"gl pn",
+  body:"The System has been patched.",after:true,onOpen:sfxGlitch,
+  actions:i==null?[{label:"Accept",acc:true}]
+    :[...(PATCH[i+1]?[{label:"Older",fn:()=>notify(patchNote(PATCH[i+1],i+1))}]:[]),{label:i?"Done":"Accept",acc:true}],
   clock:esc(p.d).toUpperCase(),extra:`<i class="pnscan" aria-hidden="true">${barHTML()}</i>`+
     `<ul class="glist pnl">${p.lines.map(l=>`<li><span class="gq">${esc(l)}</span></li>`).join("")}</ul>`});
 const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -2490,7 +2502,7 @@ function onButton(b,d){
   if(d.act){closeNote(+d.act);return}
   if(d.t||d.go){S.tab=d.t||d.go;render();return}
   if(d.demo){
-    if(d.demo==="late"){const t=new Date(Date.now()-DAY_START_H*3600e3);t.setDate(t.getDate()+1);t.setHours(1,30,0,0);shift=t-Date.now();S.tab="home";render();toast("CLOCK SET TO 01:30")}
+    if(d.demo==="late"){const t=new Date(Date.now()-dayStart*3600e3);t.setDate(t.getDate()+1);t.setHours(1,30,0,0);shift=t-Date.now();S.tab="home";render();toast("CLOCK SET TO 01:30")}
     if(d.demo==="miss"){const y=new Date(now());y.setDate(y.getDate()-1);S.day=dkey(y);S.done={};rollover();S.tab="home";render()}
     if(d.demo==="lvl"){gainXP(xpNeed(S.lvl)-S.xp);save();render(true)}
     if(d.demo==="adapt"){const q=Q().find(x=>x.n>=5);if(!q)return;for(let i=1;i<=7;i++){const x=new Date(now());x.setDate(x.getDate()-i);const k=dkey(x);S.qlog[k]=S.qlog[k]||{};S.qlog[k][q.id]=1}
@@ -2523,7 +2535,7 @@ function onButton(b,d){
   if(d.pforget){notify({chip:"[ PARTY ]",tone:"danger",title:"Delete party data?",body:"Removes you from every party and deletes your data on the party server.\nYour progress on this phone is untouched.",
       actions:[{label:"Keep"},{label:"Delete",fn:()=>partyCall({op:"forget"}).then(()=>{try{localStorage.removeItem(PKEY);localStorage.removeItem(PCACHE)}catch(e){}party={parties:[],at:0};render(true);toast("PARTY DATA DELETED")}).catch(e=>toast(e.message.toUpperCase()))}]});return}
   if(d.tmore){showAllTitles=!showAllTitles;render(true);return}
-  if(d.patch){notify(patchNote(PATCH[0]));return}
+  if(d.patch){notify(patchNote(PATCH[0],0));return}
   if(d.title){if(tEarned(d.title)){S.title=d.title;save();render(true);toast("TITLE EQUIPPED")}return}
   if(d.penrules){penRules();return}
   if(d.awaken){if(canAwaken())offerAwakening();return}
