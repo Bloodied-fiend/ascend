@@ -1480,6 +1480,7 @@ function applyOD(q){let have=S.od[q.id]||0;const want=odWant(q),d=want-have;
 const isDist=q=>q.u==="MI"||q.u==="KM";
 const mmss=s=>`${s/60|0}:${String(Math.round(s%60)).padStart(2,"0")}`;
 const parseT=v=>{v=v.trim();const m=/^(\d{1,3}):([0-5]\d)$/.exec(v)||/^(\d{1,3})([0-5]\d)$/.exec(v);return m?+m[1]*60+ +m[2]:0}; // "17:52" or phone-keypad "1752"
+const tDraft={}; // quest id -> time typed but not logged; survives the re-render that Run/Ruck and the stepper trigger
 const todayRun=q=>S.runs.find(r=>r.d===S.day&&r.q===q.id);
 const paces=(k,u,skip)=>S.runs.filter(r=>r.k===k&&r.u===u&&r!==skip).map(r=>r.t/r.n);
 function runTier(k,u,pace){const p=paces(k,u);if(!p.length)return 0;const last=p.slice(-5),avg=last.reduce((a,b)=>a+b,0)/last.length;return pace<Math.min(...p)?2:pace<avg?1:0}
@@ -1984,7 +1985,7 @@ const qrows=L=>L.map(q=>{const d=!!S.done[q.id],c=S.cnt[q.id]||0,open=openQ===q.
   <button class="qck" data-q="${q.id}" aria-pressed="${d}" aria-label="${nm}: ${d?'complete, undo':'mark complete'}">${d?`<span class="stamp ${slamId===q.id?'slam':''}">DONE</span>`:'<span class="qbox"></span>'}</button>
   ${open?`<div class="qstep"><button class="btn chamf ghost" data-step="${q.id}:-1" aria-label="Minus ${stepOf(q)}">−${stepOf(q)}</button><span class="cnt">${c} / ${q.n}${u}${c>q.n?` <em class="odt">OVERDRIVE${S.od[q.id]?" ×"+S.od[q.id]:""}</em>`:d&&canOD(q)?` <em class="odh">+${q.n/2}${u} = BONUS</em>`:""}</span><button class="btn chamf sysbtn" data-step="${q.id}:1" aria-label="Plus ${stepOf(q)}">+${stepOf(q)}</button></div>
   ${isDist(q)?(()=>{const tr=todayRun(q),bp=paces(tKind,q.u);return `<div class="qtime"><div class="seg" role="group"><button class="btn chamf" data-tkind="run" aria-pressed="${tKind==="run"}">Run</button><button class="btn chamf" data-tkind="ruck" aria-pressed="${tKind==="ruck"}">Ruck</button></div>
-  <input class="tin" id="tin-${q.id}" inputmode="numeric" maxlength="6" placeholder="mm:ss" aria-label="${nm} time, minutes and seconds" value="${tr?mmss(tr.t):""}"><button class="btn chamf sysbtn" data-tlog="${q.id}">${tr?"Update":"Log time"}</button></div>
+  <input class="tin" id="tin-${q.id}" inputmode="numeric" maxlength="6" placeholder="mm:ss" aria-label="${nm} time, minutes and seconds" value="${esc(tDraft[q.id]??(tr?mmss(tr.t):""))}"><button class="btn chamf sysbtn" data-tlog="${q.id}">${tr?"Update":"Log time"}</button></div>
   <div class="tmeta">${tr?`TODAY ${tr.k.toUpperCase()} ${mmss(tr.t)} · ${mmss(tr.t/tr.n)}/${q.u}${tr.b===2?" · NEW BEST":tr.b?" · ABOVE AVG":""}`:`${q.n} ${q.u} · LOG YOUR TIME`}${bp.length?` · BEST ${tKind.toUpperCase()} ${mmss(Math.min(...bp))}/${q.u}`:""}</div>`})():""}
   ${c?(c>=q.n&&canOD(q)?`<div class="qbar od" style="--x:${Math.min(1,(c-q.n)/q.n)}"><i></i><b></b></div>`:`<div class="qbar"><i style="width:${Math.min(100,c/q.n*100)}%"></i></div>`):""}`:c&&!d?`<div class="qbar"><i style="width:${Math.min(100,c/q.n*100)}%"></i></div>`:""}
 </div>`}).join("");
@@ -2218,6 +2219,8 @@ const BARS=[[6,"5px","var(--ab1)",-.04],[14,"12px","var(--ab2)",-.31],[23,"3px",
 const barHTML=()=>BARS.map(([y,h,c,d])=>`<b style="--y:${y}%;--h:${h};--c:${c};--d:${d}s"></b>`).join("");
 const vLabel=v=>"1."+String(v).padStart(3,"0"); // 37 -> "1.037"; a major overhaul starts the 2.x line
 const PATCH=[
+  {v:43,d:"Oct 24, 2026",lines:[
+    "Your run time stays put. Switching Run/Ruck or changing the distance no longer wipes what you typed."]},
   {v:42,d:"Oct 24, 2026",lines:[
     "The weekly boss has a face. Each one is a painting that breathes, glows and throws embers.",
     "A boss you are already fighting no longer changes when your weakest stat does."]},
@@ -2540,6 +2543,7 @@ function onButton(b,d){
     if(!t){toast("ENTER TIME AS MM:SS");el.focus();return}
     const dist=Math.max(q.n,S.cnt[q.id]||0); // log the extra distance first, then the time: pace and Gate miles use what you covered
     dropRun(q);const b=runTier(tKind,q.u,t/dist);S.runs.push({d:S.day,q:q.id,k:tKind,n:dist,u:q.u,t,b,m:1});if(b===2)S.m.pb=(S.m.pb||0)+1;addMiles(toMi(dist,q.u));S.runs=S.runs.slice(-500);
+    delete tDraft[q.id];
     if(!S.done[q.id])setDone(q,true);
     if(b){addTrain(q.s,b);gainXP(runXP(q,b))}save();render(true);
     toast(b===2?`NEW BEST ${tKind.toUpperCase()} PACE ${mmss(t/dist)}/${q.u} · +${runXP(q,b)} XP · +2 TRAINING`:b?`FASTER THAN YOUR AVERAGE · +${runXP(q,b)} XP · +1 TRAINING`:`${tKind.toUpperCase()} LOGGED · ${mmss(t)}`);return}
@@ -2571,6 +2575,7 @@ function onButton(b,d){
   if(d.gleave){if(!S.gate||S.gate.red)return;notify({chip:"[ GATE ]",tone:"danger",title:"Retreat?",body:"This Gate closes and its progress is lost.\nYou can enter a Gate again tomorrow.",
       actions:[{label:"Stay"},{label:"Retreat",fn:()=>{if(!S.gate)return;S.gate=null;S.gateCd=addDays(S.day,1);save();render(true);toast("GATE CLOSED");setTimeout(focusPin)}}]});return}
 }
+screenEl.addEventListener("input",e=>{const el=e.target&&e.target.closest&&e.target.closest(".tin");if(el)tDraft[el.id.slice(4)]=el.value});
 screenEl.addEventListener("scroll",()=>{const away=screenEl.scrollTop>24&&sheet.hidden;$("#player").classList.toggle("away",away)},{passive:true});
 setInterval(tick,1000);
 let skin="hunter";try{skin=localStorage.getItem("ascend-skin")||"hunter"}catch(e){}
