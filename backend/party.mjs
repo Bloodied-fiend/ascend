@@ -40,6 +40,7 @@ create index if not exists players_ip on players(ip, created_at);
 alter table summaries add column if not exists title text;
 alter table parties add column if not exists owner_id bigint references players(id) on delete set null;
 create table if not exists push_subs(key_hash text primary key, endpoint text not null, p256dh text not null, auth text not null, tz_off int not null default 0, nudge_min int, enabled boolean not null default true, created_at timestamptz not null default now(), last_sent timestamptz);
+alter table push_subs add column if not exists last_pass timestamptz;
 update parties set owner_id = (select player_id from members where party_id = parties.id order by joined_at, player_id limit 1) where owner_id is null;`;
 let ready = null;
 const init = () => (ready ??= (async () => { for (const s of SCHEMA.split(";").map(x => x.trim()).filter(Boolean)) await sql(s); })().catch(e => { ready = null; throw e; }));
@@ -88,6 +89,52 @@ async function cronNudge() {
     if (status >= 200 && status < 300) { await pool.query("update push_subs set last_sent = now() where key_hash = $1", [r.key_hash]); sent++; }
   }
   return { due: rows.length, sent, dropped };
+}
+
+// ponytail: sends inline inside the triggering request, one fetch per recipient. Fine at the 20-member
+// cap; if parties ever grow, move this to a queue so a sync does not wait on the push service.
+async function pushMany(rows, payload) {
+  let sent = 0;
+  for (const r of rows) {
+    try {
+      const status = await sendPush(r, payload, VAPID);
+      if (status === 404 || status === 410) await pool.query("delete from push_subs where key_hash = $1", [r.key_hash]);
+      else if (status >= 200 && status < 300) sent++;
+    } catch (e) { console.error("push failed", e && e.message); }
+  }
+  return sent;
+}
+
+// Someone overtook you on a board you share. Fires on the crossing only -- members whose total now sits
+// below the mover's but was above it before -- so a sync that changes nothing notifies nobody.
+async function notifyPassed(me, oldTotal, newTotal) {
+  if (!VAPID.privateKey || !(newTotal > oldTotal)) return;
+  const { rows } = await pool.query(
+    `select distinct ps.key_hash, ps.endpoint, ps.p256dh, ps.auth, (select name from players where id = $1) as mover
+       from members mine
+       join members theirs on theirs.party_id = mine.party_id and theirs.player_id <> mine.player_id
+       join players pl on pl.id = theirs.player_id
+       join summaries s on s.player_id = pl.id
+       join push_subs ps on ps.key_hash = pl.key_hash and ps.enabled
+      where mine.player_id = $1 and s.xp_total < $2 and s.xp_total >= $3
+        and (ps.last_pass is null or ps.last_pass < now() - interval '1 hour')`, [me, newTotal, oldTotal]);
+  if (!rows.length) return;
+  const mover = cleanName(rows[0].mover);
+  await pushMany(rows, { title: "ASCEND", body: `${mover} just passed you.`, tag: "party", url: "./" });
+  // one per hour per recipient, so two players trading places does not become a conversation
+  await pool.query("update push_subs set last_pass = now() where key_hash = any($1::text[])", [rows.map(r => r.key_hash)]);
+}
+
+async function notifyJoined(partyId, joinerId) {
+  if (!VAPID.privateKey) return;
+  const { rows } = await pool.query(
+    `select ps.key_hash, ps.endpoint, ps.p256dh, ps.auth,
+            (select name from players where id = $2) as joiner, (select name from parties where id = $1) as party
+       from members m join players pl on pl.id = m.player_id
+       join push_subs ps on ps.key_hash = pl.key_hash and ps.enabled
+      where m.party_id = $1 and m.player_id <> $2`, [partyId, joinerId]);
+  if (!rows.length) return;
+  await pushMany(rows, { title: "ASCEND", body: `${cleanName(rows[0].joiner)} joined ${cleanName(rows[0].party, 24)}.`, tag: "party", url: "./" });
 }
 
 async function pushOp(b, kh) {
@@ -159,10 +206,13 @@ async function handle(req, ip) {
       // ponytail: range checks only; a determined friend could still post a fake total. Server-side recompute needs full sync.
       if (!(int(s.lvl, 1, 999) && int(s.xp, 0, 1e8) && int(s.tier, 0, 7) && int(s.streak, 0, 1e5) && int(s.gates, 0, 1e5) && int(s.red, 0, 1e5) && (s.awaken === 0 || s.awaken === 1)))
         return [400, { error: "summary" }];
+      const prev = (await pool.query("select xp_total from summaries where player_id = $1", [me])).rows[0];
       await pool.query(
         `insert into summaries(player_id, lvl, xp_total, tier, streak, gates, red, awaken, title) values($1,$2,$3,$4,$5,$6,$7,$8,$9)
          on conflict (player_id) do update set lvl=$2, xp_total=$3, tier=$4, streak=$5, gates=$6, red=$7, awaken=$8, title=$9, updated_at=now()`,
         [me, s.lvl, s.xp, s.tier, s.streak, s.gates, s.red, s.awaken, typeof s.title === "string" ? cleanName(s.title, 40) : null]);
+      // only on a real crossing: no previous total means a first sync, which should not notify anyone
+      if (prev && Number(prev.xp_total) < s.xp) await notifyPassed(me, Number(prev.xp_total), s.xp);
       break;
     }
     // ponytail: party/member caps are check-then-insert without a transaction; simultaneous requests can overshoot by a few (friends-scale)
@@ -187,6 +237,7 @@ async function handle(req, ip) {
         if (p.n >= MAX_MEMBERS) return [409, { error: "party is full" }];
         if ((await myParties()) >= MAX_PARTIES) return [409, { error: `you can be in ${MAX_PARTIES} parties` }];
         await pool.query("insert into members(party_id, player_id) values($1,$2) on conflict do nothing", [p.id, me]);
+        await notifyJoined(p.id, me);
       }
       break;
     }

@@ -1,6 +1,13 @@
 // Exercise the party function locally against a real database.
 //   DATABASE_URL=... node test_local.mjs   or   FN_URL=https://... node test_local.mjs   (cleans up what it creates)
-import { randomBytes } from "node:crypto";
+import { randomBytes, createHash } from "node:crypto";
+const DB = process.env.DATABASE_URL, DB_HOST = DB && new URL(DB).hostname;
+const db = async (query, params = []) => {
+  const r = await fetch(`https://${DB_HOST}/sql`, { method: "POST",
+    headers: { "Neon-Connection-String": DB, "content-type": "application/json" },
+    body: JSON.stringify({ query, params }) });
+  return r.json();
+};
 // FN_URL=https://... runs the same checks against the deployed function instead of the local module
 const fn = process.env.FN_URL
   ? { fetch: async req => fetch(process.env.FN_URL, { method: req.method, headers: req.headers, body: req.method === "POST" ? await req.text() : undefined }) }
@@ -12,7 +19,14 @@ const call = async (key, body, origin = O) => {
 };
 const res = [], check = (n, ok, info) => res.push(`${ok ? "PASS" : "FAIL"} ${n}${ok ? "" : " " + JSON.stringify(info)}`);
 const A = randomBytes(32).toString("hex"), B = randomBytes(32).toString("hex"), C = randomBytes(32).toString("hex");
-const KICK = [];
+const KICK = [], PUSH = [];
+const sha = k => createHash("sha256").update(k).digest("hex");
+// read the push_subs marks straight from the DB: the only honest evidence of who was selected
+const marks = async keys => {
+  const { rows } = await db(`select key_hash, last_pass from push_subs where key_hash = any($1::text[])`, [keys.map(sha)]);
+  const names = { [sha(keys[0])]: "L", [sha(keys[1])]: "M", [sha(keys[2])]: "N" };
+  return rows.map(r => ({ who: names[r.key_hash], last_pass: r.last_pass }));
+};
 let E = "0".repeat(64);
 const sum = (xp, lvl = 5) => ({ title: "Road Warrior", lvl, xp, tier: 0, streak: 3, gates: 1, red: 0, awaken: 0 });
 try {
@@ -77,6 +91,49 @@ try {
     check("the party hands on when its leader leaves", b13.parties[0].iown === true, b13.parties[0]);
   }
 
+  // ---- party activity pushes ----
+  // These only mean anything with VAPID set: notifyPassed/notifyJoined return early without it, and
+  // every assertion below would pass vacuously. The runner asserts that up front.
+  {
+    const vapidOn = !!process.env.VAPID_PRIVATE;
+    check("VAPID is set for this run (otherwise the party-push cases are vacuous)", vapidOn,
+      "set VAPID_PRIVATE and VAPID_PUBLIC before running");
+
+    if (vapidOn) {
+      const L = randomBytes(32).toString("hex"), M = randomBytes(32).toString("hex"), N = randomBytes(32).toString("hex");
+      PUSH.push(L, M, N);
+      // endpoints that cannot resolve: sendPush throws, pushMany swallows it, and we assert on the
+      // database side effects instead -- which is what actually proves WHO would have been notified
+      const fake = k => ({ op: "psub", sub: { endpoint: "https://127.0.0.1:9/" + k, p256dh: "A".repeat(80), auth: "B".repeat(20) }, tz: 0, nudge: 240 });
+      let [, pb] = await call(L, { op: "create", name: "Lead", party: "Push Squad" });
+      const pc = pb.parties[0].code;
+      await call(M, { op: "join", name: "Mid", code: pc });
+      await call(N, { op: "join", name: "Top", code: pc });
+      for (const k of [L, M, N]) await call(k, fake(k));
+
+      // first syncs: no previous total, so nobody is "passed"
+      await call(M, { op: "sync", summary: sum(1000) });
+      await call(N, { op: "sync", summary: sum(5000) });
+      await call(L, { op: "sync", summary: sum(100) });
+      let st = await marks([L, M, N]);
+      check("a first sync passes nobody", st.every(x => x.last_pass === null), JSON.stringify(st));
+
+      // L climbs past M (1000) but not N (5000)
+      await call(L, { op: "sync", summary: sum(2000) });
+      st = await marks([L, M, N]);
+      const byKey = Object.fromEntries(st.map(x => [x.who, x.last_pass !== null]));
+      check("overtaking one member notifies exactly that member",
+        byKey.M === true && byKey.N === false && byKey.L === false, JSON.stringify(byKey));
+
+      // a sync that crosses nobody must not mark anyone new
+      await call(N, { op: "sync", summary: sum(5001) });
+      const st2 = await marks([L, M, N]);
+      const by2 = Object.fromEntries(st2.map(x => [x.who, x.last_pass !== null]));
+      check("a sync that crosses nobody notifies nobody new",
+        by2.M === true && by2.N === false && by2.L === false, JSON.stringify(by2));
+    }
+  }
+
   const D = randomBytes(32).toString("hex");
   [s, b] = await call(D, { op: "create", name: "x".repeat(19) + "\u{1F525}", party: "Emoji" });
   check("name cut through an emoji still works", s === 200, [s, b]);
@@ -89,7 +146,7 @@ try {
 } catch (e) {
   res.push("FAIL test threw " + (e && e.stack || e));   // a throw used to be swallowed by the exit(0) in finally
 } finally {
-  for (const k of [A, B, C, E, ...KICK]) await call(k, { op: "forget" });
+  for (const k of [A, B, C, E, ...KICK, ...PUSH]) await call(k, { op: "forget" });
   const [, b] = await call(A, { op: "board" });   // A re-registers on this call; forget again
   await call(A, { op: "forget" });
   console.log(res.join("\n"));

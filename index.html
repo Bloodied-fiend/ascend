@@ -2302,6 +2302,10 @@ const BARS=[[6,"5px","var(--ab1)",-.04],[14,"12px","var(--ab2)",-.31],[23,"3px",
 const barHTML=()=>BARS.map(([y,h,c,d])=>`<b style="--y:${y}%;--h:${h};--c:${c};--d:${d}s"></b>`).join("");
 const vLabel=v=>"1."+String(v).padStart(3,"0"); // 37 -> "1.037"; a major overhaul starts the 2.x line
 const PATCH=[
+  {v:47,d:"Oct 24, 2026",lines:[
+    "Your party can reach you. The System says when someone passes you on the board.",
+    "And when somebody new joins a party you are in.",
+    "At most one overtake alert an hour, so trading places stays quiet."]},
   {v:46,d:"Oct 24, 2026",lines:[
     "The System will nudge you once a day at a time you choose. Profile > Notifications.",
     "Set to 04:00 by default. Change it with the clock and tap Save time."]},
