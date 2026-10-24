@@ -12,6 +12,7 @@ const call = async (key, body, origin = O) => {
 };
 const res = [], check = (n, ok, info) => res.push(`${ok ? "PASS" : "FAIL"} ${n}${ok ? "" : " " + JSON.stringify(info)}`);
 const A = randomBytes(32).toString("hex"), B = randomBytes(32).toString("hex"), C = randomBytes(32).toString("hex");
+const KICK = [];
 let E = "0".repeat(64);
 const sum = (xp, lvl = 5) => ({ title: "Road Warrior", lvl, xp, tier: 0, streak: 3, gates: 1, red: 0, awaken: 0 });
 try {
@@ -38,6 +39,44 @@ try {
   check("CORS preflight", r.status === 204 && r.headers.get("access-control-allow-origin") === O, r.status);
   [s, b] = await call(A, { op: "sync", name: "<b>x</b>\u0007", summary: sum(950) });
   check("name sanitized", b.parties[0].members.some(x => x.name === "bx/b"), b.parties[0].members.map(x => x.name));
+  // ---- leader removes a member (op:"kick") ----
+  {
+    const L = randomBytes(32).toString("hex"), M1 = randomBytes(32).toString("hex"), M2 = randomBytes(32).toString("hex");
+    KICK.push(L, M1, M2);
+    let [, kb] = await call(L, { op: "create", name: "Lead", party: "Kick Squad" });
+    const kc = kb.parties[0].code;
+    await call(M1, { op: "join", name: "Mem1", code: kc });
+    [, kb] = await call(M2, { op: "join", name: "Mem2", code: kc });
+    check("creator is the leader, members are not",
+      kb.parties[0].members.filter(x => x.lead).length === 1 && kb.parties[0].iown === false, kb.parties[0]);
+    const [, lb] = await call(L, { op: "board" });
+    check("leader's own board says iown", lb.parties[0].iown === true, lb.parties[0]);
+    const m1id = lb.parties[0].members.find(x => x.name === "Mem1").id;
+
+    let [s9, b9] = await call(M2, { op: "kick", code: kc, id: m1id });
+    check("a member cannot kick", s9 === 403, [s9, b9]);
+    [s9, b9] = await call(L, { op: "kick", code: kc, id: lb.parties[0].members.find(x => x.me).id });
+    check("the leader cannot kick themselves", s9 === 400, [s9, b9]);
+    [s9, b9] = await call(L, { op: "kick", code: kc, id: 999999999 });
+    check("kicking a non-member -> 404", s9 === 404, [s9, b9]);
+
+    [s9, b9] = await call(L, { op: "kick", code: kc, id: m1id });
+    const names = b9.parties[0].members.map(x => x.name);
+    check("leader removes a member", s9 === 200 && !names.includes("Mem1") && names.includes("Mem2"), names);
+    const nc = b9.parties[0].code;
+    check("removal rotates the invite code", /^[A-HJ-NP-Z2-9]{8}$/.test(nc) && nc !== kc, [kc, nc]);
+    const [s10] = await call(M1, { op: "join", code: kc });
+    check("the removed member cannot rejoin with the old code", s10 === 404, s10);
+    const [, b11] = await call(M1, { op: "board" });
+    check("the removed member no longer sees the party", b11.parties.length === 0, b11);
+    const [, b12] = await call(M2, { op: "board" });
+    check("other members keep their membership through the rotation", b12.parties.length === 1, b12);
+
+    await call(L, { op: "leave", code: nc });
+    const [, b13] = await call(M2, { op: "board" });
+    check("the party hands on when its leader leaves", b13.parties[0].iown === true, b13.parties[0]);
+  }
+
   const D = randomBytes(32).toString("hex");
   [s, b] = await call(D, { op: "create", name: "x".repeat(19) + "\u{1F525}", party: "Emoji" });
   check("name cut through an emoji still works", s === 200, [s, b]);
@@ -50,7 +89,7 @@ try {
 } catch (e) {
   res.push("FAIL test threw " + (e && e.stack || e));   // a throw used to be swallowed by the exit(0) in finally
 } finally {
-  for (const k of [A, B, C, E]) await call(k, { op: "forget" });
+  for (const k of [A, B, C, E, ...KICK]) await call(k, { op: "forget" });
   const [, b] = await call(A, { op: "board" });   // A re-registers on this call; forget again
   await call(A, { op: "forget" });
   console.log(res.join("\n"));

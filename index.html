@@ -93,7 +93,9 @@ button{font:inherit;color:inherit}
 .optsh{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--muted);padding:8px 0 4px;border-top:1px dashed var(--line)}
 .awk{display:inline-block;margin-left:6px;padding:1px 6px;font-size:10px;letter-spacing:.12em;vertical-align:middle;border:1px solid var(--accent);color:var(--accent)}
 .pjoin{display:grid;gap:10px}.pjoin p{margin:0;font-weight:600}.pjoin small{color:var(--muted);line-height:1.4}
-.pjoin .acts,.pboard .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pjoin .btn,.pboard .acts .btn{min-height:44px;justify-content:center}
+.pjoin .acts,.pboard .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pboard .acts.three{grid-template-columns:1fr 1fr 1fr}
+.pboard .acts.three .btn{padding:0 6px}.pjoin .btn,.pboard .acts .btn{min-height:44px;justify-content:center}
 .pcode{all:unset;cursor:pointer;font-family:var(--f-mono);font-weight:700;letter-spacing:.14em;color:var(--hl);padding:4px 8px;border:1px dashed var(--hl)}
 .plist{list-style:none;margin:10px 0 12px;padding:0;display:grid;gap:2px}
 .plist li{display:grid;grid-template-columns:22px 30px 1fr auto;gap:10px;align-items:center;padding:8px 6px;border-top:1px solid var(--line)}
@@ -110,8 +112,15 @@ button{font:inherit;color:inherit}
 .plist li.ns{opacity:.6}
 .pcode{min-height:44px;display:inline-flex;align-items:center;padding:0 10px}
 .pboard .pmore{display:flex;width:100%;box-sizing:border-box;margin-top:8px;min-height:44px;justify-content:center}
+.pboard .acts.pmore2{margin-top:8px}
 .plist .pw small{letter-spacing:0;font-family:var(--f-body);font-size:12px}
 .pleave{color:var(--muted)}
+.plist.own li{grid-template-columns:22px 30px 1fr 64px 36px}
+.plist .pw em.ld{color:var(--accent)}
+.pkick{width:36px;align-self:stretch;min-height:36px;display:grid;place-items:center;padding:0;border:0;background:none;cursor:pointer;
+  font:400 22px/1 var(--f-body);color:var(--muted);border-radius:8px}
+.pkick:hover,.pkick:focus-visible{color:var(--danger);background:color-mix(in srgb,var(--danger) 14%,transparent)}
+.pkspace{cursor:default}
 .plist .px{font-family:var(--f-display);font-weight:700;font-size:20px;text-align:right;font-variant-numeric:tabular-nums}.plist .px small{text-align:right}
 .qbar{position:relative}.qbar b{position:absolute;top:0;bottom:0;background:var(--accent)}
 /* overdrive: 0-2x scale; left half = the target (stat colour), tick at 1x, right half = extra in accent over dashed headroom */
@@ -1768,6 +1777,7 @@ const PARTY_API="https://br-red-haze-b7b2z47p-party.compute.c-13.us-east-1.aws.n
 const PKEY="ascend-party-key",PCACHE="ascend-party-cache";
 // the key identifies this player to the server; it lives apart from progress, so backups and exports never carry it
 const partyKey=make=>{try{let k=localStorage.getItem(PKEY);if(!k&&make){const a=new Uint8Array(32);crypto.getRandomValues(a);k=[...a].map(b=>b.toString(16).padStart(2,"0")).join("");localStorage.setItem(PKEY,k)}return k}catch(e){return null}};
+const pManage=new Set();
 let party={parties:[],at:0};try{const c=JSON.parse(localStorage.getItem(PCACHE)||"null");if(c&&Array.isArray(c.parties))party=c}catch(e){}
 const totalXP=()=>{let t=S.xp;for(let l=1;l<S.lvl;l++)t+=xpNeed(l);return Math.max(0,t-S.debt)}; // debt is XP already taken back; publishing it let an ordinary undo inflate the party board
 // lvl/tier come from the un-droppable level while xp is net of debt, so a teammate can see a level the
@@ -1790,6 +1800,7 @@ function schedSync(ms=4000){if(!partyKey(false)||!party.parties.length)return;cl
 const ago=t=>{const m=Math.round((Date.now()-t)/6e4);return !t?"never":m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" d ago"};
 const codeField=()=>`<div class="qe" style="margin-top:12px;text-align:left"><label>Invite code<input id="pcode" maxlength="9" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="ABCD2345"></label></div>`;
 const partyNameField=()=>`<div class="qe" style="margin-top:12px;text-align:left"><label>Party name<input id="pname2" maxlength="24" placeholder="${esc((S.name||"Hunter")+"'s Party")}"></label></div>`;
+const MAXP=5; // mirrors MAX_PARTIES in backend/party.mjs; the server rejects the 6th with a 409
 const PSHARE="Shared with your party only: your name, title, level, rank, total XP, streak and Gates cleared. Never your quests or stats.";
 function partyCard(){
   if(!party.parties.length)return `<div class="card glowcard pjoin" style="--c:var(--hl)"><p>Compete with friends.</p><small>Only people with your invite code can see you. ${PSHARE}</small>
@@ -1797,11 +1808,11 @@ function partyCard(){
   return party.parties.map((p,i)=>`<section class="sys pboard" aria-label="Party ${esc(p.name)}">
     <div class="syshead"><span class="chip">[ PARTY ]</span><button class="pcode" data-pshare="${esc(p.code)}" title="Tap to share the invite code" aria-label="Invite code ${esc(p.code)}, tap to share">${esc(p.code.slice(0,4))}-${esc(p.code.slice(4))}</button></div>
     <h2 class="systitle">${esc(p.name)}</h2>
-    <ol class="plist">${p.members.map((m,i)=>`<li class="${m.me?"me":""}${m.lvl?"":" ns"}"><span class="pn">${i+1}</span>${m.lvl?badge(Math.min(m.tier,LAST),30):'<span class="pb0 pghost"></span>'}
-      <span class="pw"><b>${esc(m.name)}${m.me?' <em>YOU</em>':""}${m.awaken?' <em class="aw">II</em>':""}</b><small>${m.lvl?`${m.title?`<em class="pt">${esc(m.title)}</em> · `:""}Lv ${m.lvl} · ${m.streak}d streak`:"not synced yet"}</small></span>
-      <span class="px">${m.lvl?`${m.xp.toLocaleString("en-US")}<small>XP</small>`:"—"}</span></li>`).join("")}</ol>
-    <div class="acts"><button class="btn chamf sysbtn" data-pshare="${esc(p.code)}">Invite</button><button class="btn chamf ghost pleave" data-pleave="${esc(p.code)}">Leave</button></div>
-    ${i===party.parties.length-1&&party.parties.length<5?`<button class="btn chamf ghost pmore" data-party="join">Join another party</button>`:""}</section>`).join("")}
+    <ol class="plist${p.iown&&pManage.has(p.code)?" own":""}">${p.members.map((m,i)=>`<li class="${m.me?"me":""}${m.lvl?"":" ns"}"><span class="pn">${i+1}</span>${m.lvl?badge(Math.min(m.tier,LAST),30):'<span class="pb0 pghost"></span>'}
+      <span class="pw"><b>${esc(m.name)}${m.me?' <em>YOU</em>':""}${m.lead?' <em class="ld">LEAD</em>':""}${m.awaken?' <em class="aw">II</em>':""}</b><small>${m.lvl?`${m.title?`<em class="pt">${esc(m.title)}</em> · `:""}Lv ${m.lvl} · ${m.streak}d streak`:"not synced yet"}</small></span>
+      <span class="px">${m.lvl?`${m.xp.toLocaleString("en-US")}<small>XP</small>`:"—"}</span>${p.iown&&pManage.has(p.code)?(m.me?'<span class="pkick pkspace"></span>':`<button class="pkick" data-pkick="${m.id}" data-pkcode="${esc(p.code)}" aria-label="Remove ${esc(m.name)} from ${esc(p.name)}" title="Remove ${esc(m.name)}">&times;</button>`):""}</li>`).join("")}</ol>
+    <div class="acts${p.iown?" three":""}"><button class="btn chamf sysbtn" data-pshare="${esc(p.code)}">Invite</button>${p.iown?`<button class="btn chamf ghost" data-pmanage="${esc(p.code)}" aria-pressed="${pManage.has(p.code)}">${pManage.has(p.code)?"Done":"Manage"}</button>`:""}<button class="btn chamf ghost pleave" data-pleave="${esc(p.code)}">Leave</button></div>
+    ${i===party.parties.length-1&&party.parties.length<MAXP?`<div class="acts pmore2"><button class="btn chamf ghost" data-party="create">Create another</button><button class="btn chamf ghost" data-party="join">Join another</button></div>`:""}</section>`).join("")}
 const PEN_MS=3*3600e3; // warn when under 3h left
 const TEST=[
   ["str","How many push-ups can you do in one set, with good form?",["0–15","16–40","41–70","71 or more"]],
@@ -2163,6 +2174,10 @@ const BARS=[[6,"5px","var(--ab1)",-.04],[14,"12px","var(--ab2)",-.31],[23,"3px",
 const barHTML=()=>BARS.map(([y,h,c,d])=>`<b style="--y:${y}%;--h:${h};--c:${c};--d:${d}s"></b>`).join("");
 const vLabel=v=>"1."+String(v).padStart(3,"0"); // 37 -> "1.037"; a major overhaul starts the 2.x line
 const PATCH=[
+  {v:41,d:"Oct 24, 2026",lines:[
+    "Party leaders can remove a member from their party.",
+    "Removing someone changes the invite code, so they cannot rejoin with it.",
+    "The party board now shows who leads it."]},
   {v:40,d:"Oct 24, 2026",lines:[
     "Weekly bosses now leave spoils. Five named trophies, one per boss, on the Trophies screen.",
     "A spoil leaves with its kill: undo the killing blow and the trophy goes back too."]},
@@ -2449,6 +2464,10 @@ function onButton(b,d){
         partyCall({op:"join",code:v},true).then(()=>{toast("JOINED");schedSync(0)}).catch(e=>toast(e.message.toUpperCase()))}},{label:"Cancel"}]});return}
   if(d.pshare){const c=d.pshare,txt=`Join my Ascend party. Code: ${c.slice(0,4)}-${c.slice(4)}\nhttps://bloodied-fiend.github.io/ascend/`;
     if(navigator.share)navigator.share({text:txt}).catch(()=>{});else navigator.clipboard.writeText(txt).then(()=>toast("INVITE COPIED")).catch(()=>toast("CODE "+c));return}
+  if(d.pmanage){const c=d.pmanage;if(pManage.has(c))pManage.delete(c);else pManage.add(c);render(true);return}
+  if(d.pkick){const id=d.pkick,c=d.pkcode,who=(party.parties.find(p=>p.code===c)?.members.find(m=>String(m.id)===String(id))||{}).name||"this member";
+    notify({chip:"[ PARTY ]",tone:"danger",title:`Remove ${who}?`,body:"They lose access to this party board. The invite code changes too, so they cannot rejoin with it — share the new code with anyone else you want to invite.",
+      actions:[{label:"Cancel"},{label:"Remove",fn:()=>partyCall({op:"kick",code:c,id:Number(id)}).then(()=>{render(true);toast("REMOVED · NEW INVITE CODE")}).catch(e=>toast(e.message.toUpperCase()))}]});return}
   if(d.pleave){const c=d.pleave;notify({chip:"[ PARTY ]",tone:"danger",title:"Leave this party?",body:"You can rejoin later with the code.",
       actions:[{label:"Stay"},{label:"Leave",fn:()=>partyCall({op:"leave",code:c}).then(()=>toast("LEFT PARTY")).catch(e=>toast(e.message.toUpperCase()))}]});return}
   if(d.pforget){notify({chip:"[ PARTY ]",tone:"danger",title:"Delete party data?",body:"Removes you from every party and deletes your data on the party server.\nYour progress on this phone is untouched.",

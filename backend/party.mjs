@@ -16,7 +16,7 @@ const pool = { query: sql };
 const ORIGINS = (process.env.ALLOWED_ORIGINS || "https://bloodied-fiend.github.io").split(",").map(s => s.trim());
 const LOCAL = process.env.ALLOW_LOCAL === "1"; // tests from http://127.0.0.1:<port>
 const MAX_PARTIES = 5, MAX_MEMBERS = 20, NEW_PLAYERS_PER_IP_DAY = 10, PER_KEY_PER_MIN = 30;
-const OPS = new Set(["board", "sync", "create", "join", "leave", "forget"]);
+const OPS = new Set(["board", "sync", "create", "join", "leave", "forget", "kick"]);
 const CODE_ABC = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I
 
 const SCHEMA = `
@@ -26,7 +26,9 @@ create table if not exists members(party_id bigint not null references parties(i
 create table if not exists summaries(player_id bigint primary key references players(id) on delete cascade, lvl int not null, xp_total bigint not null, tier int not null, streak int not null, gates int not null, red int not null, awaken int not null, updated_at timestamptz not null default now());
 create index if not exists members_player on members(player_id);
 create index if not exists players_ip on players(ip, created_at);
-alter table summaries add column if not exists title text;`;
+alter table summaries add column if not exists title text;
+alter table parties add column if not exists owner_id bigint references players(id) on delete set null;
+update parties set owner_id = (select player_id from members where party_id = parties.id order by joined_at, player_id limit 1) where owner_id is null;`;
 let ready = null;
 const init = () => (ready ??= (async () => { for (const s of SCHEMA.split(";").map(x => x.trim()).filter(Boolean)) await sql(s); })().catch(e => { ready = null; throw e; }));
 
@@ -37,8 +39,8 @@ const newCode = () => Array.from({ length: 8 }, () => CODE_ABC[randomInt(CODE_AB
 
 async function board(me) {
   const { rows } = await pool.query(
-    `select p.code, p.name,
-       json_agg(json_build_object('name', pl.name, 'me', pl.id = $1, 'lvl', s.lvl, 'xp', s.xp_total, 'tier', s.tier,
+    `select p.code, p.name, (p.owner_id = $1) as iown,
+       json_agg(json_build_object('id', pl.id, 'name', pl.name, 'me', pl.id = $1, 'lead', pl.id = p.owner_id, 'lvl', s.lvl, 'xp', s.xp_total, 'tier', s.tier,
          'streak', s.streak, 'gates', s.gates, 'red', s.red, 'awaken', s.awaken, 'title', s.title)
          order by s.xp_total desc nulls last, pl.id) as members
      from members m join parties p on p.id = m.party_id
@@ -79,6 +81,9 @@ async function handle(req, ip) {
     me = (await pool.query("insert into players(key_hash, name, ip) values($1,$2,$3) on conflict (key_hash) do update set name = excluded.name returning id", [kh, name, ip])).rows[0].id;
   } else if (typeof b.name === "string") await pool.query("update players set name = $2 where id = $1 and name <> $2", [me, name]);
 
+  // a party outlives its leader: give it to whoever has been in it longest
+  const handOn = async code => pool.query(
+    "update parties set owner_id = (select player_id from members where party_id = parties.id order by joined_at, player_id limit 1) where code = $1 and not exists (select 1 from members where party_id = parties.id and player_id = parties.owner_id)", [code]);
   const myParties = async () => (await pool.query("select count(*)::int c from members where player_id = $1", [me])).rows[0].c;
   switch (b.op) {
     case "board": break;
@@ -102,6 +107,7 @@ async function handle(req, ip) {
         pid = (await pool.query("insert into parties(code, name) values($1,$2) on conflict (code) do nothing returning id", [newCode(), pname])).rows[0]?.id;
       if (!pid) return [500, { error: "try again" }];
       await pool.query("insert into members(party_id, player_id) values($1,$2)", [pid, me]);
+      await pool.query("update parties set owner_id = $2 where id = $1", [pid, me]);
       break;
     }
     case "join": {
@@ -121,12 +127,33 @@ async function handle(req, ip) {
       const code = typeof b.code === "string" ? b.code.toUpperCase() : "";
       await pool.query("delete from members where player_id = $1 and party_id = (select id from parties where code = $2)", [me, code]);
       await pool.query("delete from parties where code = $1 and not exists (select 1 from members where party_id = parties.id)", [code]);
+      await handOn(code);
+      break;
+    }
+    case "kick": {
+      const code = typeof b.code === "string" ? b.code.toUpperCase().replace(/[^A-Z0-9]/g, "") : "";
+      const target = Number(b.id);
+      if (!Number.isInteger(target) || target <= 0) return [400, { error: "member" }];
+      const p = (await pool.query("select id, owner_id from parties where code = $1", [code])).rows[0];
+      if (!p) return [404, { error: "no party with that code" }];
+      if (String(p.owner_id) !== String(me)) return [403, { error: "only the party leader can remove members" }];
+      if (String(target) === String(me)) return [400, { error: "leave the party instead" }];
+      const gone = (await pool.query("delete from members where party_id = $1 and player_id = $2", [p.id, target])).rowCount;
+      if (!gone) return [404, { error: "not in this party" }];
+      // Rotating is the point: the removed player still holds the old invite code and would otherwise
+      // rejoin immediately. Everyone else keeps their membership; only the code they'd share changes.
+      for (let i = 0; i < 5; i++)
+        if ((await pool.query("update parties set code = $2 where id = $1 and not exists (select 1 from parties x where x.code = $2) returning id", [p.id, newCode()])).rowCount) break;
       break;
     }
     case "forget": { // remove me everywhere (credential revoke); parties I leave empty go too
       const mine = (await pool.query("select party_id from members where player_id = $1", [me])).rows.map(r => r.party_id);
       await pool.query("delete from players where id = $1", [me]);
-      if (mine.length) await pool.query("delete from parties where id = any($1::bigint[]) and not exists (select 1 from members where party_id = parties.id)", [mine]);
+      if (mine.length) {
+        await pool.query("delete from parties where id = any($1::bigint[]) and not exists (select 1 from members where party_id = parties.id)", [mine]);
+        // on delete set null leaves survivors leaderless; give each surviving party its longest-standing member
+        await pool.query("update parties set owner_id = (select player_id from members where party_id = parties.id order by joined_at, player_id limit 1) where id = any($1::bigint[]) and owner_id is null", [mine]);
+      }
       return [200, { parties: [] }];
     }
     default: return [400, { error: "op" }];
