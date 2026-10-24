@@ -2261,6 +2261,9 @@ const BARS=[[6,"5px","var(--ab1)",-.04],[14,"12px","var(--ab2)",-.31],[23,"3px",
 const barHTML=()=>BARS.map(([y,h,c,d])=>`<b style="--y:${y}%;--h:${h};--c:${c};--d:${d}s"></b>`).join("");
 const vLabel=v=>"1."+String(v).padStart(3,"0"); // 37 -> "1.037"; a major overhaul starts the 2.x line
 const PATCH=[
+  {v:45,d:"Oct 24, 2026",lines:[
+    "The System can reach your phone now. Profile > Notifications > Turn on.",
+    "Send test puts one through immediately, so you know it works before you need it."]},
   {v:44,d:"Oct 24, 2026",lines:[
     "The System day now runs midnight to midnight instead of 04:00 to 04:00.",
     "The change waits for your next clean rollover, so no day in progress is cut short.",
