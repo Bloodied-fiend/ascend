@@ -287,12 +287,18 @@ button{font:inherit;color:inherit}
 .relic{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r);color:var(--c)}
 .relic b{display:block;font-size:14px;color:var(--fg)}
 .relic .rrar{font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;color:var(--c);margin:0 0 1px}
-.relic small{display:block;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.3}
+.relic small{display:block;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.45}
 .relic .rn{font-family:var(--f-mono);font-size:16px;font-variant-numeric:tabular-nums;color:var(--c)}
-.relic.none{opacity:.5;border-style:dashed}
-[data-skin="daylight"] .relic.none{opacity:1}
-[data-skin="daylight"] .relic.none b,[data-skin="daylight"] .relic.none small{color:var(--muted)}
-[data-skin="daylight"] .relic.none .rrar{color:color-mix(in srgb,var(--c) 75%,var(--muted))}
+.spoil .rrar,.spoil .rn{color:color-mix(in srgb,var(--c) 90%,var(--fg))}
+.spoil .rn{font-size:13px}
+.relic.none{border-style:dashed}
+.sprite{position:absolute;width:0;height:0;overflow:hidden} /* never display:none -- that can stop <use> resolving */
+.relic .sp{flex:none}
+.sp .sppl{fill:color-mix(in srgb,var(--c) 12%,transparent);stroke:var(--c);stroke-opacity:.45;stroke-width:3}
+.sp.lk .sppl{stroke-opacity:.35;fill:color-mix(in srgb,var(--c) 5%,transparent)}
+.sp.lk rect{opacity:.7}
+.relic.none b,.relic.none small{color:var(--muted)}
+.relic.none .rrar{color:color-mix(in srgb,var(--c) 75%,var(--muted))}
 [data-skin="daylight"] .relic .hex path{fill-opacity:.18}
 .relnote{margin:10px 0 0;font-size:12px;color:var(--muted);line-height:1.5}
 .xpfloat{position:absolute;left:48px;top:2px;font-family:var(--f-mono);font-size:14px;font-weight:700;color:var(--hl);pointer-events:none;animation:floatup .7s ease-out forwards;text-shadow:0 0 8px var(--hl)}
@@ -550,8 +556,8 @@ button{font:inherit;color:inherit}
 .tabs{position:relative}
 .tind{position:absolute;top:-1px;left:4px;width:calc((100% - 8px)/5);height:2px;background:var(--hl);box-shadow:0 0 10px var(--hl);transition:transform 250ms var(--ease-out)}
 /* quest check: light sweep across the row */
-.qrow.sweep::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(100deg,transparent 30%,color-mix(in srgb,var(--c) 35%,transparent) 50%,transparent 70%);animation:sweep 300ms var(--ease-out) forwards}
-@keyframes sweep{from{transform:translateX(-100%)}to{transform:translateX(100%);opacity:0}}
+.qrow.sweep::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(100deg,transparent 30%,color-mix(in srgb,var(--c) 35%,transparent) 50%,transparent 70%);animation:rowsweep 300ms var(--ease-out) forwards}
+@keyframes rowsweep{from{transform:translateX(-100%)}to{transform:translateX(100%);opacity:0}}
 .qrow{overflow:hidden}
 /* hero: slow halo ring + level pop after a level-up */
 .halo{position:relative;display:grid;place-items:center}
@@ -800,6 +806,571 @@ button{font:inherit;color:inherit}
     <p style="font-size:13px">Starts at Level 1. Use Load sample data to see a hunter on day 18. Progress saves in this browser only.</p>
   </section>
 
+<svg class="sprite" aria-hidden="true" focusable="false">
+<!-- Spoil art. Each symbol carries a normalising transform computed from its MEASURED getBBox(),
+     so all five render to one height instead of the 225-253px spread they were drawn at. Recompute
+     with dev/test/measure_sp.mjs if any piece is redrawn. -->
+<symbol id="sp-warden" viewBox="0 0 256 256">
+<g transform="translate(128 128) scale(0.6569) translate(-128.0 -128.0)">
+<!-- Warden's Gear Tooth (STR / Iron Warden). Sheared involute gear tooth: forged steel,
+     one rivet, a stress fracture glowing at the root where it tore off the wheel.
+     Light: key upper-left, cool fill lower-right. No filters, no alpha gradients -
+     the whole piece is opaque so the app's alpha-masked specular sweep behaves like
+     it does on the rank badges. All ids are prefixed wd- in case five of these get
+     inlined into one document. -->
+<defs>
+  <!-- outer contour: dark where the key light rolls off (upper-left edge),
+       lifting to a cool fill on the lower-right so the silhouette never merges
+       into the near-black neon background -->
+  <linearGradient id="wd-cont" x1="0.14" y1="0.02" x2="0.9" y2="1">
+    <stop offset="0" stop-color="#11151a"/>
+    <stop offset=".46" stop-color="#1b212a"/>
+    <stop offset=".82" stop-color="#3b4654"/>
+    <stop offset="1" stop-color="#5a6877"/>
+  </linearGradient>
+  <!-- the bevel crest: full steel ramp, white end kept INSIDE the contour so it
+       never touches the daylight background -->
+  <linearGradient id="wd-rim" x1="0.08" y1="0" x2="0.92" y2="1">
+    <stop offset="0" stop-color="#f2f6fb"/>
+    <stop offset=".13" stop-color="#cdd8e4"/>
+    <stop offset=".33" stop-color="#97a5b4"/>
+    <stop offset=".56" stop-color="#64717f"/>
+    <stop offset=".78" stop-color="#3e4854"/>
+    <stop offset="1" stop-color="#2a323b"/>
+  </linearGradient>
+  <!-- recessed front face, the dark mass that carries the piece on daylight -->
+  <linearGradient id="wd-face" x1="0.2" y1="0" x2="0.78" y2="1">
+    <stop offset="0" stop-color="#424c58"/>
+    <stop offset=".34" stop-color="#2a313b"/>
+    <stop offset=".72" stop-color="#1a1f26"/>
+    <stop offset="1" stop-color="#242b34"/>
+  </linearGradient>
+  <linearGradient id="wd-groove" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0d1014"/>
+    <stop offset=".55" stop-color="#1d242c"/>
+    <stop offset="1" stop-color="#4e5b69"/>
+  </linearGradient>
+  <linearGradient id="wd-ember" x1="0.4" y1="1" x2="0.6" y2="0">
+    <stop offset="0" stop-color="#6e1608"/>
+    <stop offset=".3" stop-color="#e03b14"/>
+    <stop offset=".68" stop-color="#ff9b3a"/>
+    <stop offset="1" stop-color="#ffe9bd"/>
+  </linearGradient>
+  <radialGradient id="wd-rivet" cx="0.34" cy="0.28" r="0.82">
+    <stop offset="0" stop-color="#ffffff"/>
+    <stop offset=".2" stop-color="#d6e0ec"/>
+    <stop offset=".52" stop-color="#8793a2"/>
+    <stop offset=".82" stop-color="#4c5663"/>
+    <stop offset="1" stop-color="#2b323b"/>
+  </radialGradient>
+</defs>
+
+<g transform="rotate(-8 128 128) translate(128 128) scale(1.12) translate(-128 -120)">
+  <!-- 1. silhouette + dark contour -->
+  <path fill="url(#wd-cont)" d="M96 30 L160 30 C168 30 173 35 174 44 L187 116 C191 134 198 145 208 152 L204 190 L190 170 L180 204 L164 178 L150 208 L134 182 L118 210 L104 180 L90 202 L76 174 L62 196 L48 152 C58 145 65 134 69 116 L82 44 C83 35 88 30 96 30 Z"/>
+
+  <!-- 2. bevel crest -->
+  <path fill="url(#wd-rim)" d="M100 39 L156 39 C163 39 166 43 167 50 L180 117 C184 134 190 144 199 151 L196 180 L186 163 L178 192 L164 170 L151 196 L136 174 L121 198 L108 172 L94 192 L81 167 L68 186 L57 152 C66 145 72 134 76 117 L89 50 C90 43 93 39 100 39 Z"/>
+
+  <!-- 3. recessed face -->
+  <path fill="url(#wd-face)" d="M107 53 L149 53 C154 53 157 56 158 61 L170 118 C174 134 179 143 187 150 L185 168 L177 155 L171 178 L159 160 L148 182 L136 164 L124 184 L112 162 L100 180 L89 158 L78 174 L68 152 C76 145 81 134 85 118 L97 61 C98 56 101 53 107 53 Z"/>
+
+  <!-- 4. the root groove: where the tooth meets the wheel rim. Reads at 72px as the
+          line that turns a wedge into a machined part. -->
+  <path fill="url(#wd-groove)" d="M70 141 C76 145 80 148 85 150 L171 150 C176 148 180 145 186 141 L189 158 C182 155 177 153 171 162 L85 162 C79 153 74 155 67 158 Z"/>
+
+  <!-- 5. machining ridges on the face, held within ~6% of the face value so they
+          average out instead of shifting the plane when they go sub-pixel at 32px -->
+  <path fill="#171c23" d="M101 76 L155 76 L155 81 L100 81 Z"/>
+  <path fill="#303945" d="M100 81 L155 81 L155 83 L100 83 Z"/>
+  <path fill="#171c23" d="M97 110 L159 110 L159 115 L96 115 Z"/>
+  <path fill="#303945" d="M96 115 L159 115 L159 117 L96 117 Z"/>
+  <path fill="#171c23" d="M93 128 L163 128 L163 133 L92 133 Z"/>
+  <path fill="#303945" d="M92 133 L163 133 L163 135 L92 135 Z"/>
+
+  <!-- 6. stress fracture, root to mid-body, still hot. Tapered polygon rather than a
+          stroke so it cannot resolve below a pixel and turn to haze. -->
+  <path fill="url(#wd-ember)" d="M90 192 L99 188 L108 162 L116 160 L111 136 L120 132 L116 112 L122 108 L119 92 L112 97 L113 115 L105 119 L110 143 L101 147 L95 170 L87 175 Z"/>
+  <!-- secondary hairline on the opposite root, cold (already cooled) -->
+  <path fill="#0e1218" d="M169 186 L173 170 L167 158 L172 144 L168 142 L162 158 L168 170 L164 185 Z"/>
+
+  <!-- 7. rivet: raised dome, its own occlusion ring and cast shadow -->
+  <ellipse cx="131" cy="92" rx="25" ry="25" fill="#0f1319"/>
+  <ellipse cx="128" cy="89" rx="23" ry="23" fill="url(#wd-rivet)"/>
+  <path fill="#f6f9ff" d="M116 78 C121 73 131 71 138 74 C130 75 123 79 119 85 Z"/>
+  <ellipse cx="128" cy="89" rx="10" ry="10" fill="#39424e"/>
+  <ellipse cx="126" cy="87" rx="7" ry="7" fill="#1d232b"/>
+
+  <!-- 8. key speculars. These sit ON the already-bright bevel, so when they blur away
+          at 32px the value of that plane is unchanged - the piece only loses sparkle,
+          never contrast. -->
+  <path fill="#ffffff" d="M101 40 L155 40 L153 47 L103 47 Z"/>
+  <path fill="#eaf1fa" d="M91 54 L98 54 L85 118 L77 116 Z"/>
+  <path fill="#d7e2ef" d="M72 126 L80 128 L67 152 L60 146 Z"/>
+  <!-- lower-right fill light: the one band that keeps the dark contour from running
+       all the way round on the near-black skins -->
+  <path fill="#7f8e9e" d="M186 120 L191 139 C194 147 199 152 205 155 L203 170 C193 164 186 152 182 136 Z"/>
+  <path fill="#5f6d7c" d="M196 180 L198 196 L189 184 Z"/>
+</g>
+</g></symbol>
+<symbol id="sp-wraith" viewBox="0 0 256 256">
+<g transform="translate(128 128) scale(0.6055) translate(-135.0 -127.5)">
+<!-- Wraith's Hollow Eye (VIT / Sleepless Wraith). A cold eye-stone in a carved socket
+     ring, a lid of smoke curling over the top, tendrils below.
+     The one deliberate omission: the pupil has NO catchlight. Every other sphere in
+     this set gets one. Nothing is behind this one.
+     Smoke is drawn as opaque tapered licks, not an alpha fade, so the app's
+     alpha-masked sweep crosses it at the same strength as the stone. -->
+<defs>
+  <!-- outer contour of the ring: a torus lit from upper-left is in shadow at its
+       outermost upper-left edge and crests just inside, so the dark-edge rule and
+       the physics agree here -->
+  <linearGradient id="wr-cont" x1="0.12" y1="0.04" x2="0.88" y2="0.98">
+    <stop offset="0" stop-color="#0b100e"/>
+    <stop offset=".5" stop-color="#121a17"/>
+    <stop offset=".84" stop-color="#2f433c"/>
+    <stop offset="1" stop-color="#4d6a60"/>
+  </linearGradient>
+  <!-- stone body. Deliberately mid-to-dark cold jade-slate, not pale: a pale stone
+       would sit within a hair of daylight's #e9e6df background. Range here is
+       L~22 to L~78, all of it inside the contour. -->
+  <linearGradient id="wr-stone" x1="0.1" y1="0.02" x2="0.9" y2="1">
+    <stop offset="0" stop-color="#cfddd6"/>
+    <stop offset=".12" stop-color="#a6bbb2"/>
+    <stop offset=".3" stop-color="#6f8880"/>
+    <stop offset=".52" stop-color="#4e645c"/>
+    <stop offset=".54" stop-color="#445851"/>
+    <stop offset=".78" stop-color="#28352f"/>
+    <stop offset="1" stop-color="#1b2521"/>
+  </linearGradient>
+  <!-- socket interior: the lip casts back across the upper-left of the recess -->
+  <linearGradient id="wr-socket" x1="0.18" y1="0" x2="0.82" y2="1">
+    <stop offset="0" stop-color="#070b09"/>
+    <stop offset=".45" stop-color="#0e1613"/>
+    <stop offset=".8" stop-color="#1f2b26"/>
+    <stop offset="1" stop-color="#32433c"/>
+  </linearGradient>
+  <!-- iris: luminous ring, dead-black core. This ring is the piece's whole rescue
+       on the near-black skins. -->
+  <radialGradient id="wr-iris" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#000000"/>
+    <stop offset=".34" stop-color="#03100b"/>
+    <stop offset=".42" stop-color="#0a3527"/>
+    <stop offset=".58" stop-color="#2fd39a"/>
+    <stop offset=".72" stop-color="#8ff0c7"/>
+    <stop offset=".84" stop-color="#1d5e46"/>
+    <stop offset="1" stop-color="#06120e"/>
+  </radialGradient>
+  <linearGradient id="wr-smoke" x1="0.2" y1="1" x2="0.8" y2="0">
+    <stop offset="0" stop-color="#859990"/>
+    <stop offset=".02" stop-color="#859990"/>
+    <stop offset=".42" stop-color="#5a6c66"/>
+    <stop offset=".76" stop-color="#3a4843"/>
+    <stop offset="1" stop-color="#28332f"/>
+  </linearGradient>
+  <linearGradient id="wr-smoke2" x1="0.8" y1="1" x2="0.3" y2="0">
+    <stop offset="0" stop-color="#768881"/>
+    <stop offset=".03" stop-color="#768881"/>
+    <stop offset=".5" stop-color="#4b5b55"/>
+    <stop offset="1" stop-color="#2a3531"/>
+  </linearGradient>
+</defs>
+
+<g transform="rotate(-4 128 128)">
+  <!-- 1. smoke, behind the stone. Opaque tapered licks: they have to hold an edge in
+          silhouette at 32px or the piece reads as a plain disc. -->
+  <path fill="url(#wr-smoke)" d="M58 96 C30 74 34 36 74 14 C57 44 58 70 88 86 C77 88 66 92 58 96 Z"/>
+  <path fill="url(#wr-smoke2)" d="M104 58 C105 32 118 14 136 8 C125 28 123 48 129 64 C120 60 112 58 104 58 Z"/>
+  <path fill="url(#wr-smoke2)" d="M152 58 C170 34 196 28 212 38 C190 42 174 56 166 76 C162 69 157 63 152 58 Z"/>
+  <path fill="url(#wr-smoke)" d="M86 198 C74 218 79 238 97 248 C84 234 87 218 101 207 Z"/>
+  <path fill="url(#wr-smoke2)" d="M168 194 C186 208 189 228 176 242 C185 224 178 209 161 202 Z"/>
+  <path fill="url(#wr-smoke)" d="M196 150 C218 152 230 166 230 182 C222 168 210 162 194 162 Z"/>
+
+  <!-- 2. the stone ring -->
+  <circle cx="128" cy="130" r="88" fill="url(#wr-cont)"/>
+  <circle cx="128" cy="130" r="80" fill="url(#wr-stone)"/>
+
+  <!-- carved facets around the setting. Each wedge is >=14 units wide so it survives
+       the 72px read; at 32px they merge into the ring's own gradient. -->
+  <path fill="#1d2823" d="M128 50 L136 54 L128 58 L120 54 Z"/>
+  <path fill="#1d2823" d="M184 86 L190 94 L181 94 L177 88 Z"/>
+  <path fill="#1d2823" d="M72 86 L79 88 L75 94 L66 94 Z"/>
+  <path fill="#303f39" d="M196 140 L204 142 L196 150 L190 144 Z"/>
+  <path fill="#1d2823" d="M60 140 L66 144 L60 150 L52 142 Z"/>
+  <path fill="#303f39" d="M128 202 L136 206 L128 210 L120 206 Z"/>
+
+  <!-- 3. socket recess -->
+  <circle cx="128" cy="130" r="64" fill="url(#wr-socket)"/>
+  <!-- occlusion crescent cast by the upper-left lip into the socket -->
+  <path fill="#050807" d="M128 66 A64 64 0 0 0 68 148 A54 54 0 0 1 128 78 Z"/>
+
+  <!-- 4. the eye -->
+  <circle cx="128" cy="130" r="50" fill="#060c0a"/>
+  <circle cx="128" cy="130" r="47" fill="url(#wr-iris)"/>
+  <!-- lens rim: a 5-unit band, sub-pixel at 32px but sitting on the dark socket
+       edge where a slight lift is harmless -->
+  <circle cx="128" cy="130" r="49" fill="none" stroke="#9fe4c8" stroke-width="5"/>
+  <circle cx="128" cy="130" r="53" fill="none" stroke="#0b1512" stroke-width="5"/>
+  <!-- pupil: flat, dead, no highlight anywhere on it -->
+  <circle cx="128" cy="130" r="17" fill="#000000"/>
+
+  <!-- 5. key speculars on the ring crest, kept interior so nothing near-white ever
+          touches the silhouette edge -->
+  <path fill="#f4faf7" d="M78 84 C92 68 108 58 126 54 L124 62 C109 66 95 75 84 89 Z"/>
+  <path fill="#c3d6ce" d="M67 101 C70 95 73 90 77 85 L83 91 C79 96 76 101 73 107 Z"/>
+  <!-- lower-right fill light along the outer edge: the band that stops the dark
+       contour running the full circumference on neon/ember -->
+  <path fill="#718d82" d="M186 176 C176 190 162 201 146 208 L144 200 C159 193 172 183 181 170 Z"/>
+  <path fill="#4e665d" d="M200 140 C200 150 198 160 194 169 L187 164 C190 156 192 148 193 139 Z"/>
+
+  <!-- 6. chips in the stone, for wear -->
+  <path fill="#121a17" d="M160 60 L172 66 L166 74 L155 68 Z"/>
+  <path fill="#7d948b" d="M160 60 L172 66 L170 68 L159 63 Z"/>
+  <path fill="#121a17" d="M54 160 L64 168 L56 174 L48 166 Z"/>
+</g>
+</g></symbol>
+<symbol id="sp-stalker" viewBox="0 0 256 256">
+<g transform="translate(128 128) scale(0.7262) translate(-123.0 -123.9)">
+<!-- Stalker's Talon (AGI / Swift Stalker). Raptor talon taken at the joint: warm
+     keratin at the severed base running to near-black horn at the tip, a chipped
+     point with a crack running back from it, a stub of tendon at the cut.
+     The long specular following the convex edge is the whole trick with keratin -
+     one continuous curved highlight, interior to the silhouette, never on it.
+     Cool AGI blue appears only as reflected fill light on the concave edge. -->
+<defs>
+  <!-- outer contour. Upper-left edge dark (key rolls off), lower-right lifts to a
+       cool fill so the shape never dissolves into near-black. -->
+  <linearGradient id="st-cont" x1="0.1" y1="0.04" x2="0.88" y2="0.96">
+    <stop offset="0" stop-color="#1a130c"/>
+    <stop offset=".4" stop-color="#241a11"/>
+    <stop offset=".74" stop-color="#3c4a55"/>
+    <stop offset="1" stop-color="#55707f"/>
+  </linearGradient>
+  <!-- keratin body: light amber-bone at the base falling to dark horn at the tip.
+       The light end stops at L~72 and lives inside the contour. -->
+  <linearGradient id="st-horn" x1="0.26" y1="0.04" x2="0.62" y2="0.96">
+    <stop offset="0" stop-color="#eadcc0"/>
+    <stop offset=".1" stop-color="#d4bd95"/>
+    <stop offset=".28" stop-color="#ab8d62"/>
+    <stop offset=".5" stop-color="#7a5f3e"/>
+    <stop offset=".72" stop-color="#4a3626"/>
+    <stop offset=".88" stop-color="#2a1d15"/>
+    <stop offset="1" stop-color="#17100b"/>
+  </linearGradient>
+  <!-- concave underside: always in occlusion, the dark that gives the hook its read -->
+  <linearGradient id="st-under" x1="0.1" y1="0.1" x2="0.85" y2="0.9">
+    <stop offset="0" stop-color="#2b2016"/>
+    <stop offset=".45" stop-color="#1a130d"/>
+    <stop offset="1" stop-color="#100b08"/>
+  </linearGradient>
+  <linearGradient id="st-sinew" x1="0.2" y1="1" x2="0.8" y2="0">
+    <stop offset="0" stop-color="#6d4f3c"/>
+    <stop offset=".45" stop-color="#a9806a"/>
+    <stop offset="1" stop-color="#d8b9a6"/>
+  </linearGradient>
+  <linearGradient id="st-cut" x1="0.1" y1="0" x2="0.9" y2="1">
+    <stop offset="0" stop-color="#8a6b50"/>
+    <stop offset=".4" stop-color="#5a4330"/>
+    <stop offset=".78" stop-color="#32241a"/>
+    <stop offset="1" stop-color="#4a3a2c"/>
+  </linearGradient>
+  <linearGradient id="st-spec" x1="0.5" y1="0" x2="0.5" y2="1">
+    <stop offset="0" stop-color="#fffdf6"/>
+    <stop offset=".35" stop-color="#fdf3dd"/>
+    <stop offset=".72" stop-color="#cbb99a"/>
+    <stop offset="1" stop-color="#6d5c47"/>
+  </linearGradient>
+</defs>
+
+<g transform="rotate(6 128 128)">
+  <!-- 1. tendon stub, behind the base: three cords torn out of the joint -->
+  <path fill="url(#st-sinew)" d="M62 44 C52 32 49 22 57 15 C60 25 67 31 76 36 Z"/>
+  <path fill="url(#st-sinew)" d="M78 36 C75 22 77 14 86 11 C84 21 88 29 94 38 Z"/>
+  <path fill="#5c4133" d="M62 44 C57 36 53 27 53 19 C57 28 63 34 70 39 Z"/>
+  <path fill="#443026" d="M80 36 C78 26 79 19 84 14 C83 23 85 30 88 36 Z"/>
+
+  <!-- 2. silhouette + contour -->
+  <path fill="url(#st-cont)" d="M56 40 L112 58 C186 78 214 152 176 216 L150 238 C150 190 124 146 88 110 C70 88 60 62 56 40 Z"/>
+
+  <!-- 3. keratin body, inset from the contour -->
+  <path fill="url(#st-horn)" d="M63 48 L110 64 C178 84 204 152 170 210 L155 228 C154 186 122 146 92 112 C76 92 67 68 63 48 Z"/>
+
+  <!-- 4. concave underside plane. The hook only reads as a hook if this stays dark. -->
+  <path fill="url(#st-under)" d="M78 60 C84 84 96 102 112 120 C140 150 158 184 160 216 L155 228 C154 186 122 146 92 112 C83 100 79 78 78 60 Z"/>
+  <path fill="#0d0906" d="M96 104 C122 132 146 166 155 202 L158 220 C150 186 128 150 100 118 Z"/>
+
+  <!-- 5. growth ridges across the horn. Each is >=7 units and sits within a narrow
+          value band of the plane under it, so going sub-pixel at 32px costs detail
+          and not contrast. -->
+  <path fill="#5d4830" d="M104 70 C130 84 150 104 162 128 L156 132 C144 110 126 92 102 78 Z"/>
+  <path fill="#c0a87f" d="M104 64 C132 79 153 100 166 126 L162 128 C149 104 128 84 102 70 Z"/>
+  <path fill="#40301f" d="M128 104 C150 122 166 146 172 172 L166 173 C159 149 144 128 124 110 Z"/>
+  <path fill="#8d7450" d="M126 100 C150 119 167 144 174 170 L172 172 C165 147 148 123 124 106 Z"/>
+  <path fill="#2c2015" d="M152 150 C164 168 170 190 170 208 L164 208 C163 190 157 170 147 154 Z"/>
+
+  <!-- 6. chipped tip + the crack running back from it. Tapered polygons, minimum
+          6 units wide; nothing here is a stroke that can starve to a half pixel. -->
+  <path fill="#0a0705" d="M150 238 L166 212 L170 222 L159 232 Z"/>
+  <path fill="#120c08" d="M158 196 L166 200 L160 214 L153 210 Z"/>
+  <path fill="#6b5640" d="M157 194 L165 199 L163 203 L155 199 Z"/>
+  <path fill="#070504" d="M163 176 L168 178 L162 196 L156 193 L160 184 Z"/>
+
+  <!-- 7. the long keratin specular on the convex edge - the single most important
+          mark on this piece -->
+  <path fill="url(#st-spec)" d="M84 54 C152 76 196 134 186 194 L176 192 C184 140 146 86 80 64 Z"/>
+  <path fill="#ffffff" d="M86 56 C116 66 142 84 160 106 L155 110 C138 90 114 73 83 63 Z"/>
+
+  <!-- 8. cool reflected fill on the concave edge: what keeps the dark underside from
+          welding itself to the neon background -->
+  <path fill="#3f6f86" d="M150 236 C152 196 134 158 108 126 L104 132 C128 162 146 198 145 234 Z"/>
+  <path fill="#7fc4dc" d="M149 224 C149 200 140 176 126 154 L123 158 C135 179 144 202 145 224 Z"/>
+
+  <!-- 9. the severed base: a cut face, not a tapered end -->
+  <path fill="url(#st-cut)" d="M56 40 L112 58 L104 70 L60 54 Z"/>
+  <path fill="#1a120c" d="M60 54 L104 70 L102 75 L59 59 Z"/>
+  <path fill="#c3a888" d="M57 41 L111 59 L109 63 L56 46 Z"/>
+  <!-- marrow/quick cavity in the cut -->
+  <path fill="#2a1a14" d="M74 50 C82 50 90 54 94 60 C88 62 79 60 73 56 Z"/>
+  <path fill="#8d5f4f" d="M76 52 C83 52 89 55 92 59 C87 60 80 58 76 55 Z"/>
+</g>
+</g></symbol>
+<symbol id="sp-scholar" viewBox="0 0 256 256">
+<g transform="translate(128 128) scale(0.7113) translate(-128.6 -131.7)">
+<!-- Scholar's Knucklebone (INT / Hollow Scholar). A four-lobed knucklebone, soaked in
+     violet ink from the lower lobes up the shaft, with worn notation etched into the
+     face. The ink is doing double duty: it is the piece's story AND its guaranteed
+     dark mass, which is what lets a bone-coloured object survive daylight's #e9e6df
+     background. A clean white bone would have died there.
+     Notation marks are held within a narrow band of the bone value so that when they
+     go sub-pixel at 32px they average back to the plane instead of greying it. -->
+<defs>
+  <linearGradient id="sc-cont" x1="0.12" y1="0.03" x2="0.88" y2="0.97">
+    <stop offset="0" stop-color="#241d14"/>
+    <stop offset=".44" stop-color="#2e2619"/>
+    <stop offset=".78" stop-color="#4a4332"/>
+    <stop offset="1" stop-color="#6d6650"/>
+  </linearGradient>
+  <!-- bone. Lightest value lives only in the upper-left lobes, interior. -->
+  <linearGradient id="sc-bone" x1="0.16" y1="0.02" x2="0.86" y2="0.98">
+    <stop offset="0" stop-color="#f6efdd"/>
+    <stop offset=".14" stop-color="#e3d7bd"/>
+    <stop offset=".34" stop-color="#c2b394"/>
+    <stop offset=".56" stop-color="#9a8a6e"/>
+    <stop offset=".76" stop-color="#6f6250"/>
+    <stop offset=".92" stop-color="#4b4235"/>
+    <stop offset="1" stop-color="#393127"/>
+  </linearGradient>
+  <!-- ink: INT violet, pooling almost to black where it is thickest -->
+  <linearGradient id="sc-ink" x1="0.3" y1="0" x2="0.72" y2="1">
+    <stop offset="0" stop-color="#4a3480"/>
+    <stop offset=".24" stop-color="#2f1f5c"/>
+    <stop offset=".58" stop-color="#1a1038"/>
+    <stop offset="1" stop-color="#0a0618"/>
+  </linearGradient>
+  <linearGradient id="sc-inkrim" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#6a4fae"/>
+    <stop offset=".5" stop-color="#3d2a73"/>
+    <stop offset="1" stop-color="#241848"/>
+  </linearGradient>
+  <radialGradient id="sc-lobe" cx="0.34" cy="0.3" r="0.82">
+    <stop offset="0" stop-color="#fffaf0"/>
+    <stop offset=".3" stop-color="#e6dac0"/>
+    <stop offset=".64" stop-color="#b4a586"/>
+    <stop offset=".88" stop-color="#75684f"/>
+    <stop offset="1" stop-color="#4e4434"/>
+  </radialGradient>
+</defs>
+
+<g transform="rotate(-10 128 128) translate(128 128) scale(0.93) translate(-128 -128)">
+  <!-- 1. silhouette + contour -->
+  <path fill="url(#sc-cont)" d="M92 18 C72 18 58 32 58 52 C58 72 70 85 88 87 C97 96 97 112 95 132 C93 152 93 166 86 178 C68 182 56 196 56 214 C56 234 70 246 90 246 C106 246 118 236 123 222 L128 212 L133 222 C138 236 150 246 166 246 C186 246 200 234 200 214 C200 196 188 182 170 178 C163 166 163 152 161 132 C159 112 159 96 168 87 C186 85 198 72 198 52 C198 32 184 18 164 18 C148 18 136 28 131 42 L128 52 L125 42 C120 28 108 18 92 18 Z"/>
+
+  <!-- 2. bone body, inset from the contour -->
+  <path fill="url(#sc-bone)" d="M93 25 C76 25 65 37 65 53 C65 70 75 80 91 82 C102 93 102 112 100 132 C98 152 98 168 90 182 C74 186 63 197 63 213 C63 230 75 240 91 240 C104 240 114 231 118 219 L128 198 L138 219 C142 231 152 240 165 240 C181 240 193 230 193 213 C193 197 182 186 166 182 C158 168 158 152 156 132 C154 112 154 93 165 82 C181 80 191 70 191 53 C191 37 180 25 163 25 C150 25 140 34 136 46 L128 66 L120 46 C116 34 106 25 93 25 Z"/>
+
+  <!-- 3. lobe modelling: each condyle is its own little sphere -->
+  <ellipse cx="88" cy="52" rx="23" ry="26" fill="url(#sc-lobe)"/>
+  <ellipse cx="168" cy="52" rx="23" ry="26" fill="url(#sc-lobe)"/>
+  <ellipse cx="88" cy="212" rx="25" ry="27" fill="url(#sc-lobe)"/>
+  <ellipse cx="168" cy="212" rx="25" ry="27" fill="url(#sc-lobe)"/>
+  <!-- occlusion in the two notches, where the lobes meet the shaft -->
+  <path fill="#5b513e" d="M128 60 C124 48 121 38 117 32 C124 38 128 48 131 58 C134 48 138 38 144 32 C140 38 136 48 132 60 Z"/>
+  <path fill="#4a4132" d="M128 198 C124 210 121 222 117 230 C124 222 128 212 131 202 C134 212 138 222 144 230 C140 222 136 210 132 198 Z"/>
+  <path fill="#6d6149" d="M100 84 C104 100 104 116 102 134 L96 134 C98 116 98 100 94 84 Z"/>
+
+  <!-- 4. the ink. Starts as a soaked pool across the lower-right lobe and wicks up
+          the shaft, with a darker dried rim at its boundary. -->
+  <path fill="url(#sc-ink)" d="M193 206 C193 228 180 240 164 240 C151 240 142 232 137 220 L128 200 C134 186 140 168 142 148 C144 128 146 112 152 98 C156 110 156 126 157 142 C159 164 164 180 170 184 C184 188 193 196 193 206 Z"/>
+  <path fill="url(#sc-inkrim)" d="M152 98 C156 110 156 126 157 142 C159 164 164 180 170 184 L166 188 C159 180 154 164 152 142 C150 124 150 110 148 100 Z"/>
+  <path fill="#0a0618" d="M150 214 C160 214 170 220 176 230 C168 236 156 236 148 230 Z"/>
+  <!-- a second, older splash on the upper-left lobe -->
+  <path fill="url(#sc-ink)" d="M74 36 C84 32 94 34 100 42 C94 48 82 50 72 46 Z"/>
+  <path fill="#6a4fae" d="M74 36 C83 32 93 34 99 41 L96 42 C90 37 82 35 74 38 Z"/>
+  <!-- run-off droplet down the shaft -->
+  <path fill="#190f34" d="M110 150 C114 150 116 154 115 160 C114 166 111 169 108 168 C105 167 104 162 105 157 Z"/>
+
+  <!-- 5. worn notation etched into the shaft. 120px-tier detail: every mark is a
+          filled shape, never a hairline stroke, and sits ~12% off the plane it is on. -->
+  <g fill="#6e624b">
+    <path d="M100 100 L124 100 L124 105 L100 105 Z"/>
+    <path d="M100 114 L118 114 L118 119 L100 119 Z"/>
+    <path d="M98 128 L126 128 L126 133 L98 133 Z"/>
+    <path d="M97 142 L114 142 L114 147 L97 147 Z"/>
+    <path d="M96 156 L122 156 L122 161 L96 161 Z"/>
+    <path d="M95 170 L110 170 L110 175 L95 175 Z"/>
+  </g>
+  <g fill="#8d7f63">
+    <path d="M100 105 L124 105 L124 107 L100 107 Z"/>
+    <path d="M98 133 L126 133 L126 135 L98 135 Z"/>
+    <path d="M96 161 L122 161 L122 163 L96 163 Z"/>
+  </g>
+  <!-- a chevron and a tally group, the "notation" reading at 120px -->
+  <path fill="#5f5440" d="M103 88 L112 80 L121 88 L117 88 L112 84 L107 88 Z"/>
+  <path fill="#5f5440" d="M104 182 L108 182 L108 196 L104 196 Z M112 182 L116 182 L116 196 L112 196 Z M120 182 L124 182 L124 196 L120 196 Z"/>
+  <path fill="#2a1f52" d="M136 120 L146 120 L146 125 L136 125 Z M136 134 L144 134 L144 139 L136 139 Z"/>
+
+  <!-- 6. pits and wear on the lobes -->
+  <ellipse cx="78" cy="60" rx="6" ry="5" fill="#6b5f49"/>
+  <ellipse cx="77" cy="59" rx="5" ry="4" fill="#9d8f71"/>
+  <ellipse cx="178" cy="60" rx="5" ry="4" fill="#5d5341"/>
+  <ellipse cx="80" cy="224" rx="7" ry="5" fill="#574d3c"/>
+
+  <!-- 7. key speculars, interior to the silhouette on every lobe -->
+  <path fill="#fffdf4" d="M72 34 C80 29 90 29 97 34 C88 34 79 38 73 45 Z"/>
+  <path fill="#fdf7e6" d="M152 34 C160 29 170 29 177 34 C168 34 159 38 153 45 Z"/>
+  <path fill="#fdf7e6" d="M70 194 C78 188 88 188 95 193 C86 193 77 198 71 206 Z"/>
+  <path fill="#f3ead5" d="M99 90 C101 104 101 118 100 130 L95 130 C96 118 96 104 94 90 Z"/>
+  <!-- cool fill light on the lower-right outline, the one band that keeps the dark
+       contour from closing the whole perimeter on the near-black skins -->
+  <path fill="#8d8a74" d="M191 206 C193 224 182 238 166 240 L165 234 C178 231 187 221 186 206 Z"/>
+  <path fill="#7d7a66" d="M186 56 C185 70 178 79 167 82 L166 77 C175 74 180 67 181 56 Z"/>
+</g>
+</g></symbol>
+<symbol id="sp-shade" viewBox="0 0 256 256">
+<g transform="translate(128 128) scale(0.8379) translate(-130.9 -128.3)">
+<!-- Shade's Mirror Shard (PER / Mirror Shade). A sliver of silvered glass holding a
+     reflection that is not the viewer's: a hooded figure, turned slightly off the
+     shard's own axis so it reads as an independent image rather than a decal.
+     Two gold eye-points are the only warm colour on the piece.
+     Daylight problem and the answer: glass wants to be light, and light glass on
+     #e9e6df is invisible. So the FACE carries the dark mass (the reflection is a
+     night image), the perimeter bevel is held at a mid grey around L~48 rather than
+     white, and the near-white fracture speculars are inset bands, never the outline.
+     That inversion - dark face, mid edge, interior white - is what makes the same
+     file work on #05070b and #e9e6df. -->
+<defs>
+  <!-- perimeter bevel: mid grey, deliberately NOT white. Darkens toward the
+       upper-left where the key rolls off, lifts to a cool fill lower-right. -->
+  <linearGradient id="sd-cont" x1="0.1" y1="0.02" x2="0.9" y2="0.98">
+    <stop offset="0" stop-color="#4a525c"/>
+    <stop offset=".3" stop-color="#5e6873"/>
+    <stop offset=".62" stop-color="#7c8795"/>
+    <stop offset=".84" stop-color="#58626e"/>
+    <stop offset="1" stop-color="#39414b"/>
+  </linearGradient>
+  <!-- the glass face: a cold night field the reflection sits in -->
+  <linearGradient id="sd-face" x1="0.2" y1="0" x2="0.8" y2="1">
+    <stop offset="0" stop-color="#39455a"/>
+    <stop offset=".3" stop-color="#232c3c"/>
+    <stop offset=".64" stop-color="#121826"/>
+    <stop offset="1" stop-color="#080b14"/>
+  </linearGradient>
+  <!-- horizon band behind the figure, so the hood silhouettes instead of smearing -->
+  <linearGradient id="sd-sky" x1="0.5" y1="0" x2="0.5" y2="1">
+    <stop offset="0" stop-color="#1b2433"/>
+    <stop offset=".45" stop-color="#7c8ca4"/>
+    <stop offset=".7" stop-color="#4a566d"/>
+    <stop offset="1" stop-color="#141a28"/>
+  </linearGradient>
+  <!-- tarnish where the silvering has lifted off the back -->
+  <linearGradient id="sd-tarnish" x1="0.1" y1="0.1" x2="0.9" y2="0.9">
+    <stop offset="0" stop-color="#5a4a36"/>
+    <stop offset=".45" stop-color="#3a2f22"/>
+    <stop offset="1" stop-color="#1b1710"/>
+  </linearGradient>
+  <linearGradient id="sd-edge" x1="0" y1="0" x2="0.6" y2="1">
+    <stop offset="0" stop-color="#ffffff"/>
+    <stop offset=".4" stop-color="#e6eef8"/>
+    <stop offset=".78" stop-color="#9fb0c4"/>
+    <stop offset="1" stop-color="#5d6a7a"/>
+  </linearGradient>
+  <radialGradient id="sd-eye" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#fff7d8"/>
+    <stop offset=".45" stop-color="#f2c230"/>
+    <stop offset=".8" stop-color="#8a6204"/>
+    <stop offset="1" stop-color="#2a1e05"/>
+  </radialGradient>
+  <!-- the face image is clipped to the shard so the reflection can be composed
+       freely and still stop dead at the fracture -->
+  <clipPath id="sd-clip">
+    <path d="M98 30 L156 41 L178 90 L157 153 L136 226 L116 150 L86 100 Z"/>
+  </clipPath>
+</defs>
+
+<g transform="rotate(7 128 128)">
+  <!-- 1. silhouette + mid-grey perimeter bevel -->
+  <path fill="url(#sd-cont)" d="M92 20 L158 32 L184 86 L160 156 L136 236 L112 150 L78 96 Z"/>
+
+  <!-- 2. the glass face, inset so the bevel shows as a band all the way round -->
+  <path fill="url(#sd-face)" d="M98 30 L156 41 L178 90 L157 153 L136 226 L116 150 L86 100 Z"/>
+
+  <!-- 3. the reflection, clipped to the face -->
+  <g clip-path="url(#sd-clip)">
+    <!-- horizon -->
+    <path fill="url(#sd-sky)" d="M86 96 L178 96 L178 150 L86 150 Z"/>
+    <path fill="#0d121d" d="M86 128 L178 128 L178 230 L86 230 Z"/>
+    <!-- far ridge -->
+    <path fill="#2c3647" d="M86 128 L104 116 L120 126 L140 110 L158 124 L178 114 L178 132 L86 132 Z"/>
+    <!-- hooded figure. Deliberately off the shard's axis - it is not looking out of
+         the glass the way a reflection of the holder would. -->
+    <path fill="#05070a" d="M128 92 C142 92 150 104 150 118 C150 126 153 132 158 137 C166 144 172 156 174 172 L174 230 L84 230 L84 176 C86 158 93 145 102 138 C108 133 110 126 110 118 C110 104 114 92 128 92 Z"/>
+    <!-- hood opening: a void inside the void, one value lighter so the head reads -->
+    <path fill="#101521" d="M128 100 C139 100 144 108 144 118 C144 128 138 136 128 136 C118 136 112 128 112 118 C112 108 117 100 128 100 Z"/>
+    <path fill="#05070a" d="M128 104 C136 104 140 110 140 118 C140 126 135 132 128 132 C121 132 116 126 116 118 C116 110 120 104 128 104 Z"/>
+    <!-- the eyes. ~9 units: they fuse into a single gold glint at 32px, which is the
+         intended small-size read. -->
+    <ellipse cx="121" cy="117" rx="5" ry="4" fill="url(#sd-eye)"/>
+    <ellipse cx="135" cy="117" rx="5" ry="4" fill="url(#sd-eye)"/>
+    <ellipse cx="121" cy="117" rx="2" ry="2" fill="#fffbe8"/>
+    <ellipse cx="135" cy="117" rx="2" ry="2" fill="#fffbe8"/>
+    <!-- shoulder rim light, picked out of the horizon -->
+    <path fill="#55637c" d="M102 138 C96 144 91 153 88 164 L84 176 L84 186 C87 166 93 150 104 141 Z"/>
+    <path fill="#55637c" d="M158 137 C165 144 170 155 173 170 L174 186 C171 164 165 148 155 140 Z"/>
+    <path fill="#8e9db5" d="M112 106 C116 101 122 99 128 99 L128 103 C123 103 118 105 115 109 Z"/>
+
+    <!-- 4. tarnish: the silvering lifted off the lower-right back of the shard -->
+    <path fill="url(#sd-tarnish)" d="M150 168 C162 176 168 194 164 216 L136 226 L142 186 Z"/>
+    <path fill="#6b5a40" d="M150 168 C158 173 164 182 166 194 L162 194 C159 183 154 175 148 171 Z"/>
+    <path fill="#241d14" d="M152 196 C158 202 160 212 158 220 L148 224 L150 202 Z"/>
+  </g>
+
+  <!-- 5. fracture speculars: inset bands along the two edges the key light catches.
+          Minimum 6 units wide, and they sit on an already-light bevel so losing them
+          at 32px costs sparkle, not contrast. -->
+  <path fill="url(#sd-edge)" d="M92 20 L158 32 L155 40 L97 29 Z"/>
+  <path fill="url(#sd-edge)" d="M92 20 L97 29 L89 95 L79 96 Z"/>
+  <path fill="#ffffff" d="M93 22 L150 32 L149 35 L94 25 Z"/>
+  <path fill="#cfd9e6" d="M158 32 L184 86 L176 88 L154 40 Z"/>
+  <!-- lower-right fill: keeps the bottom half of the outline alive on near-black -->
+  <path fill="#8e9aab" d="M184 86 L160 156 L152 152 L176 86 Z"/>
+  <path fill="#5f6a7a" d="M160 156 L136 236 L132 212 L153 152 Z"/>
+  <!-- the one edge left dark on purpose: the lower-left fracture reads as the back
+       of the glass and anchors the shape on daylight -->
+  <path fill="#2b313a" d="M112 150 L136 236 L130 222 L107 152 Z"/>
+  <path fill="#232931" d="M86 100 L112 150 L107 152 L81 102 Z"/>
+
+  <!-- 6. internal cracks. Few and short on purpose: every one of them lightens the
+          dark face, which is the piece's whole daylight budget. -->
+  <path fill="#9fb0c4" d="M116 60 L148 96 L145 99 L113 63 Z"/>
+  <path fill="#7a899c" d="M148 96 L168 104 L167 108 L146 100 Z"/>
+  <path fill="#7a899c" d="M116 60 L104 74 L101 72 L113 57 Z"/>
+  <path fill="#6d7b8d" d="M127 168 L140 196 L137 197 L124 169 Z"/>
+  <!-- chip out of the right edge -->
+  <path fill="#1b212a" d="M174 108 L182 104 L170 128 L166 122 Z"/>
+  <path fill="#aebccd" d="M174 108 L182 104 L180 110 L173 112 Z"/>
+</g>
+</g></symbol>
+</svg>
   <div class="phone" id="phone">
     <div class="toast" id="toast" role="status"></div>
     <div class="fx" id="fx" aria-hidden="true"></div>
@@ -992,6 +1563,16 @@ const wd=d=>(d.getDay()+6)%7; // Monday=0
 const pad=n=>String(n).padStart(2,"0");
 const mondayKey=d=>{const m=new Date(d);m.setDate(d.getDate()-wd(d));return dkey(m)};
 const BOSSES={str:"Iron Warden",vit:"Sleepless Wraith",agi:"Swift Stalker",int:"Hollow Scholar",per:"Mirror Shade"};
+// Spoils: one named trophy per boss, cosmetic. Earned state is DERIVED from S.m.kills -- there is no trophy
+// field in the save. Deliberate: the Bane titles key off the same counter, so the v37 retraction in setDone
+// (kill undone -> kills[k]-- -> delete) already takes the trophy back with the kill, and a second copy of
+// "did he kill this" could only drift out of step with the first.
+const SPOILS={str:["warden","Warden's Gear Tooth","Sheared clean off the wheel. The fracture at the root has not finished cooling."],
+  vit:["wraith","Wraith's Hollow Eye","It kept no catchlight. Whatever it watched for, it never slept."],
+  agi:["stalker","Stalker's Talon","Taken at the joint, point already chipped. It caught something faster than you, once."],
+  int:["scholar","Scholar's Knucklebone","Ink-soaked to the shaft. The notation on the face is in no language the System will translate."],
+  per:["shade","Shade's Mirror Shard","The reflection in it is not yours, and it does not turn when you do."]};
+const spoilN=()=>Object.keys(SPOILS).filter(k=>(S.m.kills||{})[k]).length;
 // Titles: cosmetic, earned from real data, and never taken away except when the activity that earned
 // one is corrected in the same session (undoing the blow that killed a boss returns its Bane). New counters (pb/odn/adv/sleep/kills) start at install;
 // the rest (miles, Gates, Red Gates, program clears, rank, awakening) read data you already have.
@@ -1279,6 +1860,23 @@ function badge(t,size=56){const id="g"+(gid++),f=`badges/${BADGE_FILE[t]}.webp`,
 <defs><mask id="${id}" style="mask-type:alpha"><image href="${f}" width="256" height="256"/></mask></defs>
 <image href="${f}" width="256" height="256"/>
 <g mask="url(#${id})"><g class="sweep"><polygon points="-160,0 -90,0 -170,256 -240,256" fill="#fff" fill-opacity=".7"/><polygon points="-80,0 -62,0 -142,256 -160,256" fill="#fff" fill-opacity=".45"/></g></g></svg>`}
+// A spoil renders from the inline <symbol> sheet, not a WebP: five opaque pieces of art the size of the
+// badges would be five more SW shell files, and one missing shell file makes cache.addAll() reject as a
+// unit and the service worker never install. The shine reuses badge()'s alpha-masked sweep -- the art was
+// drawn opaque for exactly that -- so class "rb" inherits both the animation and its reduced-motion kill.
+function spoil(k,size=60){const[slug]=SPOILS[k],got=!!(S.m.kills||{})[k],id="g"+(gid++),name=SPOILS[k][1];
+  // the hex plate is the achievements' own frame (trophy(), 40-unit path) scaled x6.4 into this 256 box,
+  // so one screen does not carry two framing languages
+  const plate=`<path class="sppl" d="M128 19.2 230.4 76.8v102.4L128 236.8 25.6 179.2V76.8z"/>`;
+  const mask=`<defs><mask id="${id}" style="mask-type:alpha"><use href="#sp-${slug}"/></mask></defs>`;
+  // Locked is a FLAT silhouette: the art masks a single token-coloured fill, so concealment is identical
+  // on every skin. A CSS filter could not do that -- it darkens the art's own values, which means it hides
+  // detail on near-black skins and leaves it readable on daylight.
+  if(!got)return `<svg class="sp lk" width="${size}" height="${size}" viewBox="0 0 256 256" aria-hidden="true">${plate}${mask}
+<rect width="256" height="256" fill="var(--muted)" mask="url(#${id})"/></svg>`;
+  return `<svg class="sp rb" width="${size}" height="${size}" viewBox="0 0 256 256" role="img" aria-label="${name}" style="--d:${Object.keys(SPOILS).indexOf(k)*0.5}s">${plate}${mask}
+<use href="#sp-${slug}"/>
+<g mask="url(#${id})"><g class="sweep"><polygon points="-160,0 -90,0 -170,256 -240,256" fill="#fff" fill-opacity=".7"/><polygon points="-80,0 -62,0 -142,256 -160,256" fill="#fff" fill-opacity=".45"/></g></g></svg>`}
 function trophy(goal,size=36){const[c1,c2]=goal>=50?["#c99a2e","#ffe08a"]:goal>=20?["#9fb0c4","#eef3f8"]:["#b8794a","#f0b080"];
 return `<svg width="${size}" height="${size}" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 3 36 12v16L20 37 4 28V12z" fill="rgba(0,0,0,.3)" stroke="${c2}" stroke-opacity=".5"/>
 <path d="M13 10h14v6a7 7 0 0 1-14 0zM20 23v4M15 30h10v-2.5H15zM13 12H9.5v2a4 4 0 0 0 4 4M27 12h3.5v2a4 4 0 0 1-4 4" fill="${c1}" stroke="${c2}" stroke-width="1.2" stroke-linejoin="round"/>
@@ -1398,7 +1996,11 @@ return `<h1 class="title">Trophies.</h1>
 <div class="stack">${list.map(a=>{const[id,s,t,goal,xp]=a,p=Math.min(S.ap[id],goal),got=S.claimed[id],rd=ready(a);
 return `<div class="card glowcard ach ${got?'got':''} ${rd?'ready':''}" style="--c:var(--${s==='sys'?'accent':s})">${trophy(goal)}
 <div><div class="t">${t}</div><div class="bar" style="--c:var(--hl)"><i style="width:${p/goal*100}%"></i></div></div>
-<div class="rew"><span class="n">${p}/${goal}</span>${got?'<span class="xp" style="color:var(--muted)">CLAIMED</span>':rd?`<button class="btn acc chamf" data-claim="${id}">Claim</button>`:`<span class="xp">+${xp} XP</span>`}</div></div>`}).join("")}</div>`},
+<div class="rew"><span class="n">${p}/${goal}</span>${got?'<span class="xp" style="color:var(--muted)">CLAIMED</span>':rd?`<button class="btn acc chamf" data-claim="${id}">Claim</button>`:`<span class="xp">+${xp} XP</span>`}</div></div>`}).join("")}</div>
+${sh("Boss spoils",`${spoilN()} / ${Object.keys(SPOILS).length} TAKEN`)}
+<div class="relics">${Object.entries(SPOILS).map(([k,[slug,name,lore]])=>{const n=(S.m.kills||{})[k]||0;
+  return `<div class="relic spoil ${n?"":"none"}" style="--c:var(--${k})">${spoil(k)}<span><small class="rrar">${STATS[k].toUpperCase()} · ${esc(BOSSES[k])}</small><b>${esc(name)}</b><small>${esc(n?lore:"Not yet defeated.")}</small></span>${n?`<span class="rn">×${n}</span>`:""}</div>`}).join("")}</div>
+<p class="relnote">Spoils are taken from weekly bosses and are worth no XP. Undoing the quest that landed the killing blow returns the spoil with the kill.</p>`},
 
 me(){const t=tierOf(S.lvl),nx=RANKS[Math.min(LAST,t+1)],toGo=t<LAST?RANK_AT[t+1]-S.lvl:0;
 return `<h1 class="title">Profile.</h1>
@@ -1536,6 +2138,9 @@ const BARS=[[6,"5px","var(--ab1)",-.04],[14,"12px","var(--ab2)",-.31],[23,"3px",
 const barHTML=()=>BARS.map(([y,h,c,d])=>`<b style="--y:${y}%;--h:${h};--c:${c};--d:${d}s"></b>`).join("");
 const vLabel=v=>"1."+String(v).padStart(3,"0"); // 37 -> "1.037"; a major overhaul starts the 2.x line
 const PATCH=[
+  {v:40,d:"Oct 24, 2026",lines:[
+    "Weekly bosses now leave spoils. Five named trophies, one per boss, on the Trophies screen.",
+    "A spoil leaves with its kill: undo the killing blow and the trophy goes back too."]},
   {v:39,d:"Oct 15, 2026",lines:[
     "The tear cuts the window into bands now instead of shaking the whole frame.",
     "The System reports its own failure while it is breaking, then takes it back.",
