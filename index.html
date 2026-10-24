@@ -1836,6 +1836,11 @@ const b64ToBytes=s=>{const p=s.replace(/-/g,"+").replace(/_/g,"/"),pad="=".repea
   const raw=atob(p+pad),a=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)a[i]=raw.charCodeAt(i);return a};
 const bytesToB64=b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
 let pushState=null; // null = unknown, true/false = subscribed or not
+const NKEY="ascend-nudge";
+const nudgeMin=()=>{try{const v=+localStorage.getItem(NKEY);return Number.isInteger(v)&&v>=0&&v<1440?v:240}catch(e){return 240}}; // 04:00 default
+const nudgeHHMM=()=>`${String(nudgeMin()/60|0).padStart(2,"0")}:${String(nudgeMin()%60).padStart(2,"0")}`;
+const setNudge=v=>{const m=/^(\d{1,2}):(\d{2})$/.exec(String(v||""));if(!m)return null;
+  const n=+m[1]*60+ +m[2];if(!(n>=0&&n<1440))return null;try{localStorage.setItem(NKEY,String(n))}catch(e){}return n};
 async function pushRefresh(){if(!pushOK())return pushState=false;
   try{const reg=await navigator.serviceWorker.ready;const s=await reg.pushManager.getSubscription();
     return pushState=!!s&&Notification.permission==="granted"}catch(e){return pushState=false}}
@@ -1849,7 +1854,7 @@ async function pushOn(){
     const reg=await navigator.serviceWorker.ready;
     const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64ToBytes(VAPID_PUB)});
     const j=sub.toJSON().keys||{};
-    await partyCall({op:"psub",sub:{endpoint:sub.endpoint,p256dh:j.p256dh,auth:j.auth},tz:-new Date().getTimezoneOffset()},true);
+    await partyCall({op:"psub",sub:{endpoint:sub.endpoint,p256dh:j.p256dh,auth:j.auth},tz:-new Date().getTimezoneOffset(),nudge:nudgeMin()},true);
     pushState=true;render(true);toast("NOTIFICATIONS ON")
   }catch(e){toast((e&&e.message||"COULDN'T SUBSCRIBE").toUpperCase())}}
 async function pushOff(){
@@ -1857,6 +1862,15 @@ async function pushOff(){
     if(s)await s.unsubscribe();
     await partyCall({op:"poff"});pushState=false;render(true);toast("NOTIFICATIONS OFF")
   }catch(e){toast((e&&e.message||"COULDN'T UNSUBSCRIBE").toUpperCase())}}
+async function pushSave(){
+  const v=setNudge(($("#nudget")||{}).value);
+  if(v===null)return toast("ENTER A TIME");
+  try{const reg=await navigator.serviceWorker.ready;const s=await reg.pushManager.getSubscription();
+    if(!s)return toast("TURN NOTIFICATIONS ON FIRST");
+    const j=s.toJSON().keys||{};
+    await partyCall({op:"psub",sub:{endpoint:s.endpoint,p256dh:j.p256dh,auth:j.auth},tz:-new Date().getTimezoneOffset(),nudge:v});
+    render(true);toast("REMINDER SET FOR "+nudgeHHMM())
+  }catch(e){toast((e&&e.message||"COULDN'T SAVE").toUpperCase())}}
 async function pushTest(){
   try{await partyCall({op:"ptest"});toast("TEST SENT")}
   catch(e){toast((e&&e.message||"TEST FAILED").toUpperCase())}}
@@ -2170,6 +2184,8 @@ ${sh("Relics",`${lootN()} FOUND`)}
 ${sh("Theme","SETTINGS")}<div class="themes" role="group" aria-label="Theme">${SKINS.map(([k,n,g])=>`<button class="skin" data-s="${k}" aria-pressed="${(document.documentElement.dataset.skin||"hunter")===k}"><span class="sw" style="background:linear-gradient(90deg,${g})"></span><span><b>${n}</b></span></button>`).join("")}</div>
 ${sh("Notifications")}<div class="card glowcard" style="--c:var(--hl);display:grid;gap:10px">
   <small style="color:var(--muted)">${pushOK()?(Notification.permission==="denied"?"Blocked in your browser settings for this site. Re-allow it there first.":"A reminder on your phone when the Daily Quest is still open."):"This browser can't show notifications."}</small>
+  ${pushState?`<label class="qe" style="text-align:left;margin:0">Remind me at<input type="time" id="nudget" value="${nudgeHHMM()}"></label>
+  <button class="btn chamf sysbtn" data-pushsave="1">Save time</button>`:""}
   <div class="acts">${pushState?`<button class="btn chamf ghost" data-pushtest="1">Send test</button><button class="btn chamf ghost" data-pushoff="1">Turn off</button>`
     :`<button class="btn chamf sysbtn" data-pushon="1"${pushOK()&&Notification.permission!=="denied"?"":" disabled"}>Turn on</button>`}</div></div>
 ${partyKey(false)?`${sh("Party data")}<div class="card glowcard" style="--c:var(--danger);display:grid;gap:10px"><small style="color:var(--muted)">Your party membership and shared summary live on the party server.</small><button class="btn chamf ghost" data-pforget="1">Delete my party data</button></div>`:""}
@@ -2598,6 +2614,7 @@ function onButton(b,d){
       actions:[{label:"Stay"},{label:"Leave",fn:()=>partyCall({op:"leave",code:c}).then(()=>toast("LEFT PARTY")).catch(e=>toast(e.message.toUpperCase()))}]});return}
   if(d.pushon){pushOn();return}
   if(d.pushoff){pushOff();return}
+  if(d.pushsave){pushSave();return}
   if(d.pushtest){pushTest();return}
   if(d.pforget){notify({chip:"[ PARTY ]",tone:"danger",title:"Delete party data?",body:"Removes you from every party and deletes your data on the party server.\nYour progress on this phone is untouched.",
       actions:[{label:"Keep"},{label:"Delete",fn:()=>partyCall({op:"forget"}).then(()=>{try{localStorage.removeItem(PKEY);localStorage.removeItem(PCACHE)}catch(e){}party={parties:[],at:0};render(true);toast("PARTY DATA DELETED")}).catch(e=>toast(e.message.toUpperCase()))}]});return}

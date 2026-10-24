@@ -21,6 +21,11 @@ const OPS = new Set(["board", "sync", "create", "join", "leave", "forget", "kick
 // Push identity is the same device key, but deliberately NOT tied to a player row: the daily nudge
 // has to work whether or not you are in a party, and an unknown key cannot create a player.
 const PUSH_OPS = new Set(["psub", "poff", "ptest"]);
+// The cron trigger invokes the function over plain HTTP with no Authorization header and no Origin,
+// so the scheduled path has to bypass both checks -- which makes the path itself the only thing
+// standing between a stranger and Jaime's notifications. It is a secret kept in the function env and
+// in the trigger config, never in the repo. Worst case if guessed: one early nudge.
+const CRON_PATH = process.env.CRON_PATH || "";
 const VAPID = { publicKey: process.env.VAPID_PUBLIC, privateKey: process.env.VAPID_PRIVATE,
   subject: process.env.VAPID_SUBJECT || "https://bloodied-fiend.github.io/ascend/" };
 const CODE_ABC = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I
@@ -62,6 +67,28 @@ const hits = new Map();
 const limited = k => { const now = Date.now(), h = hits.get(k); if (!h || now - h.t > 60e3) { hits.set(k, { t: now, n: 1 }); if (hits.size > 5000) hits.clear(); return false; } return ++h.n > PER_KEY_PER_MIN; };
 
 const asInt = (v, lo, hi, d) => (Number.isInteger(v) && v >= lo && v <= hi ? v : d);
+
+// Runs every 15 minutes. A subscriber is due when their LOCAL clock has just passed their chosen
+// minute, and they have not already been sent today in their own timezone -- so one nudge a day, at
+// their time, wherever they are.
+async function cronNudge() {
+  if (!VAPID.publicKey || !VAPID.privateKey) return { error: "push not configured" };
+  await init();
+  const { rows } = await pool.query(
+    `select key_hash, endpoint, p256dh, auth, tz_off, nudge_min from push_subs
+     where enabled and nudge_min is not null
+       and (((extract(epoch from now())/60)::int + tz_off) % 1440 + 1440) % 1440 >= nudge_min
+       and (((extract(epoch from now())/60)::int + tz_off) % 1440 + 1440) % 1440 < nudge_min + 15
+       and (last_sent is null
+            or date((last_sent + make_interval(mins => tz_off))) < date((now() + make_interval(mins => tz_off))))`);
+  let sent = 0, dropped = 0;
+  for (const r of rows) {
+    const status = await sendPush(r, { title: "ASCEND", body: "Daily Quest is waiting.", tag: "nudge", url: "./" }, VAPID);
+    if (status === 404 || status === 410) { await pool.query("delete from push_subs where key_hash = $1", [r.key_hash]); dropped++; continue; }
+    if (status >= 200 && status < 300) { await pool.query("update push_subs set last_sent = now() where key_hash = $1", [r.key_hash]); sent++; }
+  }
+  return { due: rows.length, sent, dropped };
+}
 
 async function pushOp(b, kh) {
   if (!VAPID.publicKey || !VAPID.privateKey) return [503, { error: "push not configured" }];
@@ -208,6 +235,11 @@ export default {
     const cors = { "Access-Control-Allow-Origin": ok ? origin : ORIGINS[0], "Access-Control-Allow-Headers": "content-type, authorization",
       "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Max-Age": "86400", "Vary": "Origin" };
     const json = (b, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...cors, "content-type": "application/json" } });
+    // the scheduled trigger: no Origin, no Authorization, so it is routed before either is enforced
+    if (CRON_PATH && new URL(req.url).pathname === "/" + CRON_PATH) {
+      try { return new Response(JSON.stringify(await cronNudge()), { status: 200, headers: { "content-type": "application/json" } }); }
+      catch (e) { console.error(e); return new Response(JSON.stringify({ error: "server" }), { status: 500, headers: { "content-type": "application/json" } }); }
+    }
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
     if (req.method !== "POST") return json({ error: "method" }, 405);
     if (!ok) return json({ error: "origin" }, 403);
