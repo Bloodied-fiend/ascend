@@ -1,7 +1,21 @@
 // Assessment + adaptive-difficulty cases, run from state_test.mjs with the "gates" flag.
 // Both guard against the same defect class: a lost newline that lets a trailing // comment
-// swallow the statements after it. Two shipped instances (v29 and v32) are pinned here.
+// swallow the statements after it. Three shipped instances are pinned here: v29, v32, and the
+// bossStat restore that had been dead since v28 (found 2026-10-24 while wiring the boss art).
 export async function runAssess({ ev, boot, check, KEY, base, wait }) {
+  // v28 instance: the comment on the bossDown line ran straight into `S.bossStat=STATS[...]`, so the
+  // saved boss was never restored and bossK() fell back to weakest() on every load -- the weekly boss
+  // was not fixed for the week at all.
+  {
+    const live = await ev(`__ascend.S.wk`);
+    // seed a boss on a stat that is NOT the weakest, so the saved value and weakest() disagree
+    await boot(KEY, { ...base, lvl: 22, boss: 64, bossStat: "per", bossDown: false, wk: live,
+      stats: { str: 20, vit: 60, agi: 60, int: 60, per: 60 } });
+    const r = await ev(`(()=>({saved:__ascend.S.bossStat,weakest:Object.keys(__ascend.S.stats).reduce((a,b)=>__ascend.S.stats[a]<=__ascend.S.stats[b]?a:b)}))()`);
+    check("a saved weekly boss survives a reload instead of being re-picked from the weakest stat",
+      r.saved === "per" && r.weakest === "str", JSON.stringify(r));
+  }
+
   const S = expr => ev(`(()=>{const S=__ascend.S;return ${expr}})()`);
   const raw = async sel => { await ev(`(()=>{const e=document.querySelector(${JSON.stringify(sel)});if(e)e.click()})()`); await wait(260); };
   const shut = async () => { await ev(`(()=>{for(let i=0;i<8;i++)__ascend.closeNote(-1)})()`); await wait(200); };

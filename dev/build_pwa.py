@@ -60,6 +60,14 @@ head_part, body_part = s[:i], s[i:]
 html = HEAD + head_part + '<style>body{background:#0c1015}</style>\n</head>\n<body>\n' + body_part + TAIL
 open(f'{OUT}/index.html', 'w', encoding='utf-8').write(html)
 # soundtrack.mp3 lives at the repo root already (Jaime's own track); nothing to copy
+BOSS_ART = ("iron_warden", "sleepless_wraith", "swift_stalker", "hollow_scholar", "mirror_shade")
+for b in BOSS_ART:
+    os.makedirs(f'{OUT}/bosses/{b}', exist_ok=True)
+    for layer in ("bg", "fg", "gb", "gg"):
+        src_path = os.path.join(os.path.dirname(SRC), 'bosses', b, layer + '.webp')
+        assert os.path.exists(src_path), 'missing boss layer: ' + src_path
+        shutil.copy(src_path, f'{OUT}/bosses/{b}/{layer}.webp')
+
 os.makedirs(f'{OUT}/badges', exist_ok=True)
 for b in ('e','d','c','b','a','s','nl','m'):
     shutil.copy(os.path.join(os.path.dirname(SRC), 'badges', b + '.webp'), f'{OUT}/badges/{b}.webp')
@@ -83,7 +91,7 @@ open(f'{OUT}/manifest.webmanifest', 'w', encoding='utf-8').write('''{
 ''')
 
 open(f'{OUT}/sw.js', 'w', encoding='utf-8').write('''// Ascend service worker: serve from cache, refresh in the background (bypassing the HTTP cache).
-const V = "ascend-v41";
+const V = "ascend-v42";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", ...["e","d","c","b","a","s","nl","m"].map(b => `badges/${b}.webp`), "gates/map.webp", ...["blue","cyan","amber","pink","red"].map(c => `gates/pillar-${c}.webp`)];
 // cache: "reload" bypasses the HTTP cache (GitHub Pages max-age=600) so a new version never stores the old page
 self.addEventListener("install", e => e.waitUntil(caches.open(V).then(c => c.addAll(SHELL.map(x => new Request(x, { cache: "reload" })))).then(() => self.skipWaiting())));

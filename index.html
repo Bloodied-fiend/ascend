@@ -523,6 +523,27 @@ button{font:inherit;color:inherit}
 .av{position:relative;display:grid;place-items:center;flex:none;width:var(--s);height:var(--s);border-radius:calc(var(--s)*.28);border:1.5px solid var(--c);background:color-mix(in srgb,var(--c) 12%,var(--sysbg));box-shadow:0 0 calc(10px*var(--glow)) color-mix(in srgb,var(--c) 40%,transparent)}
 .av span{font-family:var(--f-display);font-weight:700;font-size:calc(var(--s)*.42);color:var(--fg);text-transform:uppercase}
 
+/* weekly boss art: four layers cut from one painting (bg, fg, body glow, ground glow) */
+.bx{position:relative;overflow:hidden;isolation:isolate;background:#07090d;contain:paint}
+.bx .stk{position:absolute}
+.bx .stk img{position:absolute;inset:0;width:100%;height:100%;display:block;user-select:none;pointer-events:none;-webkit-user-drag:none}
+.bx .fg,.bx .gb,.bx .bl{transform-origin:var(--ox) var(--oy);animation:bx-br 3.6s ease-in-out infinite}
+.bx .gb{mix-blend-mode:screen;animation:bx-br 3.6s ease-in-out infinite,bx-pu 3.6s ease-in-out infinite}
+.bx .bl{mix-blend-mode:screen;filter:blur(8px) saturate(1.4);animation:bx-br 3.6s ease-in-out infinite,bx-pu 3.6s ease-in-out infinite}
+.bx .gg{mix-blend-mode:screen;animation:bx-lv 4.8s ease-in-out infinite}
+.bx .fl{position:absolute;inset:0;mix-blend-mode:screen;opacity:0;animation:bx-fl 7.3s linear infinite;
+  background:radial-gradient(ellipse at 72% 12%,rgba(var(--fc),.6),transparent 55%),radial-gradient(ellipse at 22% 22%,rgba(var(--fc),.35),transparent 50%)}
+.bx canvas{position:absolute;inset:0;width:100%;height:100%;mix-blend-mode:screen;pointer-events:none}
+.bx .vg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,transparent 58%,rgba(0,0,0,.5))}
+@keyframes bx-br{0%,100%{transform:scale(1,1)}50%{transform:scale(1.012,1.024)}}
+@keyframes bx-pu{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes bx-lv{0%,100%{opacity:.45}50%{opacity:1}}
+@keyframes bx-fl{0%,62%,66%,69%,100%{opacity:0}63%{opacity:1}64%{opacity:.25}67.5%{opacity:.8}}
+.bossmark .bx{width:100%;height:100%;border-radius:10px}
+.bbanner{border-radius:12px;overflow:hidden;margin:0 0 12px}
+.bbanner .bx{aspect-ratio:16/7}
+[data-skin="daylight"] .bx .vg{background:radial-gradient(ellipse at 50% 50%,transparent 58%,rgba(0,0,0,.3))}
+
 /* trophies */
 .achhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
 .achhead b{font-family:var(--f-display);font-size:26px;color:var(--accent);letter-spacing:.04em}
@@ -1691,7 +1712,8 @@ function load(sv){if(!sv||typeof sv!=="object")return;const D=fresh(),num=v=>typ
   S.onboarded=sv.onboarded===true||(sv.onboarded===undefined&&!!sv.base); // older saves with a baseline skip onboarding
   S.statHist={};if(sv.statHist&&typeof sv.statHist==="object")for(const[k,v]of Object.entries(sv.statHist).slice(-90))
     if(key(k)&&v&&typeof v==="object"&&Object.keys(STATS).every(x=>num(v[x])))S.statHist[k]=Object.fromEntries(Object.keys(STATS).map(x=>[x,v[x]]));
-  S.penalty=sv.penalty?PENALTY:null;S.bossDown=sv.bossDown===true&&S.boss===0; // the pair has to be coherent: "dead" with HP left made an ordinary tap strip a real killS.bossStat=STATS[sv.bossStat]?sv.bossStat:null;
+  S.penalty=sv.penalty?PENALTY:null;S.bossDown=sv.bossDown===true&&S.boss===0; // the pair has to be coherent: "dead" with HP left made an ordinary tap strip a real kill
+  S.bossStat=STATS[sv.bossStat]?sv.bossStat:null; // a lost newline had this commented out since v28: the boss was re-picked from weakest() on every load instead of being fixed for the week
   if(sv.m&&num(sv.m.miles)&&sv.m.miles>=0)S.m.miles=sv.m.miles;
   if(sv.m)for(const k of ["red","pb","odn","adv","sleep"])if(Number.isInteger(sv.m[k])&&sv.m[k]>0)S.m[k]=sv.m[k];
   if(sv.m&&sv.m.advOn===1)S.m.advOn=1;
@@ -1867,9 +1889,55 @@ const weakest=()=>Object.keys(STATS).reduce((a,k)=>eff(k)<eff(a)?k:a,"str");
 const bossK=()=>S.bossStat||weakest(); // fixed for the week, chosen from the weakest stat when the boss spawns
 const progDay=()=>Math.min(60,Math.round((new Date(now().toDateString())-new Date(S.prog+"T00:00"))/864e5)+1);
 function streak(){return (allDone()?1:0)+histRun()}
+// Four layers per boss, cut from one painting. The figure and its glow breathe, the ground glow
+// pulses, embers rise (snow falls for the Frost Giant) on a canvas, and stormier arenas flash.
+// w/h are the painting's native size; face is the focus point as a percent; ox/oy the breathe origin.
+const BART={iron_warden:[900,653,50,97,50,22,"255,150,60","170,205,255",0],
+  sleepless_wraith:[600,528,49.3,99,49.3,14.4,"110,255,160",null,0],
+  swift_stalker:[600,529,46.9,99,64,51.4,"140,190,255","190,215,255",0],
+  hollow_scholar:[600,529,46.5,99,46.5,17.2,"200,140,255","190,120,255",0],
+  mirror_shade:[600,529,47.9,99,47.9,14.4,"255,215,130","255,230,170",0]};
+const BOSS_ART={str:"iron_warden",vit:"sleepless_wraith",agi:"swift_stalker",int:"hollow_scholar",per:"mirror_shade"};
+// place the layer stack so it covers a box of the given aspect, centred on the focus point
+function bxPlace(b,aspect,fx,fy,zoom){const ar=b[0]/b[1],r=1/aspect;
+  const Z=Math.max(1,r*ar)*zoom, sh=Z/ar;
+  let L=.5-fx/100*Z, T=r/2-fy/100*sh;
+  L=Math.min(0,Math.max(1-Z,L)); T=Math.min(0,Math.max(r-sh,T));
+  return `left:${L*100}%;top:${T/r*100}%;width:${Z*100}%;height:${sh/r*100}%`}
+function bossArt(k,aspect,face){const id=BOSS_ART[k],b=BART[id];if(!b)return "";
+  const[fx,fy]=face?[b[4],b[5]]:[b[2],55];
+  const st=bxPlace(b,aspect,fx,fy,face?2.6:1), src=l=>`bosses/${id}/${l}.webp`;
+  return `<div class="bx" data-boss="${id}" style="aspect-ratio:${aspect};--ox:${b[2]}%;--oy:${b[3]}%;--fc:${b[7]||"0,0,0"}" role="img" aria-label="${esc(BOSSES[k])}">
+<div class="stk" style="${st}"><img src="${src("bg")}" alt="" loading="lazy" decoding="async"><img class="gg" src="${src("gg")}" alt="" loading="lazy" decoding="async"></div>
+${b[7]?`<div class="fl"></div>`:""}
+<div class="stk" style="${st}"><img class="fg" src="${src("fg")}" alt="" loading="lazy" decoding="async"><img class="gb" src="${src("gb")}" alt="" loading="lazy" decoding="async"><img class="bl" src="${src("gb")}" alt="" loading="lazy" decoding="async"></div>
+<div class="vg"></div><canvas></canvas></div>`}
+// embers rise, snow falls; density scales with the box so a 52px avatar does not run a full field.
+// Skipped entirely under reduced motion, and every loop dies with its element via isConnected.
+function bossFx(root){if(RM)return;
+  for(const bx of (root||document).querySelectorAll(".bx")){
+    if(bx._run)return;bx._run=1;const id=bx.dataset.boss,b=BART[id];if(!b)continue;
+    const cv=bx.querySelector("canvas"),cx=cv.getContext("2d"),down=b[8]===1,col=b[6];
+    let W=1,H=1,P=[],dpr=Math.min(2,window.devicePixelRatio||1),last=0;
+    const sp=()=>{const s=W/(300*dpr);return{x:Math.random()*W,y:down?-Math.random()*H*.2:H*(.7+Math.random()*.32),
+      vx:(Math.random()-.5)*.35,vy:down?.25+Math.random()*.5:-(.3+Math.random()*.8),life:0,max:140+Math.random()*160,
+      r:(.5+Math.random()*1.3)*dpr*Math.max(.6,Math.min(1.6,s))}};
+    const rs=()=>{const r=cv.getBoundingClientRect();W=cv.width=Math.max(1,r.width*dpr|0);H=cv.height=Math.max(1,r.height*dpr|0);
+      const n=Math.round(Math.min(70,Math.max(6,r.width*r.height/2200)));
+      P=Array.from({length:n},()=>{const p=sp();p.life=Math.random()*p.max;p.y=H*Math.random();return p})};
+    rs();if(typeof ResizeObserver!=="undefined")new ResizeObserver(rs).observe(cv);
+    const tick=now=>{if(!bx.isConnected)return;const k2=last?Math.min(3,(now-last)/16.67):1;last=now;
+      cx.clearRect(0,0,W,H);cx.lineCap="round";cx.shadowColor=`rgba(${col},.9)`;cx.shadowBlur=3*dpr;
+      for(const p of P){p.life+=k2;const sx=(p.vx+Math.sin(p.life/18)*.3)*k2*dpr,sy=p.vy*k2*dpr;p.x+=sx;p.y+=sy;
+        const tt=p.life/p.max,a=Math.max(0,tt<.15?tt/.15:1-(tt-.15)/.85);
+        cx.strokeStyle=`rgba(${col},${a})`;cx.lineWidth=p.r*(1-tt*.5)*2;
+        cx.beginPath();cx.moveTo(p.x,p.y);cx.lineTo(p.x-sx*(down?.4:1.6),p.y-sy*(down?.4:1.6));cx.stroke();
+        if(p.life>=p.max||p.y<-10||p.y>H+10)Object.assign(p,sp())}
+      requestAnimationFrame(tick)};requestAnimationFrame(tick)}}
 function bossCard(compact){const k=bossK(),hp=Math.max(0,S.boss);return `<section class="sys boss" style="--bc:var(--${k})" aria-label="Weekly boss">
   <div class="syshead"><span class="chip">[ WEEKLY BOSS ]</span><span style="display:flex;gap:10px;align-items:center"><span class="clock">${hp?`HP ${hp}%`:"DEFEATED"}</span>${compact?`<button class="btn chamf sysbtn" data-go="quests" style="min-height:32px;padding:0 10px">View</button>`:""}</span></div>
-  <div class="bossrow"><div class="bossmark">${hex(k,compact?40:52)}</div><div style="flex:1;min-width:0"><h2 class="systitle">${BOSSES[k]}</h2>
+  ${compact?"":`<div class="bbanner">${bossArt(k,16/7,false)}</div>`}
+  <div class="bossrow"><div class="bossmark" style="width:${compact?40:52}px;height:${compact?40:52}px">${bossArt(k,1,true)||hex(k,compact?40:52)}</div><div style="flex:1;min-width:0"><h2 class="systitle">${BOSSES[k]}</h2>
   <div class="bmeta">TARGETS YOUR WEAKEST STAT · <span style="color:var(--${k})">${STATS[k].toUpperCase()} ${eff(k)}</span></div>
   <div class="bar hpbar"><i style="width:${hp}%"></i></div></div></div>
   ${compact?"":`<p class="bnote">${STATS[k]} quests deal 15 damage. Every other quest deals 5. Defeat it by Sunday for +150 XP.</p>`}
@@ -2140,6 +2208,7 @@ function render(keep){const y=screenEl.scrollTop;
   $("#player").hidden=S.tab==="test"||!$("#ov").hidden;
   const xb=$("#xpbar");if(lvUp)playLvUp();else if(xb&&lastXP!==null&&lastXP<S.xp){xb.style.transition="none";xb.style.width=Math.min(100,lastXP/xpNeed(S.lvl)*100)+"%";xb.offsetWidth;xb.style.transition="";xb.style.width=xpPct()+"%"}
   if(S.tab==="home")lastXP=S.xp;
+  bossFx(screenEl);
 }
 let lastXP=null,lvUp=null,lastLv=null;
 // level-up on Home: bar fills to full, flashes, the level ticks over, then the bar refills to the leftover XP.
@@ -2174,6 +2243,9 @@ const BARS=[[6,"5px","var(--ab1)",-.04],[14,"12px","var(--ab2)",-.31],[23,"3px",
 const barHTML=()=>BARS.map(([y,h,c,d])=>`<b style="--y:${y}%;--h:${h};--c:${c};--d:${d}s"></b>`).join("");
 const vLabel=v=>"1."+String(v).padStart(3,"0"); // 37 -> "1.037"; a major overhaul starts the 2.x line
 const PATCH=[
+  {v:42,d:"Oct 24, 2026",lines:[
+    "The weekly boss has a face. Each one is a painting that breathes, glows and throws embers.",
+    "A boss you are already fighting no longer changes when your weakest stat does."]},
   {v:41,d:"Oct 24, 2026",lines:[
     "Party leaders can remove a member from their party.",
     "Removing someone changes the invite code, so they cannot rejoin with it.",

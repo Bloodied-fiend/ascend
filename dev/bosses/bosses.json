@@ -1,0 +1,162 @@
+{
+ "iron_warden": {
+  "name": "Iron Warden",
+  "tag": "Weekly boss \u00b7 STR",
+  "stat": "str",
+  "ember": "255,150,60",
+  "fx": "up",
+  "flash": "170,205,255",
+  "ox": 50,
+  "oy": 97,
+  "face": [
+   50,
+   22
+  ],
+  "w": 900,
+  "h": 653
+ },
+ "sleepless_wraith": {
+  "name": "Sleepless Wraith",
+  "tag": "Weekly boss \u00b7 VIT",
+  "stat": "vit",
+  "ember": "110,255,160",
+  "fx": "up",
+  "flash": null,
+  "ox": 49.3,
+  "oy": 99,
+  "face": [
+   49.3,
+   14.4
+  ],
+  "w": 600,
+  "h": 528
+ },
+ "swift_stalker": {
+  "name": "Swift Stalker",
+  "tag": "Weekly boss \u00b7 AGI",
+  "stat": "agi",
+  "ember": "140,190,255",
+  "fx": "up",
+  "flash": "190,215,255",
+  "ox": 46.9,
+  "oy": 99,
+  "face": [
+   64,
+   51.4
+  ],
+  "w": 600,
+  "h": 529
+ },
+ "hollow_scholar": {
+  "name": "Hollow Scholar",
+  "tag": "Weekly boss \u00b7 INT",
+  "stat": "int",
+  "ember": "200,140,255",
+  "fx": "up",
+  "flash": "190,120,255",
+  "ox": 46.5,
+  "oy": 99,
+  "face": [
+   46.5,
+   17.2
+  ],
+  "w": 600,
+  "h": 529
+ },
+ "mirror_shade": {
+  "name": "Mirror Shade",
+  "tag": "Weekly boss \u00b7 PER",
+  "stat": "per",
+  "ember": "255,215,130",
+  "fx": "up",
+  "flash": "255,230,170",
+  "ox": 47.9,
+  "oy": 99,
+  "face": [
+   47.9,
+   14.4
+  ],
+  "w": 600,
+  "h": 529
+ },
+ "goblin_chief": {
+  "name": "Goblin Chieftain",
+  "tag": "E-Rank \u00b7 Goblin Den",
+  "stat": "vit",
+  "ember": "255,150,60",
+  "fx": "up",
+  "flash": null,
+  "ox": 61.3,
+  "oy": 99,
+  "face": [
+   50,
+   29.7
+  ],
+  "w": 600,
+  "h": 565
+ },
+ "crypt_lich": {
+  "name": "Crypt Lich",
+  "tag": "D-Rank \u00b7 Bone Crypt",
+  "stat": "int",
+  "ember": "110,240,210",
+  "fx": "up",
+  "flash": "120,255,220",
+  "ox": 55.1,
+  "oy": 99,
+  "face": [
+   55.1,
+   16.1
+  ],
+  "w": 600,
+  "h": 589
+ },
+ "ashen_knight": {
+  "name": "Ashen Knight",
+  "tag": "C-Rank \u00b7 Ashen Barracks",
+  "stat": "str",
+  "ember": "255,130,50",
+  "fx": "up",
+  "flash": null,
+  "ox": 47.3,
+  "oy": 99,
+  "face": [
+   47.3,
+   15.5
+  ],
+  "w": 600,
+  "h": 591
+ },
+ "frost_giant": {
+  "name": "Frost Giant",
+  "tag": "B-Rank \u00b7 Frost Spire",
+  "stat": "agi",
+  "ember": "235,245,255",
+  "fx": "down",
+  "flash": "160,210,255",
+  "ox": 56.0,
+  "oy": 99,
+  "face": [
+   48,
+   25.6
+  ],
+  "w": 600,
+  "h": 591
+ },
+ "demon_lord": {
+  "name": "Demon Lord",
+  "tag": "A-Rank \u00b7 Demon Keep",
+  "stat": "str",
+  "ember": "255,90,50",
+  "fx": "up",
+  "flash": "255,80,50",
+  "ox": 50,
+  "oy": 99,
+  "face": [
+   50,
+   22.9
+  ],
+  "w": 600,
+  "h": 608
+ }
+}
