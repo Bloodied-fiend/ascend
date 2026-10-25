@@ -8,6 +8,10 @@ const db = async (query, params = []) => {
     body: JSON.stringify({ query, params }) });
   return r.json();
 };
+// admin checks: locally a throwaway password is installed before the module loads; against FN_URL pass ADMIN_PW
+import { scryptSync } from "node:crypto";
+const ADMIN_PW = process.env.ADMIN_PW || (process.env.FN_URL ? "" : "test-" + randomBytes(8).toString("hex"));
+if (!process.env.FN_URL && ADMIN_PW) { const salt = randomBytes(16); process.env.ADMIN_HASH = salt.toString("hex") + ":" + scryptSync(ADMIN_PW, salt, 32).toString("hex"); }
 // FN_URL=https://... runs the same checks against the deployed function instead of the local module
 const fn = process.env.FN_URL
   ? { fetch: async req => fetch(process.env.FN_URL, { method: req.method, headers: req.headers, body: req.method === "POST" ? await req.text() : undefined }) }
@@ -19,7 +23,7 @@ const call = async (key, body, origin = O) => {
 };
 const res = [], check = (n, ok, info) => res.push(`${ok ? "PASS" : "FAIL"} ${n}${ok ? "" : " " + JSON.stringify(info)}`);
 const A = randomBytes(32).toString("hex"), B = randomBytes(32).toString("hex"), C = randomBytes(32).toString("hex");
-const KICK = [], PUSH = [];
+const KICK = [], PUSH = [], PING = [];
 const sha = k => createHash("sha256").update(k).digest("hex");
 // read the push_subs marks straight from the DB: the only honest evidence of who was selected
 const marks = async keys => {
@@ -143,10 +147,26 @@ try {
   const [s2] = await call(E, { op: "join", code: "ZZZZZZZZ" });
   const [s3] = await call(E, { op: "bogus" });
   check("unknown key: sync stores nothing; bad op rejected", s === 200 && b.parties.length === 0 && s2 === 404 && s3 === 400, [s, b, s2, s3]);
+  const P = randomBytes(32).toString("hex"); PING.push(P);
+  const [sp] = await call(P, { op: "ping", name: "SoloTest", summary: sum(4321, 12) });
+  const [sp2] = await call(P, { op: "ping", name: "SoloTest", summary: { lvl: 0 } });
+  const [, bp] = await call(P, { op: "board" });
+  check("ping: a solo install checks in, bad summary rejected, and it gets no party board", sp === 200 && sp2 === 400 && bp.parties.length === 0, [sp, sp2, bp]);
+  if (ADMIN_PW) {
+    const [sw, bw] = await call(E, { op: "admin", pw: "nope" });
+    [s, b] = await call(E, { op: "admin", pw: ADMIN_PW });
+    const t = b.players?.find(p => p.name === "TestB"), u = b.players?.find(p => p.name === "SoloTest");
+    check("admin: wrong password 403; right password lists party players AND solo installs with level and XP", sw === 403 && bw.error === "wrong password" && s === 200
+      && t && t.lvl === 9 && +t.xp === 1500 && u && u.lvl === 12 && +u.xp === 4321 && u.parties === 0, [sw, bw, s, t, u]);
+    await call(E, { op: "admin", pw: "x" });
+    const [s4] = await call(E, { op: "admin", pw: ADMIN_PW });
+    check("admin: 4th try in a minute is rate-limited even with the right password", s4 === 429, s4);
+  } else res.push("SKIP admin (set ADMIN_PW to check the deployed function)");
 } catch (e) {
   res.push("FAIL test threw " + (e && e.stack || e));   // a throw used to be swallowed by the exit(0) in finally
 } finally {
   for (const k of [A, B, C, E, ...KICK, ...PUSH]) await call(k, { op: "forget" });
+  if (PING.length) await db("delete from installs where key_hash = any($1::text[])", [PING.map(sha)]);
   const [, b] = await call(A, { op: "board" });   // A re-registers on this call; forget again
   await call(A, { op: "forget" });
   console.log(res.join("\n"));

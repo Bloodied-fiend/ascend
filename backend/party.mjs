@@ -1,7 +1,8 @@
 // Ascend party leaderboard: one Neon Function, one JSON endpoint (POST / {op,...}).
 // Identity = an invisible per-player key the app keeps on the device; only its SHA-256 is stored here.
 // Parties are invite-code only: you see exactly the players who share a party with you.
-import { createHash, randomInt } from "node:crypto";
+// Every install also checks in on open (op "ping") so Jaime's hidden admin list sees everyone, party or not.
+import { createHash, randomInt, scryptSync, timingSafeEqual } from "node:crypto";
 import { sendPush } from "./push.mjs";
 
 // SQL over Neon's HTTPS endpoint with plain fetch: no driver, so the deployed bundle is a few KB
@@ -17,7 +18,7 @@ const pool = { query: sql };
 const ORIGINS = (process.env.ALLOWED_ORIGINS || "https://bloodied-fiend.github.io").split(",").map(s => s.trim());
 const LOCAL = process.env.ALLOW_LOCAL === "1"; // tests from http://127.0.0.1:<port>
 const MAX_PARTIES = 5, MAX_MEMBERS = 20, NEW_PLAYERS_PER_IP_DAY = 10, PER_KEY_PER_MIN = 30;
-const OPS = new Set(["board", "sync", "create", "join", "leave", "forget", "kick", "psub", "poff", "ptest"]);
+const OPS = new Set(["ping", "board", "sync", "create", "join", "leave", "forget", "kick", "psub", "poff", "ptest"]);
 // Push identity is the same device key, but deliberately NOT tied to a player row: the daily nudge
 // has to work whether or not you are in a party, and an unknown key cannot create a player.
 const PUSH_OPS = new Set(["psub", "poff", "ptest"]);
@@ -26,6 +27,9 @@ const PUSH_OPS = new Set(["psub", "poff", "ptest"]);
 // standing between a stranger and Jaime's notifications. It is a secret kept in the function env and
 // in the trigger config, never in the repo. Worst case if guessed: one early nudge.
 const CRON_PATH = process.env.CRON_PATH || "";
+// Hidden admin list (Jaime only). ADMIN_HASH = "<salt hex>:<scrypt hex>" in the function env, never the repo.
+// Unset, the op does not exist. Lists every install that has checked in, plus party players on app versions from before the check-in.
+const [ADMIN_SALT, ADMIN_KEY] = (process.env.ADMIN_HASH || "").split(":");
 const VAPID = { publicKey: process.env.VAPID_PUBLIC, privateKey: process.env.VAPID_PRIVATE,
   subject: process.env.VAPID_SUBJECT || "https://bloodied-fiend.github.io/ascend/" };
 const CODE_ABC = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I
@@ -41,6 +45,7 @@ alter table summaries add column if not exists title text;
 alter table parties add column if not exists owner_id bigint references players(id) on delete set null;
 create table if not exists push_subs(key_hash text primary key, endpoint text not null, p256dh text not null, auth text not null, tz_off int not null default 0, nudge_min int, enabled boolean not null default true, created_at timestamptz not null default now(), last_sent timestamptz);
 alter table push_subs add column if not exists last_pass timestamptz;
+create table if not exists installs(key_hash text primary key, name text not null, lvl int not null, xp bigint not null, tier int not null, streak int not null, title text, ip text, first_seen timestamptz not null default now(), seen timestamptz not null default now());
 update parties set owner_id = (select player_id from members where party_id = parties.id order by joined_at, player_id limit 1) where owner_id is null;`;
 let ready = null;
 const init = () => (ready ??= (async () => { for (const s of SCHEMA.split(";").map(x => x.trim()).filter(Boolean)) await sql(s); })().catch(e => { ready = null; throw e; }));
@@ -65,7 +70,7 @@ async function board(me) {
 
 // ponytail: best-effort per-key limiter in one warm instance's memory; a scripted flood across cold starts still costs invocations
 const hits = new Map();
-const limited = k => { const now = Date.now(), h = hits.get(k); if (!h || now - h.t > 60e3) { hits.set(k, { t: now, n: 1 }); if (hits.size > 5000) hits.clear(); return false; } return ++h.n > PER_KEY_PER_MIN; };
+const limited = (k, max = PER_KEY_PER_MIN) => { const now = Date.now(), h = hits.get(k); if (!h || now - h.t > 60e3) { hits.set(k, { t: now, n: 1 }); if (hits.size > 5000) hits.clear(); return false; } return ++h.n > max; };
 
 const asInt = (v, lo, hi, d) => (Number.isInteger(v) && v >= lo && v <= hi ? v : d);
 
@@ -167,6 +172,35 @@ async function pushOp(b, kh) {
   return [status >= 200 && status < 300 ? 200 : 502, { sent: status }];
 }
 
+async function adminOp(b, ip) {
+  if (!ADMIN_SALT || !ADMIN_KEY) return [400, { error: "op" }];
+  if (limited("adm:" + ip, 3)) return [429, { error: "slow down" }];   // 3 guesses a minute per address
+  const pw = typeof b.pw === "string" ? b.pw.slice(0, 200) : "";
+  if (!timingSafeEqual(scryptSync(pw, Buffer.from(ADMIN_SALT, "hex"), 32), Buffer.from(ADMIN_KEY, "hex"))) return [403, { error: "wrong password" }];
+  await init();
+  const { rows } = await pool.query(
+    `select coalesce(i.name, pl.name) as name, coalesce(i.lvl, s.lvl) as lvl, coalesce(i.xp, s.xp_total) as xp, coalesce(i.tier, s.tier) as tier,
+       coalesce(i.streak, s.streak) as streak, coalesce(i.title, s.title) as title, greatest(i.seen, s.updated_at) as seen,
+       least(i.first_seen, pl.created_at) as joined, (select count(*)::int from members m where m.player_id = pl.id) as parties
+     from installs i full outer join players pl on pl.key_hash = i.key_hash left join summaries s on s.player_id = pl.id
+     order by 3 desc nulls last, 1`);
+  return [200, { players: rows }];
+}
+
+// a check-in is not a player row: party rules (unknown keys store nothing there) are untouched
+async function pingOp(b, kh, ip) {
+  const s = b.summary || {};
+  if (!(int(s.lvl, 1, 999) && int(s.xp, 0, 1e8) && int(s.tier, 0, 7) && int(s.streak, 0, 1e5))) return [400, { error: "summary" }];
+  const known = (await pool.query("select 1 from installs where key_hash = $1", [kh])).rowCount;
+  if (!known && (await pool.query("select count(*)::int c from installs where ip = $1 and first_seen > now() - interval '1 day'", [ip])).rows[0].c >= NEW_PLAYERS_PER_IP_DAY)
+    return [429, { error: "slow down" }];
+  await pool.query(
+    `insert into installs(key_hash, name, lvl, xp, tier, streak, title, ip) values($1,$2,$3,$4,$5,$6,$7,$8)
+     on conflict (key_hash) do update set name=$2, lvl=$3, xp=$4, tier=$5, streak=$6, title=$7, seen=now()`,
+    [kh, cleanName(b.name), s.lvl, s.xp, s.tier, s.streak, typeof s.title === "string" ? cleanName(s.title, 40) : null, ip]);
+  return [200, { ok: true }];
+}
+
 async function handle(req, ip) {
   const key = (req.headers.get("authorization") || "").replace(/^Bearer /, "");
   if (!/^[a-f0-9]{64}$/.test(key)) return [401, { error: "key" }];
@@ -176,11 +210,13 @@ async function handle(req, ip) {
   let b; try { b = JSON.parse(raw); } catch { return [400, { error: "json" }]; }
   if (!b || typeof b !== "object") return [400, { error: "json" }];
   if (b.op === "ip" && LOCAL) return [200, { xff: req.headers.get("x-forwarded-for"), ip }]; // test-only: what the platform sends
+  if (b.op === "admin") return adminOp(b, ip);
   if (!OPS.has(b.op)) return [400, { error: "op" }];
   if (limited(key)) return [429, { error: "slow down" }];
   await init();
   const kh = createHash("sha256").update(key).digest("hex");
   if (PUSH_OPS.has(b.op)) return pushOp(b, kh);
+  if (b.op === "ping") return pingOp(b, kh, ip);
   // find or register the player (new players are rate-limited per IP)
   let me = (await pool.query("select id from players where key_hash = $1", [kh])).rows[0]?.id;
   const name = cleanName(b.name);
@@ -267,6 +303,7 @@ async function handle(req, ip) {
     case "forget": { // remove me everywhere (credential revoke); parties I leave empty go too
       const mine = (await pool.query("select party_id from members where player_id = $1", [me])).rows.map(r => r.party_id);
       await pool.query("delete from players where id = $1", [me]);
+      await pool.query("delete from installs where key_hash = $1", [kh]);   // "deletes your data on the party server" includes the check-in
       if (mine.length) {
         await pool.query("delete from parties where id = any($1::bigint[]) and not exists (select 1 from members where party_id = parties.id)", [mine]);
         // on delete set null leaves survivors leaderless; give each surviving party its longest-standing member

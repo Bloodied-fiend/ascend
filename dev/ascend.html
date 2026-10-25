@@ -814,6 +814,9 @@ button{font:inherit;color:inherit}
   .overlay .sys{animation:fadein .2s ease!important}.fx{display:none}.rb .sweep{display:none}.pnscan{display:none}}
 @keyframes fadein{from{opacity:0}}
 @media (max-width:460px){.stage{padding:0;gap:0;display:block}.pitch{display:none}.phone{width:100%;height:100dvh;min-height:0;border:0;border-radius:0}}
+.adm{max-height:52vh;overflow:auto;display:grid;gap:8px;margin-top:12px;text-align:left}
+.admr{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}
+.admr span{font-variant-numeric:tabular-nums;color:var(--hl)}.admr small{grid-column:1/-1;color:var(--muted)}
 </style>
 
 <div class="stage">
@@ -1776,7 +1779,8 @@ function settleGate(){if(!S.gate)return false;const g=gateDef(S.gate.id);
   if(S.gate.failed){closeGate("A day was missed. This Gate allows none.");return true}
   if(S.day>S.gate.until){closeGate("Time ran out.");return true}
   return false}
-// ---- Party leaderboard (backend/party.mjs on Neon). Nothing is sent until the player creates or joins a party.
+// ---- Party leaderboard (backend/party.mjs on Neon). Party data is sent only after the player creates or joins a party;
+// separately, every install checks in on open with name/level/XP (ping below) for the hidden admin list.
 const PARTY_API="https://br-red-haze-b7b2z47p-party.compute.c-13.us-east-1.aws.neon.tech/";
 const PKEY="ascend-party-key",PCACHE="ascend-party-cache";
 // the key identifies this player to the server; it lives apart from progress, so backups and exports never carry it
@@ -1801,6 +1805,22 @@ let lastSent="";
 function schedSync(ms=4000){if(!partyKey(false)||!party.parties.length)return;clearTimeout(syncT);
   syncT=setTimeout(()=>{const sm=pSummary(),js=JSON.stringify(sm);if(navigator.onLine===false||(js===lastSent&&ms))return; // only real changes (opening the app always refreshes)
     partyCall({op:"sync",summary:sm}).then(()=>{lastSent=js}).catch(()=>{})},ms)}
+// check-in for the hidden admin list: once per open (and on return after 15 min), silent, never blocks the app
+let pinged=0;function ping(){if(!S.onboarded||navigator.onLine===false||Date.now()-pinged<9e5)return;const k=partyKey(true);if(!k)return;pinged=Date.now();const sm=pSummary();
+  fetch(PARTY_API,{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer "+k},keepalive:true,
+    body:JSON.stringify({op:"ping",name:S.name||"Hunter",summary:{lvl:sm.lvl,xp:sm.xp,tier:sm.tier,streak:sm.streak,title:sm.title}})}).catch(()=>{})}
+// hidden admin list (Jaime only): tap Guild 5 times in a row. The password is checked on the server, never here.
+const adm={n:0,at:0};
+function adminAsk(){notify({chip:"[ SYSTEM ]",title:"Restricted",after:true,
+  extra:`<div class="qe" style="margin-top:12px;text-align:left"><label>Password<input id="apw" type="password" maxlength="200" autocomplete="current-password"></label></div>`,
+  onOpen:()=>{const f=$("#apw");if(f)f.focus()},actions:[{label:"Enter",fn:()=>adminOpen(($("#apw")||{}).value||"")},{label:"Cancel"}]})}
+async function adminOpen(pw){const k=partyKey(true);if(!k||!pw)return;let r,j={};
+  try{r=await fetch(PARTY_API,{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer "+k},body:JSON.stringify({op:"admin",pw}),signal:AbortSignal.timeout(12000)});j=await r.json().catch(()=>({}))}
+  catch(e){toast("CAN'T REACH THE SERVER");return}
+  if(!r.ok){toast(r.status===403?"WRONG PASSWORD":r.status===429?"TOO MANY TRIES · WAIT A MINUTE":"DENIED");return}
+  const P=j.players||[];
+  notify({chip:"[ ADMIN ]",title:P.length+" player"+(P.length===1?"":"s"),actions:[{label:"Close"}],
+    extra:`<div class="adm">${P.map(p=>`<div class="admr"><b>${esc(p.name)}</b><span>Lv ${p.lvl??"?"} · ${(+p.xp||0).toLocaleString()} XP</span><small>${p.streak??0}d streak · ${p.parties?p.parties+(p.parties>1?" parties":" party"):"solo"} · seen ${ago(Date.parse(p.seen))}</small></div>`).join("")||"<small>No one has checked in yet.</small>"}</div>`})}
 const ago=t=>{const m=Math.round((Date.now()-t)/6e4);return !t?"never":m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" d ago"};
 const codeField=()=>`<div class="qe" style="margin-top:12px;text-align:left"><label>Invite code<input id="pcode" maxlength="9" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="ABCD2345"></label></div>`;
 // Web Push. The public half of the VAPID pair is meant to be public; the private half lives only in
@@ -2163,7 +2183,7 @@ ${sh("Notifications")}<div class="card glowcard" style="--c:var(--hl);display:gr
   <button class="btn chamf sysbtn" data-pushsave="1">Save time</button>`:""}
   <div class="acts">${pushState?`<button class="btn chamf ghost" data-pushtest="1">Send test</button><button class="btn chamf ghost" data-pushoff="1">Turn off</button>`
     :`<button class="btn chamf sysbtn" data-pushon="1"${pushOK()&&Notification.permission!=="denied"?"":" disabled"}>Turn on</button>`}</div></div>
-${partyKey(false)?`${sh("Party data")}<div class="card glowcard" style="--c:var(--danger);display:grid;gap:10px"><small style="color:var(--muted)">Your party membership and shared summary live on the party server.</small><button class="btn chamf ghost" data-pforget="1">Delete my party data</button></div>`:""}
+${partyKey(false)&&party.at?`${sh("Party data")}<div class="card glowcard" style="--c:var(--danger);display:grid;gap:10px"><small style="color:var(--muted)">Your party membership and shared summary live on the party server.</small><button class="btn chamf ghost" data-pforget="1">Delete my party data</button></div>`:""}
 ${sh("Backup")}<div class="card glowcard" style="--c:var(--hl);display:grid;gap:10px"><small style="color:var(--muted)">Progress lives in this browser. Copy a backup now and then, or after clearing site data restore it from a .json file.</small>
 <div style="display:flex;gap:8px"><button class="btn chamf sysbtn" data-backup="1" style="flex:1">Copy backup</button><label class="btn chamf ghost" for="rfile" tabindex="0" style="flex:1">Restore file</label></div></div>
 `},
@@ -2556,6 +2576,7 @@ document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("#ov").
 document.addEventListener("click",e=>{
   if(!sheet.hidden&&!e.target.closest(".player"))toggleSheet(false);
   const b=e.target.closest("button");if(!b||b.disabled)return;const d=b.dataset;
+  if(d.t==="quests"){const n=Date.now();adm.n=n-adm.at<800?adm.n+1:1;adm.at=n;if(adm.n>=5){adm.n=0;setTimeout(adminAsk,50)}}else adm.n=0;
   if(b.id==="pplay"){if(!aud.src){$("#pfile").click();return}if(aud.paused){userPaused=false;aud.play().catch(()=>{})}else{userPaused=true;aud.pause()}return}
   if(b.id==="pmore"){toggleSheet(sheet.hidden);return}
   if(d.s){document.documentElement.dataset.skin=d.s;try{localStorage.setItem("ascend-skin",d.s)}catch(e){}document.querySelectorAll(".skin").forEach(x=>x.setAttribute("aria-pressed",x.dataset.s===d.s));return}
@@ -2663,7 +2684,7 @@ act(()=>{rollover();render();
   pushRefresh().then(v=>{if(v)render(true)});
   if(!S.onboarded)S.ap.pn=PATCH[0].v;
   else if((S.ap.pn||0)<PATCH[0].v){S.ap.pn=PATCH[0].v;save();notify(patchNote(PATCH[0]))}
-  arrival()});schedSync(1500);
+  arrival()});schedSync(1500);setTimeout(ping,3000);
 function onboard(){notify({chip:"[ SYSTEM ]",title:"You have been chosen as a Player.",center:true,
     body:"The System will assign you a Daily Quest each day.\nComplete it to grow. Fail it and a Penalty Quest follows.\n\nFirst, the System must measure you.",
     extra:nameField(),after:true,onOpen:focusName,
@@ -2682,7 +2703,7 @@ $("#rfile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)
   let sv=null;try{sv=JSON.parse(await f.text())}catch(err){}e.target.value="";
   if(!isSave(sv)){toast("THAT FILE ISN'T AN ASCEND BACKUP");return}
   act(()=>{if(!adopt(sv)){toast("THAT FILE ISN'T AN ASCEND BACKUP");return}saveBlocked=false;rollover();save();render();toast("BACKUP RESTORED")})});
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){tick();schedSync(500)}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){tick();schedSync(500);ping()}});
 if(!storageOK)setTimeout(()=>toast("WARNING · PROGRESS CAN'T BE SAVED HERE"),1500);
 if(saveBlocked)setTimeout(()=>notify({chip:"[ WARNING ]",tone:"danger",title:"Saved progress couldn't be read.",body:"Nothing has been overwritten. A copy was kept on this device.\nRestore a backup file from Profile, or reset to start fresh."}),1200);
 window.__ascend={get S(){return S},render,closeNote,totalXP,corrupt,partyBoard:()=>partyCall({op:"board"}),sample:()=>{S=sample();rollover();save();render()}};
