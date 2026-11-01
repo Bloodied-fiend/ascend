@@ -1,0 +1,190 @@
+<title>Theme Vault Art Brief</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=Noto+Sans:wght@400;600&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+/* Layout: one reading column. Shared spec first, then one section per theme with palette, scene, what code adds, and a copyable prompt. */
+:root{
+  --bg:#f3f6f8; --surface:#ffffff; --fg:#121a20; --muted:#55636d; --rule:#d5dee4; --accent:#0a6f7d; --code:#eaf0f3;
+  --f-label:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-body:"Noto Sans",system-ui,-apple-system,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#07090c;--surface:#0e1218;--fg:#e8eef5;--muted:#8a96a3;--rule:#1d2531;--accent:#62d8e6;--code:#121921;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#07090c;--surface:#0e1218;--fg:#e8eef5;--muted:#8a96a3;--rule:#1d2531;--accent:#62d8e6;--code:#121921;color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.6;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px}
+main{max-width:680px;margin:0 auto;display:grid;gap:34px}
+.eyebrow,.lbl{font-family:var(--f-label);font-weight:500;letter-spacing:.16em;text-transform:uppercase;font-size:12.5px;color:var(--accent)}
+h1{font-family:var(--f-label);font-weight:700;font-size:38px;line-height:1.02;margin:4px 0 10px;text-wrap:balance}
+h2{font-family:var(--f-label);font-weight:700;font-size:25px;line-height:1.1;margin:0;text-wrap:balance}
+h3{font-family:var(--f-label);font-weight:700;font-size:17px;letter-spacing:.06em;text-transform:uppercase;margin:0}
+p{margin:0}
+section{display:grid;gap:14px;min-width:0}
+.lede{color:var(--muted);max-width:62ch}
+ul{margin:0;padding-left:20px;display:grid;gap:6px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:560px){.split{grid-template-columns:1fr}}
+.box{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:14px 16px;display:grid;gap:8px;min-width:0}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-family:var(--f-label);font-weight:500;letter-spacing:.12em;text-transform:uppercase;font-size:12px;color:var(--muted)}
+td:first-child{white-space:nowrap;font-weight:600}
+.num{font-variant-numeric:tabular-nums}
+.zones{display:grid;grid-template-columns:118px 1fr;gap:18px;align-items:center}
+.zones svg{width:118px;height:auto;max-width:100%}
+.zones svg text{font-family:var(--f-label);font-size:44px;letter-spacing:.06em}
+.decide{display:grid;gap:10px;counter-reset:d}
+.decide li{list-style:none;background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:4px;padding:10px 14px}
+.decide{padding:0}
+.decide b{display:block}
+.decide span{color:var(--muted);font-size:14px}
+.theme{border-top:1px solid var(--rule);padding-top:26px}
+.thead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.rank{font-family:var(--f-label);font-weight:500;letter-spacing:.14em;text-transform:uppercase;font-size:13px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:flex;align-items:center;gap:7px;font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.chip i{width:22px;height:22px;border-radius:3px;border:1px solid var(--rule);display:block}
+.prompt{position:relative;background:var(--code);border:1px solid var(--rule);border-radius:6px;padding:12px 14px 12px;font-family:var(--f-mono);font-size:12.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word;min-width:0}
+.prompt b{font-family:var(--f-label);font-weight:500;letter-spacing:.14em;text-transform:uppercase;font-size:11.5px;color:var(--muted);display:block;margin-bottom:4px}
+.copy{appearance:none;cursor:pointer;justify-self:start;font-family:var(--f-label);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:13px;
+  background:transparent;color:var(--accent);border:1px solid var(--accent);border-radius:4px;min-height:40px;padding:0 14px}
+.copy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.note{color:var(--muted);font-size:14px}
+</style>
+
+<main>
+  <header>
+    <div class="eyebrow">Ascend &middot; Theme Vault &middot; Art brief</div>
+    <h1>Five painted places, unlocked by rank</h1>
+    <p class="lede">Ascend is a habit tracker styled after a dark "System" game interface. Players unlock five visual themes as they rank up from D to S. Each theme needs one painted background scene. Code adds all the motion on top (smoke, snow, light, particles), so the painting stays still and quiet.</p>
+  </header>
+
+  <section>
+    <h2>Decisions for Jaime first</h2>
+    <p class="note">Art rule: these get your call before anything is made. Each one has my default.</p>
+    <ul class="decide">
+      <li><b>Who paints it. Default: you, with the same tool you used for the boss Bestiary.</b><span>The prompts below are ready to paste. Send me the images and I cut the layers, the same way the boss art went in. Other options: hand this page to a commissioned artist, or connect Higgsfield in your claude.ai connector settings and I try generating here. I have not checked what that connector can produce.</span></li>
+      <li><b>Style. Default: match the Bestiary bosses.</b><span>Same painterly finish, so the themes and the bosses read as one world.</span></li>
+      <li><b>Coverage. Default: a full-screen plate per theme.</b><span>The landmark sits at the top and the middle stays dark and soft behind the panels. The alternative is a top banner only, which is cheaper but loses the "you're standing in this place" feel.</span></li>
+      <li><b>Motion stays in code. Default: yes.</b><span>Smoke, caustic light, ash, shadow-fire, frost and snow are the shaders already built in the v5 preview, layered over the new paintings.</span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>What every theme delivers</h2>
+    <div class="tbl"><table>
+      <tr><th>Item</th><th>Spec</th></tr>
+      <tr><td>Scene plate</td><td>Portrait <span class="num">1080 &times; 2340</span> px (19.5:9), sRGB. One finished image per theme. Generate larger if the tool allows; I downscale.</td></tr>
+      <tr><td>Layers</td><td><b>Artist:</b> a layered PSD or PNGs: <i>sky</i> (opaque), <i>landmark/foreground</i> (transparent), <i>light sources</i> on pure black. <b>Generator:</b> the single image is enough; I cut the layers.</td></tr>
+      <tr><td>Weight</td><td>At most <span class="num">250 KB</span> per theme after WebP export, all layers combined. The five boss paintings total 1.07 MB, so the themes come in about even with them.</td></tr>
+      <tr><td>Never in the art</td><td>Text, logos, UI, watermarks, people's faces, or anything the code animates (listed per theme).</td></tr>
+      <tr><td>Originality</td><td>Original designs only. Nothing traced from Solo Leveling or any other series; no recognizable characters or creatures.</td></tr>
+    </table></div>
+
+    <div class="zones">
+      <svg viewBox="0 0 1080 2340" role="img" aria-label="Phone plate safe zones: landmark in the top 28 percent, low detail behind panels from 28 to 92 percent, ground in the bottom 8 percent">
+        <rect x="0" y="0" width="1080" height="2340" rx="70" fill="var(--surface)" stroke="var(--rule)" stroke-width="8"/>
+        <rect x="0" y="0" width="1080" height="655" rx="70" fill="var(--accent)" opacity=".28"/>
+        <rect x="48" y="700" width="984" height="1430" rx="30" fill="none" stroke="var(--muted)" stroke-width="8" stroke-dasharray="30 22"/>
+        <rect x="0" y="2153" width="1080" height="187" fill="var(--accent)" opacity=".16"/>
+        <text x="540" y="350" text-anchor="middle" fill="var(--fg)">LANDMARK</text>
+        <text x="540" y="1440" text-anchor="middle" fill="var(--muted)">PANELS</text>
+        <text x="540" y="2270" text-anchor="middle" fill="var(--fg)">GROUND</text>
+      </svg>
+      <div class="box">
+        <h3>Where things go on the plate</h3>
+        <ul>
+          <li><b>Top 28%:</b> the landmark (moon, throne, jellyfish, peaks). It's the only part the player sees clearly.</li>
+          <li><b>28% to 92%:</b> sits behind see-through UI panels. Keep it soft, low in detail and dark (bright on Whiteout). No hard edges or busy texture, or the text on top won't stay readable.</li>
+          <li><b>Bottom 8%:</b> the ground or floor, a darker band that anchors the scene.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="theme">
+    <div class="thead"><h2>Mistveil</h2><span class="rank">D-Rank &middot; level 9</span></div>
+    <div class="chips"><span class="chip"><i style="background:#080d0c"></i>#080d0c</span><span class="chip"><i style="background:#18302a"></i>#18302a</span><span class="chip"><i style="background:#9fe8cf"></i>#9fe8cf</span><span class="chip"><i style="background:#ffdc8c"></i>#ffdc8c lantern</span></div>
+    <div class="split">
+      <div class="box"><h3>The place</h3><p>A dead pine forest at night, three rows of bare black pines fading into haze. One small lantern burns on a post in the middle distance, the only warm light in the scene. Pale moonlit haze sits in the upper left.</p></div>
+      <div class="box"><h3>Code adds, so don't paint it</h3><p>The rolling smoke (drawn in front of everything), fireflies, and the lantern flicker. Paint the lantern lit but steady.</p></div>
+    </div>
+    <div class="prompt" id="p-mistveil"><b>Prompt</b>Vertical 9:19.5 digital painting, a dead pine forest at night seen from ground level, three receding rows of bare black pine silhouettes fading into blue-green haze, one small lantern glowing warm amber on a wooden post in the middle distance right of center, pale moonlit haze in the upper left sky, landmark detail concentrated in the top third, lower two thirds fading to soft near-black teal with very little detail, palette deep charcoal green #080d0c, pine #18302a, cold mint highlights #9fe8cf, amber lantern #ffdc8c, painterly, atmospheric perspective, quiet and eerie, subtle grain
+
+<b>Avoid</b>people, faces, creatures, text, watermark, logo, thick fog in the foreground, falling snow, daylight, saturated colors, busy texture in the middle of the image</div>
+    <button class="copy" type="button" data-copy="p-mistveil">Copy prompt</button>
+  </section>
+
+  <section class="theme">
+    <div class="thead"><h2>Abyss</h2><span class="rank">C-Rank &middot; level 17</span></div>
+    <div class="chips"><span class="chip"><i style="background:#020810"></i>#020810</span><span class="chip"><i style="background:#082a36"></i>#082a36</span><span class="chip"><i style="background:#36e0d0"></i>#36e0d0</span><span class="chip"><i style="background:#bafff5"></i>#bafff5</span></div>
+    <div class="split">
+      <div class="box"><h3>The place</h3><p>The deep ocean. Faint light shafts reach down from a surface far above. Two bioluminescent jellyfish drift over a dark reef ridge, a large one upper right and a small distant one upper left, their bells glowing cyan.</p></div>
+      <div class="box"><h3>Code adds, so don't paint it</h3><p>The rippling caustic light, rising bubbles, the jellies' drift and pulse, and the ripple when the player taps. Paint the jellyfish on their own layer if you can; code animates them.</p></div>
+    </div>
+    <div class="prompt" id="p-abyss"><b>Prompt</b>Vertical 9:19.5 digital painting, the deep ocean far below the surface, faint pale light shafts falling from the very top, two bioluminescent jellyfish with softly glowing cyan bells and long trailing tentacles, a large one upper right and a small distant one upper left, a dark jagged reef ridge silhouette across the upper third, the rest of the image fading into deep blue-black water with very little detail, palette abyss black #020810, deep teal #082a36, bioluminescent cyan #36e0d0, pale glow #bafff5, painterly, cinematic, calm and vast
+
+<b>Avoid</b>people, divers, fish schools, text, watermark, logo, bubbles, bright caustic patterns, coral color, sunlit shallow water, busy texture in the middle of the image</div>
+    <button class="copy" type="button" data-copy="p-abyss">Copy prompt</button>
+  </section>
+
+  <section class="theme">
+    <div class="thead"><h2>Bloodmoon</h2><span class="rank">B-Rank &middot; level 25</span></div>
+    <div class="chips"><span class="chip"><i style="background:#070405"></i>#070405</span><span class="chip"><i style="background:#1c0809"></i>#1c0809</span><span class="chip"><i style="background:#e0514a"></i>#e0514a</span><span class="chip"><i style="background:#ffb8a4"></i>#ffb8a4</span></div>
+    <div class="split">
+      <div class="box"><h3>The place</h3><p>A huge cratered red moon hangs too close over a ruined gothic city: broken spires, a collapsed cathedral, jagged towers. The red haze thickens toward the horizon.</p></div>
+      <div class="box"><h3>Code adds, so don't paint it</h3><p>Drifting red cloud, falling ash, rising embers, film grain, and the unlock eclipse. <b>The moon must be its own layer</b>, because the eclipse slides a shadow across it.</p></div>
+    </div>
+    <div class="prompt" id="p-bloodmoon"><b>Prompt</b>Vertical 9:19.5 digital painting, an enormous cratered blood-red moon hanging low in the upper right, unnaturally close, over the black silhouette of a ruined gothic city with broken spires, a collapsed cathedral and jagged towers across the upper third, thin red haze near the horizon, the lower two thirds fading into deep red-black darkness with very little detail, palette near-black #070405, dried blood #1c0809, moon red #e0514a, moon highlight #ffb8a4, painterly, ominous, dark fantasy
+
+<b>Avoid</b>people, creatures, bats, text, watermark, logo, falling ash, embers, fire, lightning, purple tones, busy texture in the middle of the image</div>
+    <button class="copy" type="button" data-copy="p-bloodmoon">Copy prompt</button>
+  </section>
+
+  <section class="theme">
+    <div class="thead"><h2>Monarch</h2><span class="rank">A-Rank &middot; level 33</span></div>
+    <div class="chips"><span class="chip"><i style="background:#060410"></i>#060410</span><span class="chip"><i style="background:#150b26"></i>#150b26</span><span class="chip"><i style="background:#f0cb5e"></i>#f0cb5e</span><span class="chip"><i style="background:#c79bff"></i>#c79bff</span></div>
+    <div class="split">
+      <div class="box"><h3>The place</h3><p>A vast dark hall with an empty throne on stone steps, lit from above by thin shafts of gold light. In front of the steps kneels an army of shadow soldiers in silhouette: helmets, spears and torn cloaks, with faint violet eyes. The throne is empty because it's the player's.</p></div>
+      <div class="box"><h3>Code adds, so don't paint it</h3><p>Violet shadow-fire climbing the screen, rising gold dust, eye flicker, and the ARISE ceremony where the army stands. <b>Put the army on its own layer</b> so code can raise it.</p></div>
+    </div>
+    <div class="prompt" id="p-monarch"><b>Prompt</b>Vertical 9:19.5 digital painting, a vast dark stone throne hall, an empty tall pointed throne on wide stone steps in the upper center lit by thin shafts of warm gold light from above, in front of the steps rows of kneeling shadow soldiers in black silhouette with helmets, spears and torn cloaks, each with two faint glowing violet eyes, original designs, the lower two thirds fading into deep purple-black darkness with very little detail, palette void #060410, royal shadow #150b26, gold light #f0cb5e, violet eyes #c79bff, painterly, regal and menacing, dark fantasy
+
+<b>Avoid</b>a figure seated on the throne, recognizable characters, anime character faces, text, watermark, logo, fire, flames, smoke, gold dust particles, busy texture in the middle of the image</div>
+    <button class="copy" type="button" data-copy="p-monarch">Copy prompt</button>
+  </section>
+
+  <section class="theme">
+    <div class="thead"><h2>Whiteout</h2><span class="rank">S-Rank &middot; level 41 &middot; the only light theme</span></div>
+    <div class="chips"><span class="chip"><i style="background:#f4f9fc"></i>#f4f9fc</span><span class="chip"><i style="background:#c9d8e2"></i>#c9d8e2</span><span class="chip"><i style="background:#6f8ea3"></i>#6f8ea3</span><span class="chip"><i style="background:#0a6ea8"></i>#0a6ea8</span></div>
+    <div class="split">
+      <div class="box"><h3>The place</h3><p>High ice peaks with snow caps under a pale, sun-washed sky. It is cold and silent, and it's the summit you earn at S-rank. Three ridge layers step from pale far peaks to deeper blue-grey near ones.</p></div>
+      <div class="box"><h3>Code adds, so don't paint it</h3><p>Driving snow at three depths, frost crystals growing in from the glass edges, and the freeze-and-shatter unlock. <b>Keep the middle bright and flat</b>, because dark text sits on white panels over it.</p></div>
+    </div>
+    <div class="prompt" id="p-whiteout"><b>Prompt</b>Vertical 9:19.5 digital painting, high-altitude ice mountain peaks with crisp white snow caps across the upper third, three ridge layers stepping from pale far peaks to deeper blue-grey near ridges, a pale washed-out sun haze in the upper right sky, the lower two thirds a bright, nearly flat cold white mist with almost no detail, palette snow white #f4f9fc, far ice #c9d8e2, near ridge #6f8ea3, cold accent #0a6ea8, painterly, clean, silent, high key
+
+<b>Avoid</b>people, climbers, animals, text, watermark, logo, falling snow, blizzard, frost, dark storm clouds, warm colors, busy texture in the middle of the image</div>
+    <button class="copy" type="button" data-copy="p-whiteout">Copy prompt</button>
+  </section>
+
+  <section class="theme">
+    <h2>Handing it back</h2>
+    <ul>
+      <li>Name the files by theme: <span class="num">mistveil, abyss, bloodmoon, monarch, whiteout</span>. Any image format works; I convert to WebP.</li>
+      <li>Send them the same way the Bestiary came in. I cut the layers, wire them into the preview under the existing weather, and bring the renders back to you before anything goes in the app.</li>
+      <li>The vault list's small swatches get cropped from the plates, so no separate thumbnails are needed.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+document.querySelectorAll(".copy").forEach(b => b.addEventListener("click", () => {
+  const el = document.getElementById(b.dataset.copy), text = el.innerText.replace(/^Prompt\s*/, "").replace(/\n\s*Avoid\s*/, "\n\nAvoid: ");
+  const done = ok => { b.textContent = ok ? "Copied" : "Selected: copy it manually"; setTimeout(() => b.textContent = "Copy prompt", 1800); };
+  const select = () => { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); done(false); };
+  try { navigator.clipboard.writeText(text).then(() => done(true), select); } catch (e) { select(); }
+}));
+</script>

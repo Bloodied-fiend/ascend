@@ -1,0 +1,625 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ascend Unlockables</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Noto+Sans:wght@400;600&family=Cormorant+Garamond:ital,wght@1,500;1,600&family=Exo+2:wght@300;600&family=Grenze+Gotisch:wght@600;800&family=Cinzel:wght@600;700&family=Michroma&display=swap">
+<style>
+/* Layout: a theme vault above one live phone. Each skin is a whole place - a painted scene, its own
+   weather (a shader in FRONT of the UI), its own frame, display face and unlock ceremony - while body
+   text and System labels stay constant so the app still reads as Ascend. */
+:root{
+  --shell:#07090c; --shell2:#0e1218; --rule:#1d2531; --ink:#e8eef5; --dim:#8a96a3; --mark:#62d8e6; --lock:#4a5562;
+  --f-sys:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-body:"Noto Sans",system-ui,-apple-system,sans-serif;
+  color-scheme:dark;
+}
+
+/* ============ five identities: palette + display face ============ */
+[data-skin="mistveil"]{--bg:#0c1211;--panel:#131b19;--panel2:#1a2422;--line:#2b3936;--fg:#e6efec;--muted:#8fa6a0;--hl:#9fe8cf;--danger:#ff6a5a;
+ --phonebg:#080d0c;--str:#e08a7a;--vit:#7fd6a8;--agi:#8fcfe0;--int:#b7aee8;--per:#e0cf8f;--rar1:#7d8f8a;--rar2:#86d6b0;--rar3:#9fb6e8;--rar4:#e8dba0;
+ --face:"Cormorant Garamond",Georgia,serif;--faceW:600;--faceSize:31px;--faceTrack:.01em;--faceStyle:italic}
+[data-skin="abyss"]{--rad:18px;--bg:#030c13;--panel:#08151e;--panel2:#0d1e2a;--line:#1b3443;--fg:#dff0f7;--muted:#9ab8c8;--hl:#36e0d0;--danger:#ff6a5a;
+ --phonebg:#020810;--str:#ff7f6a;--vit:#4fd6a8;--agi:#36e0d0;--int:#8f9fff;--per:#ffcf6a;--rar1:#6d8c9c;--rar2:#4fd6a8;--rar3:#7fa8ff;--rar4:#ffd98a;
+ --face:"Exo 2","Barlow Condensed",sans-serif;--faceW:300;--faceSize:27px;--faceTrack:.14em;--faceStyle:normal}
+[data-skin="bloodmoon"]{--rad:2px;--bg:#0b0708;--panel:#15100f;--panel2:#1e1716;--line:#3d2a28;--fg:#f0e4e2;--muted:#a3908d;--hl:#e0514a;--danger:#ff6a5a;
+ --phonebg:#070405;--str:#e8574f;--vit:#8ab87f;--agi:#7fa8c4;--int:#b08ad0;--per:#e0b45a;--rar1:#8d7d7c;--rar2:#8ab87f;--rar3:#b08ad0;--rar4:#e0b45a;
+ --face:"Grenze Gotisch",Georgia,serif;--faceW:800;--faceSize:33px;--faceTrack:.01em;--faceStyle:normal}
+[data-skin="monarch"]{--bg:#09060f;--panel:#130c1d;--panel2:#1c1228;--line:#3a2a52;--fg:#f4eeff;--muted:#a897c8;--hl:#f0cb5e;--danger:#ff6a5a;
+ --phonebg:#060410;--str:#ff7a6a;--vit:#6fd6a0;--agi:#7fb8ff;--int:#c79bff;--per:#f0cb5e;--rar1:#8a7fa0;--rar2:#7fd6a0;--rar3:#c79bff;--rar4:#f0cb5e;
+ --face:"Cinzel",Georgia,serif;--faceW:700;--faceSize:25px;--faceTrack:.08em;--faceStyle:normal}
+[data-skin="whiteout"]{--rad:4px;--bg:#dae3e9;--panel:#ffffff;--panel2:#eaf1f6;--line:#bdccd6;--fg:#0d1418;--muted:#51626c;--hl:#0a6ea8;--danger:#b8231b;
+ --phonebg:#f4f9fc;--str:#c62d27;--vit:#0a7a5c;--agi:#0a6ea8;--int:#5a3fd6;--per:#86660a;--rar1:#5a666e;--rar2:#0a7a5c;--rar3:#5a3fd6;--rar4:#8a6200;
+ --face:"Michroma","Barlow Condensed",sans-serif;--faceW:400;--faceSize:19px;--faceTrack:.02em;--faceStyle:normal}
+
+*{box-sizing:border-box}
+body{background:var(--shell);color:var(--ink);font-family:var(--f-body);margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px 44px}
+.wrap{max-width:460px;margin:0 auto;display:grid;gap:18px}
+header{display:grid;gap:5px}
+.eyebrow{font-family:var(--f-sys);font-size:12px;letter-spacing:.2em;color:var(--mark);text-transform:uppercase}
+h1{font-family:var(--f-sys);font-weight:700;font-size:34px;line-height:1;margin:0;text-wrap:balance}
+.sub{color:var(--dim);font-size:14px;line-height:1.55;margin:0}
+
+/* ============ the vault ============ */
+.lvrow{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;background:var(--shell2);
+  border:1px solid var(--rule);border-radius:6px;padding:10px 12px}
+.lvrow label{font-family:var(--f-sys);font-size:12px;letter-spacing:.16em;color:var(--dim);text-transform:uppercase}
+.lvrow output{font-family:var(--f-sys);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums;color:var(--ink);min-width:56px;text-align:right}
+input[type=range]{width:100%;accent-color:var(--mark);min-height:28px}
+.vault{display:grid;gap:7px}
+.slot{appearance:none;width:100%;text-align:left;cursor:pointer;display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;
+  background:var(--shell2);border:1px solid var(--rule);border-radius:6px;padding:9px 12px;min-height:60px;color:var(--ink);
+  transition:border-color .2s ease-out,background .2s ease-out}
+.slot:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.slot[aria-pressed="true"]{border-color:var(--mark);background:#101b22}
+.sw{width:44px;height:44px;border-radius:4px;position:relative;overflow:hidden}
+.slot .nm{font-size:19px;line-height:1.05;display:block}
+.slot .rq{display:block;font-family:var(--f-sys);font-size:11.5px;letter-spacing:.13em;color:var(--dim);text-transform:uppercase;margin-top:3px}
+.slot .st{font-family:var(--f-sys);font-size:12px;letter-spacing:.14em;color:var(--mark);text-transform:uppercase}
+.prog{grid-column:2/4;height:3px;border-radius:99px;background:#1a222c;overflow:hidden;margin-top:-2px}
+.prog i{display:block;height:100%;background:var(--lock);transition:width .3s ease-out}
+.slot.locked .sw{filter:grayscale(.7) brightness(.6)}
+.sw b{position:absolute;inset:0;display:grid;place-items:center;font-size:24px;line-height:1;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.slot.locked .sw::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(0,0,0,.35) 0 4px,transparent 4px 9px)}
+.slot.locked .nm{color:#9aa5b1}
+.slot.locked .st{color:var(--dim)}
+
+/* ============ the phone: back (sky + scene) / UI / front (shader weather, particles) / ceremony ============ */
+.phone{position:relative;overflow:hidden;border-radius:16px;border:1px solid var(--rule);background:var(--phonebg);padding:14px;
+  padding-top:132px;isolation:isolate;transition:background .45s ease-out;touch-action:pan-y}
+.back,.front,.cer{position:absolute;inset:0;pointer-events:none}
+.back{z-index:0}
+.ui{position:relative;z-index:2}
+canvas.gl{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;display:block}
+canvas.pt{position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none;display:block}
+[data-skin="bloodmoon"] canvas.pt,[data-skin="monarch"] canvas.pt,[data-skin="abyss"] canvas.pt{z-index:1}   /* ash and dust were landing on text */
+.cer{z-index:5}
+.cer>*{position:absolute;inset:0;opacity:0}
+
+/* sky per skin: the still light behind each scene */
+[data-skin="mistveil"] .back{background:radial-gradient(46% 22% at 22% 8%,rgba(200,236,224,.22),transparent 70%),linear-gradient(#0f1a18,#080d0c 42%)}
+[data-skin="abyss"] .back{background:linear-gradient(176deg,rgba(90,200,220,.16),transparent 34%),linear-gradient(#082a36,#04141e 30%,#020810 70%)}
+[data-skin="bloodmoon"] .back{background:radial-gradient(70% 18% at 50% 24%,rgba(224,81,74,.22),transparent 72%),linear-gradient(#1c0809,#070405 40%)}
+[data-skin="monarch"] .back{background:radial-gradient(60% 26% at 50% 4%,rgba(185,138,255,.30),transparent 70%),linear-gradient(#150b26,#060410 40%)}
+[data-skin="whiteout"] .back{background:radial-gradient(30% 14% at 74% 8%,#fff,transparent 70%),linear-gradient(#e3edf4,#f4f9fc 36%,#e8f0f5)}
+
+/* painted plates (outsourced art, 1080x1928 WebP). Fit to width from the top; the UI starts lower so the landmark shows. */
+.plate{position:absolute;inset:0;background:no-repeat top center/100% auto;display:none}
+[data-skin="mistveil"] .plate{display:block;background-image:url(themes/mistveil.webp)}
+[data-skin="abyss"] .plate{display:block;background-image:url(themes/abyss.webp)}
+[data-skin="bloodmoon"] .plate{display:block;background-image:url(themes/bloodmoon.webp)}
+[data-skin="monarch"] .plate{display:block;background-image:url(themes/monarch.webp)}
+[data-skin="whiteout"] .plate{display:block;background-image:url(themes/whiteout.webp)}
+.phone[data-skin="mistveil"],.phone[data-skin="abyss"],.phone[data-skin="bloodmoon"],.phone[data-skin="monarch"],.phone[data-skin="whiteout"]{padding-top:62%}
+
+/* the scene band: one painted place per skin. Inactive scenes are display:none so their CSS motion costs nothing. */
+.scene{position:absolute;left:0;right:0;top:0;height:140px}
+.scene>[data-s]{position:absolute;inset:0;display:none}
+.scene svg{position:absolute;inset:0;width:100%;height:100%}
+[data-skin="mistveil"] [data-s="mistveil"],[data-skin="abyss"] [data-s="abyss"],[data-skin="bloodmoon"] [data-s="bloodmoon"],
+[data-skin="monarch"] [data-s="monarch"],[data-skin="whiteout"] [data-s="whiteout"]{display:block}
+
+.nogl[data-skin="mistveil"] .fog{display:block}
+.fog{display:none;position:absolute;inset:-18%;background:radial-gradient(70% 44% at 26% 70%,rgba(236,248,244,.6),transparent 74%);filter:blur(26px)}
+
+
+/* Bloodmoon: a moon too close to the ground, over a ruined skyline */
+/* overflow clips the eclipse disc to the moon; z keeps the skyline in front even while the filter animation promotes the moon */
+.moon{position:absolute;z-index:0;overflow:hidden;left:55.74%;top:0;margin-top:5.93%;width:37.96%;aspect-ratio:1;border-radius:50%;
+  box-shadow:0 0 60px rgba(224,81,74,.35)}
+.moon::after{content:"";position:absolute;inset:-2px;border-radius:50%;background:#070405;transform:translateX(130%);opacity:.92}
+
+
+/* panel ornaments - only the active skin's show */
+.sys,.card{position:relative}
+.orn{position:absolute;inset:0;pointer-events:none;display:none}
+.orn svg{position:absolute;width:44px;height:44px}
+.orn .tl{left:-1px;top:-1px}.orn .tr{right:-1px;top:-1px;transform:scaleX(-1)}
+.orn .bl{left:-1px;bottom:-1px;transform:scaleY(-1)}.orn .br{right:-1px;bottom:-1px;transform:scale(-1,-1)}
+[data-skin="monarch"] .orn.gilt,[data-skin="bloodmoon"] .orn.crack{display:block}
+.orn.crack svg{width:92px;height:70px;right:0;top:0}
+
+/* ============ skin frames ============ */
+[data-skin="mistveil"] .sys{background:rgba(14,20,19,.86);backdrop-filter:blur(6px)}
+[data-skin="mistveil"] .card,[data-skin="mistveil"] .hunter{background:rgba(19,27,25,.86);backdrop-filter:blur(6px)}
+[data-skin="mistveil"] .chip{border-style:dashed}
+[data-skin="mistveil"] .boss{text-shadow:0 0 18px rgba(159,232,207,.35)}
+
+[data-skin="abyss"] .sys{border-radius:18px;box-shadow:inset 0 0 30px rgba(54,224,208,.10)}
+[data-skin="abyss"] .sys::after{content:"";position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;
+  box-shadow:0 0 0 1px rgba(54,224,208,.55),0 0 22px rgba(54,224,208,.35);opacity:.15;animation:biolum 4.6s ease-in-out infinite}
+@keyframes biolum{0%,100%{opacity:.12}50%{opacity:.85}}
+[data-skin="abyss"] .card,[data-skin="abyss"] .hunter{border-radius:16px}
+[data-skin="abyss"] .chip,[data-skin="abyss"] .pip,[data-skin="abyss"] .btn{border-radius:99px}
+
+[data-skin="bloodmoon"] .sys,[data-skin="bloodmoon"] .card,[data-skin="bloodmoon"] .hunter{box-shadow:6px 6px 0 rgba(0,0,0,.7),0 14px 30px rgba(0,0,0,.6);border-radius:2px}
+[data-skin="bloodmoon"] .chip{background:var(--hl);color:var(--phonebg)}
+[data-skin="bloodmoon"] .xp i{background:#d9c7c4}   /* red is the boss HP bar's alone */
+[data-skin="bloodmoon"] .boss{text-shadow:0 2px 0 #3d0d0b,0 0 22px rgba(224,81,74,.45)}
+
+[data-skin="monarch"] .sys{box-shadow:0 0 0 1px rgba(240,203,94,.45),0 0 0 4px rgba(240,203,94,.09),0 0 34px rgba(155,92,255,.22)}
+[data-skin="monarch"] .sys{padding-bottom:22px}
+[data-skin="monarch"] .card,[data-skin="monarch"] .hunter{box-shadow:0 0 0 1px rgba(240,203,94,.26)}
+[data-skin="monarch"] .chip{box-shadow:0 0 12px rgba(240,203,94,.32)}
+[data-skin="monarch"] .boss,[data-skin="monarch"] .rk{background:linear-gradient(180deg,#fff6d6,#f0cb5e 62%,#b8862a);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+[data-skin="whiteout"] .sys,[data-skin="whiteout"] .card,[data-skin="whiteout"] .hunter{background:rgba(255,255,255,.80);backdrop-filter:blur(10px) saturate(1.2);
+  box-shadow:0 2px 14px rgba(30,60,80,.14),inset 0 1px 0 #fff;border-radius:4px}
+
+@media (prefers-reduced-motion:reduce){.scene *,.orn *,.sys::after{animation:none!important}}
+
+/* ============ mock UI (System labels constant; display face varies) ============ */
+.hunter{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:10px}
+.rk{font-family:var(--face);font-weight:var(--faceW);font-style:var(--faceStyle);font-size:34px;line-height:1;color:var(--hl);min-width:30px;text-align:center}
+.hn{font-family:var(--f-sys);font-weight:700;font-size:15px;letter-spacing:.12em;color:var(--fg);text-transform:uppercase}
+.xp{height:5px;background:var(--panel2);border-radius:99px;overflow:hidden;margin:5px 0 4px}
+.xp i{display:block;height:100%;width:58%;background:var(--hl)}
+.sys{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;transition:background .45s ease-out,border-color .45s ease-out,box-shadow .45s ease-out,border-radius .45s ease-out}
+.chip{display:inline-block;font-family:var(--f-sys);font-size:11px;letter-spacing:.16em;color:var(--hl);border:1px solid var(--hl);padding:2px 9px;border-radius:2px}
+.boss{font-family:var(--face);font-weight:var(--faceW);font-style:var(--faceStyle);font-size:var(--faceSize);letter-spacing:var(--faceTrack);
+  margin:10px 0 4px;color:var(--fg);line-height:1.05;text-transform:none}
+[data-skin="abyss"] .boss,[data-skin="monarch"] .boss,[data-skin="whiteout"] .boss{text-transform:uppercase}
+.meta{font-family:var(--f-sys);font-size:12px;letter-spacing:.11em;color:var(--muted);margin-bottom:9px;text-transform:uppercase}
+.hunter .meta{margin:0}
+.hp{height:8px;background:var(--panel2);border-radius:99px;overflow:hidden}
+.hp i{display:block;height:100%;width:62%;background:var(--danger)}
+.pips{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:11px}
+.pip{text-align:center;font-family:var(--f-sys);font-size:12px;letter-spacing:.1em;padding:8px 0;border-radius:3px;border:1px solid var(--line);background:var(--panel2)}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px}
+.btn{font-family:var(--f-sys);font-weight:600;font-size:14px;letter-spacing:.09em;padding:12px;text-align:center;border-radius:3px;border:1px solid var(--hl);color:var(--hl);text-transform:uppercase;min-height:44px}
+button.btn{appearance:none;background:transparent;cursor:pointer}
+.btn.solid{background:var(--hl);color:var(--phonebg)}
+button.btn:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px;margin-top:10px;color:var(--fg);font-size:13.5px;transition:background .45s ease-out,box-shadow .45s ease-out,border-radius .45s ease-out}
+.card small{display:block;color:var(--muted);font-size:12px;margin-top:3px;line-height:1.5}
+.rar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:9px}
+.rar span{height:5px;border-radius:99px}
+
+/* ============ unlock ceremonies: one per skin, ~2.6s, then the card ============ */
+.blackout{background:#000}
+.flash{background:#fff}
+.arise{display:grid;place-items:center;font-family:"Cinzel",serif;font-weight:700;font-size:50px;letter-spacing:.3em;padding-left:.3em;
+  color:#efe2ff;text-shadow:0 0 16px #9b5cff,0 0 44px #6a2cff,0 0 90px #4a10c0}
+.unlocking[data-skin="abyss"] .blackout{animation:cerDark 2.6s ease-out both}
+.unlocking[data-skin="abyss"] canvas.gl{z-index:6}   /* the deep lights up ABOVE the dark */
+@keyframes cerDark{0%{opacity:0}10%{opacity:.97}40%{opacity:.9}100%{opacity:0}}
+.unlocking[data-skin="bloodmoon"] .moon{animation:bleed 2.6s ease-in-out both}
+.unlocking[data-skin="bloodmoon"] .moon::after{animation:eclipse 2.6s ease-in-out both}
+/* backdrop-filter recolours the painted moon underneath: pale, then it bleeds */
+@keyframes bleed{0%{backdrop-filter:saturate(0) brightness(1.6)}55%{backdrop-filter:saturate(0) brightness(1.3)}75%{backdrop-filter:saturate(1.8) brightness(1.3)}100%{backdrop-filter:none}}
+@keyframes eclipse{0%{transform:translateX(130%)}50%{transform:translateX(0)}100%{transform:translateX(-130%)}}
+.unlocking[data-skin="bloodmoon"] .flash{background:#e0514a;animation:cerFlash 2.6s ease-out both}
+.unlocking[data-skin="whiteout"] .flash{animation:cerFlash 2.6s ease-out both}
+.unlocking[data-skin="whiteout"] .blackout{background:#0a2a40;animation:cerDim 2.6s both}   /* a dark beat so the white flash lands */
+@keyframes cerDim{0%,52%{opacity:0}58%{opacity:.55}62%{opacity:0}}
+@keyframes cerFlash{0%,58%{opacity:0}63%{opacity:.85}100%{opacity:0}}
+.unlocking[data-skin="monarch"] .arise{animation:arise 2.6s ease-out both}
+@keyframes arise{0%{opacity:0;letter-spacing:.08em;transform:scale(.9)}22%{opacity:1}72%{opacity:1;letter-spacing:.42em;transform:scale(1)}100%{opacity:0;transform:scale(1.06)}}
+.unlocking .ui{animation:dimUI 2.6s ease-in-out both}
+@keyframes dimUI{0%,100%{opacity:1}30%,60%{opacity:.25}}
+.unlocking[data-skin="monarch"] .ui{animation-name:dimUIdeep}   /* ARISE must not double-expose over Cinzel boss text */
+@keyframes dimUIdeep{0%,100%{opacity:1;filter:none}30%,60%{opacity:0;filter:blur(2px)}}
+
+.reveal{position:absolute;inset:0;z-index:6;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.6)}
+.reveal[hidden]{display:none!important}
+[data-skin="whiteout"] .reveal{background:rgba(214,226,235,.72);backdrop-filter:blur(3px)}
+.rcard{width:100%;background:var(--panel);border:1px solid var(--hl);border-radius:var(--rad,12px);padding:18px 16px;text-align:center;display:grid;gap:9px;
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--hl) 18%,transparent),0 18px 46px rgba(0,0,0,.55);animation:rin .42s cubic-bezier(.2,.9,.25,1.15) both}
+.rcard .chip{justify-self:center}
+.rname{font-family:var(--face);font-weight:var(--faceW);font-style:var(--faceStyle);letter-spacing:var(--faceTrack);font-size:calc(var(--faceSize) * 1.35);color:var(--fg);line-height:1}
+[data-skin="monarch"] .rname{background:linear-gradient(180deg,#fff6d6,#f0cb5e 62%,#b8862a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.rline{font-family:var(--f-sys);font-size:12px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+.rcard p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.5;text-wrap:pretty}
+[data-skin="bloodmoon"] .rcard{box-shadow:6px 6px 0 rgba(0,0,0,.7),0 18px 46px rgba(0,0,0,.55)}
+@keyframes rin{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.rcard{animation:none}}
+
+.cta{appearance:none;cursor:pointer;font-family:var(--f-sys);font-weight:700;font-size:15px;letter-spacing:.14em;text-transform:uppercase;
+  background:transparent;color:var(--mark);border:1px solid var(--mark);border-radius:4px;min-height:48px;padding:0 16px}
+.cta:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.cta:active{transform:scale(.98)}
+.note{border-top:1px solid var(--rule);padding-top:14px;display:grid;gap:6px}
+.note p{margin:0;color:var(--dim);font-size:13.5px;line-height:1.55}
+.note .fx{color:var(--ink);font-size:14.5px}
+.hint{font-family:var(--f-sys);font-size:12px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;text-align:center;margin-top:-8px}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Ascend &middot; Rank unlockables</div>
+    <h1>The Theme Vault</h1>
+    <p class="sub">Each rank opens a new place to stand. Slide your level to see what is locked, tap any theme to try it, then play its unlock.</p>
+  </header>
+
+  <div class="lvrow">
+    <label for="lv">Your level</label>
+    <input id="lv" type="range" min="1" max="61" value="22" aria-describedby="lvOut">
+    <output id="lvOut">LV 22</output>
+  </div>
+
+  <div class="vault" id="vault"></div>
+
+  <div class="phone" id="phone" data-skin="mistveil">
+    <div class="back" aria-hidden="true">
+      <div class="plate"></div><div class="fog"></div>
+      <div class="scene">
+        <div data-s="bloodmoon"><div class="moon"></div></div>
+      </div>
+    </div>
+
+    <div class="ui">
+      <div class="hunter">
+        <div class="rk" id="rk">C</div>
+        <div><div class="hn">Bloodied_Fiend</div><div class="xp"><i></i></div><div class="meta" id="lvMeta">LV 22 &middot; 1,240 / 2,000 XP</div></div>
+      </div>
+      <div class="sys">
+        <div class="orn gilt" aria-hidden="true"></div>
+        <div class="orn crack" aria-hidden="true"><svg viewBox="0 0 92 70"><path d="M92 0 69 13 75 22 57 29 63 38 43 47 61 36 55 28 73 20 67 12Z" fill="#e0514a" opacity=".7"/></svg></div>
+        <span class="chip">[ WEEKLY BOSS ]</span>
+        <div class="boss">Hollow Scholar</div>
+        <div class="meta">Targets your weakest stat &middot; Intellect 30</div>
+        <div class="hp"><i></i></div>
+        <div class="pips">
+          <div class="pip" style="color:var(--str)">STR</div><div class="pip" style="color:var(--vit)">VIT</div>
+          <div class="pip" style="color:var(--agi)">AGI</div><div class="pip" style="color:var(--int)">INT</div>
+          <div class="pip" style="color:var(--per)">PER</div>
+        </div>
+        <div class="acts"><div class="btn solid">Accept</div><div class="btn">Later</div></div>
+      </div>
+      <div class="card">
+        <b>Warden's Gear Tooth</b>
+        <small>Sheared clean off the wheel. The fracture at the root has not finished cooling.</small>
+        <div class="rar"><span style="background:var(--rar1)"></span><span style="background:var(--rar2)"></span><span style="background:var(--rar3)"></span><span style="background:var(--rar4)"></span></div>
+      </div>
+    </div>
+
+    <canvas class="gl" aria-hidden="true"></canvas>
+    <canvas class="pt" aria-hidden="true"></canvas>
+    <div class="cer" aria-hidden="true"><div class="blackout"></div><div class="flash"></div><div class="arise">ARISE</div></div>
+
+    <div class="reveal" id="reveal" hidden role="dialog" aria-modal="true" aria-labelledby="rName">
+      <div class="rcard">
+        <span class="chip">[ THEME UNLOCKED ]</span>
+        <div class="rline" id="rRank">Re-assessment complete &middot; B-Rank</div>
+        <div class="rname" id="rName">Bloodmoon</div>
+        <p id="rFx">A red moon sits low behind the System, and ash falls.</p>
+        <div class="acts"><button class="btn solid" id="rEquip" type="button">Equip</button><button class="btn" id="rLater" type="button">Later</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="hint">Drag or tap inside the phone &mdash; the weather answers</div>
+
+  <button class="cta" id="playUnlock" type="button">Play the unlock for this theme</button>
+
+  <div class="note">
+    <p class="fx" id="fxOut"></p>
+    <p id="descOut"></p>
+  </div>
+</div>
+
+<script>
+const SKINS = [
+  { k:"mistveil", hl:"#9fe8cf",  n:"Mistveil",  r:"D-Rank", lv:9,  face:"'Cormorant Garamond',Georgia,serif", fs:"italic", fw:600,
+    sw:"url(themes/mistveil.webp) top center/cover",
+    fx:"Smoke rolls through a dead pine wood and across the UI itself. Touch it and it parts.",
+    d:"An italic serif for names, dashed System chips, one lantern left burning. Unlock: the smoke swallows the screen, then lets you back out." },
+  { k:"abyss", hl:"#36e0d0",     n:"Abyss",     r:"C-Rank", lv:17, face:"'Exo 2',sans-serif", fs:"normal", fw:300,
+    sw:"url(themes/abyss.webp) top center/cover",
+    fx:"Caustic light from a surface far above ripples over everything. Tap it and the water rings.",
+    d:"Jellies drift over a reef ridge, bubbles rise, pill-shaped controls, a System window that glows like something alive. Unlock: the lights go out, then the deep lights up." },
+  { k:"bloodmoon", hl:"#e0514a", n:"Bloodmoon", r:"B-Rank", lv:25, face:"'Grenze Gotisch',Georgia,serif", fs:"normal", fw:800,
+    sw:"url(themes/bloodmoon.webp) top center/cover",
+    fx:"A cratered moon hangs too close over a ruined skyline. Red cloud drags across it; ash falls, embers rise.",
+    d:"Blackletter names, hard square panels with cut shadows, a crack in the System window, grain over everything. Unlock: an eclipse turns the moon to blood." },
+  { k:"monarch", hl:"#f0cb5e",   n:"Monarch",   r:"A-Rank", lv:33, face:"'Cinzel',Georgia,serif", fs:"normal", fw:700,
+    sw:"url(themes/monarch.webp) top center/cover",
+    fx:"An empty throne under gold light. Your shadow army waits in front of it, and violet shadow-fire climbs the screen.",
+    d:"Carved Roman capitals in gilt, filigree corners, gold dust rising. Unlock: ARISE - the army stands and the fire takes the screen." },
+  { k:"whiteout", hl:"#0a6ea8",  n:"Whiteout",  r:"S-Rank", lv:41, face:"'Michroma',sans-serif", fs:"normal", fw:400,
+    sw:"url(themes/whiteout.webp) top center/cover",
+    fx:"A three-depth blizzard over ice peaks, and real frost crystals growing in from the edges of the glass.",
+    d:"The one light theme you have to earn. A cold wide machine face, frosted-glass panels. Unlock: frost seals the screen, then shatters." },
+];
+
+const $ = id => document.getElementById(id);
+const phone=$("phone"), vault=$("vault"), lv=$("lv"), lvOut=$("lvOut"), reveal=$("reveal");
+const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const Q = new URLSearchParams(location.search);
+let current = "mistveil";
+
+/* ---------- painted scenes, generated so the SVG stays small ---------- */
+function rng(seed){ let s=seed; return () => (s = (s*9301 + 49297) % 233280) / 233280; }
+(function paintScenes(){
+
+
+
+  const corner = `<svg viewBox="0 0 44 44"><path d="M1 30V1h29M5 22V5h17M1 1l9 9" fill="none" stroke="#f0cb5e" stroke-width="1.2"/><path d="M5 22q0 8 7 9q-3-6 2-8M22 5q8 0 9 7q-6-3-8 2" fill="none" stroke="#f0cb5e" stroke-width="1"/><circle cx="10" cy="10" r="1.8" fill="#f0cb5e"/></svg>`;
+  document.querySelector(".orn.gilt").innerHTML = ["tl","tr","bl","br"].map(c => corner.replace("<svg", `<svg class="${c}"`)).join("");
+})();
+
+/* ---------- front weather: one WebGL context, five programs compiled on first view ---------- */
+const HEAD = `#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+uniform vec2 res;uniform float t;uniform vec3 ptr;uniform vec3 rip;uniform float rv;uniform vec4 m0;uniform vec4 m1;uniform vec4 m2;uniform float uik;uniform vec2 lamp;
+float h(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
+float n(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.-2.*f);
+  return mix(mix(h(i),h(i+vec2(1,0)),u.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),u.x),u.y);}
+float fbm(vec2 p){float v=0.,a=.5;mat2 m=mat2(1.6,1.2,-1.2,1.6);for(int i=0;i<5;i++){v+=a*n(p);p=m*p;a*=.5;}return v;}
+float fbm3(vec2 p){float v=0.,a=.5;mat2 m=mat2(1.6,1.2,-1.2,1.6);for(int i=0;i<3;i++){v+=a*n(p);p=m*p;a*=.5;}return v;}
+/* falling edge: 1 at or below b, 0 at or above a. smoothstep with edge0 > edge1 is undefined in GLSL ES, so never write it reversed. */
+float ds(float a,float b,float x){return 1.-smoothstep(b,a,x);}
+float bump(){return smoothstep(0.,.35,rv)*(1.-smoothstep(.62,1.,rv));}   /* unlock ceremony: rises, holds, falls */
+float box(vec2 uv,vec4 r){vec2 e=vec2(.012);return smoothstep(r.x-e.x,r.x+e.x,uv.x)*ds(r.z+e.x,r.z-e.x,uv.x)*smoothstep(r.y-e.y,r.y+e.y,uv.y)*ds(r.w+e.y,r.w-e.y,uv.y);}
+float K;
+vec4 fx();
+/* weather is drawn in front of the UI, but thinned over the panels (uik) so text holds; the ceremony lifts that */
+void main(){vec2 uv=gl_FragCoord.xy/res;K=max(box(uv,m0),max(box(uv,m1),box(uv,m2)));
+  gl_FragColor=fx()*mix(1.,mix(uik,1.,bump()),K);}
+`;
+const FS = {
+/* Mistveil: fbm warped through itself twice (domain warping) - the warp is what makes it curl and tear like
+   real smoke. v5: denser, brighter, drawn in front of the UI, and the finger pushes it aside. */
+mistveil:`vec4 fx(){vec2 uv=gl_FragCoord.xy/res;float asp=res.x/res.y;vec2 p=uv*vec2(asp,1.)*2.2;float s=t*.06;
+  vec2 pd=(uv-ptr.xy)*vec2(asp,1.);float pl=length(pd);
+  p+=pd/(pl+.001)*ptr.z*.32*exp(-pl*5.);
+  vec2 q=vec2(fbm3(p+vec2(0.,s)),fbm3(p+vec2(5.2,1.3)-s));
+  vec2 r=vec2(fbm3(p+3.2*q+vec2(1.7,9.2)+s*1.6),fbm3(p+3.2*q+vec2(8.3,2.8)-s*1.3));
+  float d=fbm(p+2.6*r+vec2(s*2.4,-s*.6));
+  float low=.22+.95*pow(1.-uv.y,1.4);   /* thin over the painted wood (it has its own fog), heavy low in front of the UI */
+  float dens=smoothstep(.28,.80,d)*low;
+  dens*=mix(1.,smoothstep(.05,.32,pl),ptr.z);
+  float b=bump();dens=mix(dens,.82+.18*d,b);
+  dens=clamp(dens,0.,1.)*mix(.78,.97,b);
+  vec3 col=mix(vec3(.56,.74,.69),vec3(.97,1.,.99),smoothstep(.3,.95,d));
+  col=mix(col,col*vec3(.62,.70,.68),b*(1.-d));                       /* ceremony keeps the smoke's texture */
+  float glow=exp(-length((uv-lamp)*vec2(asp,1.))*9.)*b*.9;            /* the lantern burns through */
+  col*=mix(1.,.55,K*(1.-b));                                          /* dimmer over panels: bright smoke over text cannot hold AA */
+  return vec4(col*dens+vec3(1.,.86,.55)*glow,max(dens,glow*.6));}`,
+/* Abyss: iterated sin-warp caustics (after Dave Hoskins), strongest near the surface; a tap sends a ring
+   through the light. */
+abyss:`float caus(vec2 p,float tt){vec2 i=p;float c=1.;for(int k=0;k<4;k++){float tk=tt*(1.-(3.5/float(k+1)));
+    i=p+vec2(cos(tk-i.x)+sin(tk+i.y),sin(tk-i.y)+cos(tk+i.x));
+    c+=1./length(vec2(1.24/sin(i.x+tk),1.24/cos(i.y+tk)));}
+  c/=4.;c=1.17-pow(c,1.4);return pow(abs(c),8.);}
+vec4 fx(){vec2 uv=gl_FragCoord.xy/res;float asp=res.x/res.y;vec2 a=uv*vec2(asp,1.);
+  vec2 rd=(uv-rip.xy)*vec2(asp,1.);float rl=length(rd);float front=rip.z*.38;
+  float env=exp(-pow((rl-front)*10.,2.))*exp(-rip.z*1.3);
+  a+=rd/(rl+.001)*sin(rl*44.-rip.z*10.)*env*.03;
+  float c=clamp(caus(a*5.6,t*.45),0.,1.4);
+  float mask=.25+.75*pow(uv.y,1.2);
+  float b=bump();
+  float v=c*mask*(1.+1.6*b)+env*.30;
+  vec3 col=mix(vec3(.18,.72,.84),vec3(.78,1.,.96),clamp(c,0.,1.));
+  float al=clamp(v*1.5,0.,mix(.75,.6,b));   /* the painted jelly stays the brightest thing in the ceremony */
+  return vec4(col*al,al);}`,
+/* Bloodmoon: red cloud dragged sideways across the screen (and the moon), a heavy vignette, moving grain. */
+bloodmoon:`vec4 fx(){vec2 uv=gl_FragCoord.xy/res;float asp=res.x/res.y;vec2 a=uv*vec2(asp,1.);
+  vec2 p=a*vec2(1.3,3.)+vec2(t*.035,0.);
+  float d=fbm(p+vec2(fbm3(p*1.4+vec2(0.,t*.02))*1.6,0.));
+  float zone=smoothstep(.62,.80,uv.y)*ds(1.,.86,uv.y)*.9+ds(.30,.0,uv.y)*.85+.12;
+  float b=bump();
+  float cl=smoothstep(.48,.88,d)*zone*(1.+.8*b);
+  vec3 col=mix(vec3(.30,.02,.03),vec3(.95,.32,.24),smoothstep(.5,1.,d));
+  float vg=smoothstep(.50,1.08,length((uv-vec2(.5,.55))*vec2(asp*1.1,1.)));
+  float gr=(h(gl_FragCoord.xy+floor(t*12.)*7.13)-.5)*.06;
+  float al=clamp(cl*.55+vg*.52+b*.18,0.,.9);
+  return vec4(col*cl*.55+vec3(max(gr,0.)),al+abs(gr)*.5);}`,
+/* Monarch: violet shadow-fire advected up from the bottom edge, gold rays from above. The ceremony lifts
+   the fire's ceiling until it takes the screen. */
+monarch:`vec4 fx(){vec2 uv=gl_FragCoord.xy/res;float asp=res.x/res.y;vec2 a=uv*vec2(asp,1.);vec2 p=a*3.2;
+  float w=fbm3(p*1.6+vec2(0.,-t*.9));
+  float d=fbm(p+vec2(w*1.3,-t*.55));
+  float b=bump();
+  float top=.24+.80*b;
+  float f=ds(top,0.,uv.y-(d-.5)*.42);
+  f*=smoothstep(.25,.65,d)+.15*b;
+  vec3 col=mix(vec3(.16,.03,.32),vec3(.68,.38,1.),clamp(f*d*1.4,0.,1.));
+  float al=clamp(f*.80,0.,.88);
+  return vec4(col*al,al);}`,
+/* Whiteout: cellular (voronoi) crystal edges at two scales, masked to a ragged band that grows in from
+   the glass edges and breathes. The ceremony grows it across the whole screen. */
+whiteout:`vec2 vor(vec2 x){vec2 i=floor(x),f=fract(x);float f1=8.,f2=8.;
+  for(int j=-1;j<=1;j++)for(int k=-1;k<=1;k++){vec2 g=vec2(float(k),float(j));vec2 o=vec2(h(i+g),h(i+g+19.7));
+    vec2 r=g+o-f;float dd=dot(r,r);if(dd<f1){f2=f1;f1=dd;}else if(dd<f2){f2=dd;}}
+  return vec2(sqrt(f1),sqrt(f2));}
+vec4 fx(){vec2 uv=gl_FragCoord.xy/res;float asp=res.x/res.y;vec2 a=uv*vec2(asp,1.);
+  float dx=min(a.x,asp-a.x),dy=min(uv.y,1.-uv.y);float ed=min(dx,dy);
+  ed+=(fbm3(a*5.)-.5)*.10;
+  float b=smoothstep(0.,.35,rv)*(1.-step(.63,rv));                     /* frost snaps off under the flash */
+  float corner=ds(.30,.05,max(dx,dy));                                 /* deep in the corners, thin mid-edge, so the sky stays sky */
+  float grow=.035+.10*corner+.015*sin(t*.35)+b*.85;
+  float m=ds(grow,grow-.07,ed);
+  m*=mix(1.,.35,smoothstep(.55,.75,uv.y)*(1.-b));                     /* keep it off the painted sky */
+  vec2 v=vor(a*14.);float line=1.-smoothstep(0.,.09,v.y-v.x);
+  vec2 v2=vor(a*38.+3.);float fine=1.-smoothstep(0.,.08,v2.y-v2.x);
+  float frost=m*(.30+.55*line+.40*fine);
+  vec3 col=mix(vec3(.93,.97,1.),vec3(.50,.68,.82),line*.55);
+  col=mix(col,vec3(1.),(1.-smoothstep(0.,.05,abs(ed-grow+.035)))*.8);   /* a glinting growth front */
+  float al=clamp(frost*.85,0.,.92);
+  return vec4(col*al,al);}`,
+};
+
+const weather = (() => {
+  const cv = phone.querySelector("canvas.gl");
+  const gl = cv.getContext("webgl", { premultipliedAlpha:true, antialias:false, alpha:true });
+  if (!gl) { phone.classList.add("nogl"); return null; }
+  let progs = {}, lost = false;
+  const init = () => { progs = {};
+    const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0); };
+  init();
+  /* mobile Safari can drop the context under memory pressure: fall back to CSS fog, rebuild on restore */
+  cv.addEventListener("webglcontextlost", e => { e.preventDefault(); lost = true; phone.classList.add("nogl"); });
+  cv.addEventListener("webglcontextrestored", () => { lost = false; init(); phone.classList.remove("nogl"); });
+  const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+  const prog = k => {
+    if (k in progs) return progs[k];
+    try {
+      const p = gl.createProgram();
+      gl.attachShader(p, sh(gl.VERTEX_SHADER, "attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}"));
+      gl.attachShader(p, sh(gl.FRAGMENT_SHADER, HEAD + FS[k]));
+      gl.bindAttribLocation(p, 0, "a"); gl.linkProgram(p);
+      if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+      const u = {}; for (const nm of ["res","t","ptr","rip","rv","m0","m1","m2","uik","lamp"]) u[nm] = gl.getUniformLocation(p, nm);
+      return progs[k] = { p, u };
+    } catch (e) { console.warn("weather shader failed for " + k, e); if (k === "mistveil") phone.classList.add("nogl"); return progs[k] = null; }
+  };
+  const SCALE = 0.45;
+  const UIK = { mistveil:.55, abyss:.30, bloodmoon:.35, monarch:.30, whiteout:.40 };   // weather kept over panels
+  const rects = () => { const pb = phone.getBoundingClientRect();
+    return [".hunter",".sys",".card"].map(q => { const b = phone.querySelector(q).getBoundingClientRect();
+      return [(b.left-pb.left)/pb.width, 1-(b.bottom-pb.top)/pb.height, (b.right-pb.left)/pb.width, 1-(b.top-pb.top)/pb.height]; }); };
+  let R = rects();
+  const size = () => { const b = cv.getBoundingClientRect();
+    cv.width = Math.max(1, b.width * SCALE | 0); cv.height = Math.max(1, b.height * SCALE | 0); gl.viewport(0, 0, cv.width, cv.height); };
+  size(); if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => { size(); R = rects(); }).observe(cv);
+  const ptr = { x:.5, y:.5, z:0, tz:0 }, rip = { x:.5, y:.5, age:9 };
+  let rv = 0, rvStart = -1, rvDur = 2600;
+  const t0 = performance.now();
+  const draw = (now, sec) => {
+    if (lost) return;
+    const P = prog(phone.dataset.skin);
+    gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
+    if (!P) return;
+    gl.useProgram(P.p);
+    gl.uniform2f(P.u.res, cv.width, cv.height); gl.uniform1f(P.u.t, sec);
+    gl.uniform3f(P.u.ptr, ptr.x, ptr.y, ptr.z); gl.uniform3f(P.u.rip, rip.x, rip.y, rip.age); gl.uniform1f(P.u.rv, rv);
+    gl.uniform4f(P.u.m0, ...R[0]); gl.uniform4f(P.u.m1, ...R[1]); gl.uniform4f(P.u.m2, ...R[2]); gl.uniform1f(P.u.uik, UIK[phone.dataset.skin] ?? 1);
+    { const pb = phone.getBoundingClientRect(); gl.uniform2f(P.u.lamp, .712, 1 - .2435 * pb.width * 1928/1080 / pb.height); }
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  };
+  let last = 0, lastSec = 0;
+  const frame = now => {
+    const sec = (now - t0) / 1000 + 37, dt = Math.min(.1, sec - lastSec); lastSec = sec;
+    ptr.z += (ptr.tz - ptr.z) * Math.min(1, dt * 6); ptr.tz = Math.max(0, ptr.tz - dt * .9);
+    rip.age += dt;
+    rv = rvStart < 0 ? 0 : Math.min(1, (now - rvStart) / rvDur); if (rv >= 1) rvStart = -1;
+    draw(now, sec);
+  };
+  return {
+    frame, still: () => draw(0, 37),
+    point(x, y, tap) { ptr.x = x; ptr.y = y; ptr.tz = 1; if (tap) { rip.x = x; rip.y = y; rip.age = 0; } },
+    reveal(ms) { prog(phone.dataset.skin); rvDur = ms; rvStart = performance.now(); },
+    /* compile every program while idle so no first view or ceremony stalls on a shader link */
+    warm() { const ks = Object.keys(FS); const next = () => { const k = ks.shift(); if (!k) return; if (!lost) prog(k);
+      (window.requestIdleCallback || (f => setTimeout(f, 200)))(next); }; next(); },
+  };
+})();
+
+/* ---------- front particles: one 2D canvas, re-seeded per skin ---------- */
+const FIELDS = {
+  mistveil: [{ n:14, kind:"fly",    color:"210,255,225", vy:[-0.06,0.06], vx:[-0.10,0.10], r:[1.0,1.8], glow:5, wobble:60 }],
+  abyss:    [{ n:24, kind:"bubble", color:"190,245,255", vy:[-0.55,-0.18], vx:[-0.05,0.05], r:[1.2,3.6], glow:0, wobble:28 },
+             { n:26, kind:"dot",    color:"150,240,230", vy:[-0.20,-0.06], vx:[-0.06,0.06], r:[0.5,1.2], glow:4, wobble:30 }],
+  bloodmoon:[{ n:44, kind:"dot",    color:"200,170,165", vy:[0.18,0.50],  vx:[-0.16,0.04], r:[0.5,1.5], glow:0, wobble:22 },
+             { n:12, kind:"dot",    color:"255,140,80",  vy:[-0.50,-0.20], vx:[-0.10,0.12], r:[0.7,1.6], glow:5, wobble:16 }],
+  monarch:  [{ n:28, kind:"dot",    color:"245,215,130", vy:[-0.28,-0.08], vx:[-0.06,0.10], r:[0.5,1.7], glow:5, wobble:26 },
+             { n:10, kind:"dot",    color:"190,140,255", vy:[-0.70,-0.30], vx:[-0.06,0.06], r:[0.8,1.6], glow:6, wobble:12 }],
+  whiteout: [{ n:46, kind:"snow",   color:"255,255,255", vy:[0.25,0.50],  vx:[-0.50,-0.20], r:[0.6,1.1], glow:0, wobble:16, a:[.35,.6] },
+             { n:30, kind:"snow",   color:"255,255,255", vy:[0.50,1.00],  vx:[-1.00,-0.45], r:[1.1,2.0], glow:0, wobble:14, a:[.55,.85] },
+             { n:9,  kind:"snow",   color:"255,255,255", vy:[1.20,2.00],  vx:[-2.20,-1.20], r:[2.6,4.0], glow:0, wobble:10, a:[.30,.50] }],
+};
+const rnd = ([a,b]) => a + Math.random() * (b - a);
+const motes = (() => {
+  const cv = phone.querySelector("canvas.pt"), g = cv.getContext("2d");
+  const dpr = Math.min(2, window.devicePixelRatio || 1); let W=1, H=1, P=[], spec=[], last=0;
+  const spawn = (c, seed) => ({ c, x:Math.random()*W, y: seed ? Math.random()*H : (c.vy[0] < 0 ? H+10 : -10),
+    vx:rnd(c.vx)*dpr, vy:rnd(c.vy)*dpr, r:rnd(c.r)*dpr, life:Math.random()*1000, a: c.a ? rnd(c.a) : .25+Math.random()*.75 });
+  const seed = k => { spec = FIELDS[k] || []; P = spec.flatMap(c => Array.from({ length:c.n }, () => spawn(c, true))); };
+  /* resize rescales existing particles instead of re-seeding them, so a layout shift does not visibly reset the field */
+  const size = () => { const b = cv.getBoundingClientRect(), w = Math.max(1, b.width*dpr|0), h = Math.max(1, b.height*dpr|0);
+    for (const p of P) { p.x *= w / W; p.y *= h / H; } W = cv.width = w; H = cv.height = h; };
+  const paint = () => { g.clearRect(0,0,W,H);
+    for (const p of P) { const c = p.c, a = c.kind === "fly" ? p.a * (.35 + .65 * Math.abs(Math.sin(p.life / 40))) : p.a;
+      if (c.glow) { g.fillStyle = `rgba(${c.color},${a*.16})`; g.beginPath(); g.arc(p.x, p.y, p.r * c.glow * .8, 0, 6.283); g.fill(); }
+      if (c.kind === "bubble") { g.strokeStyle = `rgba(${c.color},${a*.7})`; g.lineWidth = dpr*.8; g.beginPath(); g.arc(p.x, p.y, p.r, 0, 6.283); g.stroke();
+        g.fillStyle = `rgba(255,255,255,${a*.8})`; g.beginPath(); g.arc(p.x - p.r*.35, p.y - p.r*.35, p.r*.22, 0, 6.283); g.fill(); continue; }
+      if (c.kind === "snow") { g.fillStyle = `rgba(70,110,140,${a*.35})`; g.beginPath(); g.arc(p.x, p.y, p.r + dpr*.7, 0, 6.283); g.fill(); }
+      g.fillStyle = `rgba(${c.color},${a})`; g.beginPath(); g.arc(p.x, p.y, p.r, 0, 6.283); g.fill(); } };
+  const step = k => { for (const p of P) { const c = p.c; p.life += k;
+      p.x += (p.vx + Math.sin(p.life / c.wobble) * .22 * dpr) * k; p.y += p.vy * k;
+      if (p.y < -14 || p.y > H+14 || p.x < -14 || p.x > W+14) Object.assign(p, spawn(c, false)); } };
+  size(); if (typeof ResizeObserver !== "undefined") new ResizeObserver(size).observe(cv);
+  return { seed, paint, frame(now) { const k = last ? Math.min(3, (now - last) / 16.67) : 1; last = now; step(k); paint(); }, reset() { last = 0; } };
+})();
+
+/* ---------- one loop for both layers, ~30fps, stopped when the tab is hidden or the phone is off screen ---------- */
+let onScreen = true, rafId = 0, lastTick = 0;
+const running = () => !RM && !document.hidden && onScreen;
+const tick = now => { rafId = 0; if (!running()) return; rafId = requestAnimationFrame(tick);
+  if (now - lastTick < 33) return; lastTick = now; weather && weather.frame(now); motes.frame(now); };
+const wake = () => { if (!rafId && running()) { motes.reset(); rafId = requestAnimationFrame(tick); } };
+document.addEventListener("visibilitychange", wake);
+if (typeof IntersectionObserver !== "undefined") new IntersectionObserver(es => { onScreen = es[0].isIntersecting; wake(); }).observe(phone);
+
+const ptrAt = e => { const b = phone.getBoundingClientRect(); return [(e.clientX - b.left) / b.width, 1 - (e.clientY - b.top) / b.height]; };
+phone.addEventListener("pointermove", e => { if (weather && !reveal.contains(e.target)) weather.point(...ptrAt(e), false); });
+phone.addEventListener("pointerdown", e => { if (weather && !reveal.contains(e.target)) weather.point(...ptrAt(e), true); });
+
+/* ---------- vault + phone ---------- */
+const RANK = L => L >= 41 ? "S" : L >= 33 ? "A" : L >= 25 ? "B" : L >= 17 ? "C" : L >= 9 ? "D" : "E";
+function renderVault() {
+  const L = +lv.value; lvOut.textContent = "LV " + L;
+  $("rk").textContent = RANK(L); $("lvMeta").textContent = "LV " + L + " · 1,240 / 2,000 XP";
+  vault.innerHTML = SKINS.map((s,i) => {
+    const prev = i ? SKINS[i-1].lv : 1, open = L >= s.lv, togo = s.lv - L;
+    const pct = open ? 100 : Math.max(0, Math.min(100, (L - prev) / (s.lv - prev) * 100));
+    return `<button class="slot ${open?"":"locked"}" type="button" data-k="${s.k}" aria-pressed="${s.k===current}"
+        aria-label="${s.n}, ${open?"unlocked":"locked, "+togo+" levels to "+s.r}">
+      <span class="sw" style="background:${s.sw}"><b style="font-family:${s.face};font-style:${s.fs};font-weight:${s.fw};color:${s.hl}">${s.r[0]}</b></span>
+      <span><span class="nm" style="font-family:${s.face};font-style:${s.fs};font-weight:${s.fw}">${s.n}</span>
+        <span class="rq">${open ? s.r + " &middot; unlocked" : "Locked &middot; " + togo + " LV to " + s.r}</span></span>
+      <span class="st">${s.k===current ? "Viewing" : open ? "Try" : "Preview"}</span>
+      ${open ? "" : `<span class="prog" aria-hidden="true"><i style="width:${pct}%"></i></span>`}
+    </button>`; }).join("");
+}
+
+function show(k) {
+  const s = SKINS.find(x => x.k === k) || SKINS[0];
+  current = s.k; phone.dataset.skin = s.k;
+  $("fxOut").textContent = s.n + ": " + s.fx;
+  $("descOut").textContent = s.d;
+  renderVault(); motes.seed(s.k);
+  if (RM) { weather && weather.still(); motes.paint(); }
+  try { localStorage.setItem("ascend-vault-skin", s.k); } catch (e) {}
+}
+
+let cerTimer = 0;
+function openCard() {
+  const s = SKINS.find(x => x.k === current);
+  $("rRank").textContent = "Re-assessment complete · " + s.r;
+  $("rName").textContent = s.n;
+  $("rFx").textContent = s.fx;
+  reveal.hidden = true; void reveal.offsetWidth; reveal.hidden = false;   // restart the entrance
+  $("rEquip").focus();
+}
+function playUnlock() {
+  clearTimeout(cerTimer); reveal.hidden = true;
+  if (RM) return openCard();
+  phone.classList.remove("unlocking"); void phone.offsetWidth; phone.classList.add("unlocking");
+  weather && weather.reveal(2600);
+  cerTimer = setTimeout(() => { phone.classList.remove("unlocking"); openCard(); }, 2600);
+}
+const closeReveal = () => { reveal.hidden = true; $("playUnlock").focus(); };
+
+vault.addEventListener("click", e => { const b = e.target.closest(".slot"); if (b) show(b.dataset.k); });
+lv.addEventListener("input", renderVault);
+$("playUnlock").addEventListener("click", playUnlock);
+$("rEquip").addEventListener("click", closeReveal);
+$("rLater").addEventListener("click", closeReveal);
+reveal.addEventListener("keydown", e => { if (e.key === "Escape") closeReveal();
+  if (e.key === "Tab") { e.preventDefault(); (document.activeElement === $("rEquip") ? $("rLater") : $("rEquip")).focus(); } });
+
+/* ?skin=&lv=&unlock=1 drive the preview for captures */
+let start = "mistveil";
+try { const v = localStorage.getItem("ascend-vault-skin"); if (SKINS.some(s => s.k === v)) start = v; } catch (e) {}
+if (SKINS.some(s => s.k === Q.get("skin"))) start = Q.get("skin");
+if (Q.get("lv")) lv.value = Q.get("lv");
+show(start); wake(); weather && weather.warm();
+if (Q.get("unlock")) playUnlock();
+</script>

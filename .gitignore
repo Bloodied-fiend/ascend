@@ -1,2 +1,5 @@
 backend/node_modules/
 backend/dist/
+
+# Theme Vault full-res originals (~11.8 MB) stay local; public repo gets the WebPs
+dev/art/themes/src/
