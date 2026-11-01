@@ -2,7 +2,36 @@
 // Both guard against the same defect class: a lost newline that lets a trailing // comment
 // swallow the statements after it. Three shipped instances are pinned here: v29, v32, and the
 // bossStat restore that had been dead since v28 (found 2026-10-24 while wiring the boss art).
+// A fourth, S.rev in load() (dead since 1.037, found 2026-11-01), added the static scan below.
+import { readFileSync } from "node:fs";
+
+// Flags a // comment whose text runs straight into code: a lowercase/closing char glued to
+// `Name.prop=` or `if(`/`for(`/`const(`/`let(`. Catches the S.rev instance at both commits that
+// had it and is clean on the commit before. shortcut: regex, not a JS parser; upgrade if it ever false-positives.
+export function swallowedCode(src) {
+  const hits = [];
+  src.split("\n").forEach((l, i) => {
+    const m = l.match(/(?:^|[\s;{}])\/\/(.*)$/);
+    if (m && /[a-z0-9.)\]]([A-Z]\w*\.[\w$]+\s*=[^=]|(?:if|for|const|let)\()/.test(m[1])) hits.push(i + 1);
+  });
+  return hits;
+}
+
 export async function runAssess({ ev, boot, check, KEY, base, wait }) {
+  {
+    const hits = swallowedCode(readFileSync(new URL("../ascend.html", import.meta.url), "utf8"));
+    check("no // comment in ascend.html swallows the code after it", hits.length === 0, JSON.stringify(hits));
+  }
+  // S.rev instance: the debt-ceiling comment ran into `S.rev=...`, so load() never restored the
+  // save's revision and every pull() re-adopted a save it already had.
+  // Boot saves (and mints a new rev), so drive load() through the cross-tab storage path,
+  // which adopts and renders without saving.
+  {
+    await boot(KEY, base);
+    const rev = await ev(`(()=>{const sv=JSON.parse(localStorage.getItem(${JSON.stringify(KEY)}));sv.rev="pinrev123";
+      dispatchEvent(new StorageEvent("storage",{key:${JSON.stringify(KEY)},newValue:JSON.stringify(sv)}));return __ascend.S.rev})()`);
+    check("a save adopted from another tab keeps its rev", rev === "pinrev123", JSON.stringify(rev));
+  }
   // v28 instance: the comment on the bossDown line ran straight into `S.bossStat=STATS[...]`, so the
   // saved boss was never restored and bossK() fell back to weakest() on every load -- the weekly boss
   // was not fixed for the week at all.
