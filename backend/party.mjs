@@ -69,8 +69,8 @@ async function board(me) {
 }
 
 // ponytail: best-effort per-key limiter in one warm instance's memory; a scripted flood across cold starts still costs invocations
-const hits = new Map();
-const limited = (k, max = PER_KEY_PER_MIN) => { const now = Date.now(), h = hits.get(k); if (!h || now - h.t > 60e3) { hits.set(k, { t: now, n: 1 }); if (hits.size > 5000) hits.clear(); return false; } return ++h.n > max; };
+const hits = new Map(), admHits = new Map(); // admin guesses get their own Map: a flood of throwaway keys clearing `hits` must not reset them
+const limited = (k, max = PER_KEY_PER_MIN, m = hits) => { const now = Date.now(), h = m.get(k); if (!h || now - h.t > 60e3) { m.set(k, { t: now, n: 1 }); if (m.size > 5000) m.clear(); return false; } return ++h.n > max; };
 
 const asInt = (v, lo, hi, d) => (Number.isInteger(v) && v >= lo && v <= hi ? v : d);
 
@@ -176,7 +176,7 @@ async function pushOp(b, kh) {
 
 async function adminOp(b, ip) {
   if (!ADMIN_SALT || !ADMIN_KEY) return [400, { error: "op" }];
-  if (limited("adm:" + ip, 3)) return [429, { error: "slow down" }];   // 3 guesses a minute per address
+  if (limited("adm:" + ip, 3, admHits)) return [429, { error: "slow down" }];   // 3 guesses a minute per address
   const pw = typeof b.pw === "string" ? b.pw.slice(0, 200) : "";
   if (!timingSafeEqual(scryptSync(pw, Buffer.from(ADMIN_SALT, "hex"), 32), Buffer.from(ADMIN_KEY, "hex"))) return [403, { error: "wrong password" }];
   await init();

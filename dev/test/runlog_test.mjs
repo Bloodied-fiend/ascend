@@ -4,7 +4,8 @@
 //   node dev/test/runlog_test.mjs <fresh-profile-dir> <url>
 import { spawn } from "node:child_process"; import { setTimeout as wait } from "node:timers/promises";
 const [prof, url] = process.argv.slice(2);
-const dk = o => { const d = new Date(Date.now() - 4 * 3600e3); d.setDate(d.getDate() + o); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") };
+let DSH; // the app's day boundary in hours, read from the page after it loads
+const dk = o => { const d = new Date(Date.now() - DSH * 3600e3); d.setDate(d.getDate() + o); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") };
 const res = [], check = (n, ok, info = "") => { res.push(`${ok ? "PASS" : "FAIL"} ${n}${ok ? "" : " " + JSON.stringify(info)}`); };
 
 const c = spawn("C:/Program Files/Google/Chrome/Application/chrome.exe",
@@ -22,7 +23,7 @@ try {
   await s("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await s("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 5 });
   await s("Emulation.setEmitTouchEventsForMouse", { enabled: true, configuration: "mobile" });
-  await s("Page.navigate", { url }); await wait(3000);
+  await s("Page.navigate", { url }); await wait(3000); DSH = await ev("__ascend.S.dsh");
 
   const base = await ev(`(()=>{const s=JSON.parse(JSON.stringify(__ascend.S));Object.assign(s,{onboarded:true,seen:${JSON.stringify(dk(0))},base:"Oct 1",baseKey:${JSON.stringify(dk(0))},name:"Jaime"});delete s.tab;delete s.test;return s})()`);
   const boot = async () => {

@@ -9,7 +9,8 @@ import { spawn } from "node:child_process"; import { setTimeout as wait } from "
 const [prof, url, outDir, skinArg] = process.argv.slice(2);
 const skin = skinArg || "hunter";
 fs.mkdirSync(outDir, { recursive: true });
-const dk = o => { const d = new Date(Date.now() - 4 * 3600e3); d.setDate(d.getDate() + o); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") };
+let DSH; // the app's day boundary in hours, read from the page after it loads
+const dk = o => { const d = new Date(Date.now() - DSH * 3600e3); d.setDate(d.getDate() + o); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") };
 
 const mem = (id, name, lvl, xp, o = {}) => ({ id, name, lvl, xp, tier: o.tier ?? 2, streak: o.streak ?? 9, gates: 3, red: 0, awaken: o.awaken ?? 0, title: o.title ?? null, me: !!o.me, lead: !!o.lead });
 const CACHE = {
@@ -41,7 +42,7 @@ try {
     if (r.result.exceptionDetails) throw new Error(x.slice(0, 90) + " -> " + JSON.stringify(r.result.exceptionDetails.exception?.description)); return r.result.result.value };
   await s("Runtime.enable"); await s("Page.enable");
   await s("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
-  await s("Page.navigate", { url }); await wait(3000);
+  await s("Page.navigate", { url }); await wait(3000); DSH = await ev("__ascend.S.dsh");
 
   const base = await ev(`(()=>{const s=JSON.parse(JSON.stringify(__ascend.S));Object.assign(s,{onboarded:true,seen:${JSON.stringify(dk(0))},base:"Oct 1",baseKey:${JSON.stringify(dk(0))},name:"Jaime",prog:${JSON.stringify(dk(-20))}});delete s.tab;delete s.test;return s})()`);
   if (!base || typeof base !== "object") throw new Error("the app did not boot: __ascend.S = " + JSON.stringify(base));

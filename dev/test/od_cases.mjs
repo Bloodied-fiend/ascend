@@ -37,7 +37,7 @@ export async function runOD({ ev, boot, check, KEY, base, wait }) {
   }
   // 3. distance targets adapt in half steps: a strong week 2 -> 2.5 MI, a weak week 2 -> 1.5 MI
   for (const [hit, want] of [[1, 2.5], [0, 1.5]]) {
-    const days = await ev(`(()=>{const d=new Date(Date.now()-4*3600e3),k=x=>{const y=new Date(d);y.setDate(y.getDate()+x);return y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0")};return [k(-1),...[2,3,4,5,6,7].map(i=>k(-i))]})()`);
+    const days = await ev(`(()=>{const d=new Date(Date.now()-__ascend.S.dsh*3600e3),k=x=>{const y=new Date(d);y.setDate(y.getDate()+x);return y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0")};return [k(-1),...[2,3,4,5,6,7].map(i=>k(-i))]})()`);
     const qlog = Object.fromEntries(days.slice(1).map(k => [k, { run: hit }]));
     const done = hit ? Object.fromEntries(base.quests.map(q => [q.id, 1])) : {};
     await boot(KEY, { ...base, day: days[0], done, qlog, adj: {} });

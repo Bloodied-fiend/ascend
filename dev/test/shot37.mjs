@@ -10,7 +10,8 @@ import crypto from "node:crypto";
 const [prof, url, outDir, skinArg] = process.argv.slice(2);
 const skin = skinArg || "hunter";
 fs.mkdirSync(outDir, { recursive: true });
-const dk = o => { const d = new Date(Date.now() - 4 * 3600e3); d.setDate(d.getDate() + o); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") };
+let DSH; // the app's day boundary in hours, read from the page after it loads
+const dk = o => { const d = new Date(Date.now() - DSH * 3600e3); d.setDate(d.getDate() + o); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") };
 
 const c = spawn("C:/Program Files/Google/Chrome/Application/chrome.exe",
   ["--headless=new", "--disable-gpu", `--user-data-dir=${prof}`, "--remote-debugging-port=9341", "--window-size=500,1000", "about:blank"], { stdio: "ignore" });
@@ -25,6 +26,7 @@ try {
   await s("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await s("Page.navigate", { url });
   await wait(3000); // let the service worker install and do its one reload before any capture
+  DSH = await ev("__ascend.S.dsh");
 
   const shots = new Map();
   const shot = async name => { const r = await s("Page.captureScreenshot", { format: "png" });
@@ -37,7 +39,7 @@ try {
   const save = await ev(`(()=>{const s=JSON.parse(JSON.stringify(__ascend.S));
     Object.assign(s,{onboarded:true,seen:${JSON.stringify(dk(0))},base:"Oct 1",baseKey:${JSON.stringify(dk(0))},name:"Jaime",
       lvl:23,xp:140,rest:2,prog:${JSON.stringify(dk(-20))},sMile:14,loot:{c:6,u:3,r:1}});
-    s.ap.pn=36; s.hist={}; for(let i=1;i<=18;i++){const d=new Date(Date.now()-4*3600e3);d.setDate(d.getDate()-i);
+    s.ap.pn=36; s.hist={}; for(let i=1;i<=18;i++){const d=new Date(Date.now()-__ascend.S.dsh*3600e3);d.setDate(d.getDate()-i);
       s.hist[d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")]=1}
     delete s.tab;delete s.test;return s})()`);
 

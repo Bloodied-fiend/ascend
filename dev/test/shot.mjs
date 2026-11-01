@@ -10,7 +10,7 @@ ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.method==="Runtime.exceptionThro
 const s=(m,pa={})=>new Promise(r=>{const i=++id;p.set(i,r);ws.send(JSON.stringify({id:i,method:m,params:pa}))});
 const ev=async x=>(await s("Runtime.evaluate",{expression:x,awaitPromise:true,returnByValue:true})).result.result.value;
 await s("Runtime.enable");await s("Page.enable");await s("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:2,mobile:true});await s("Page.navigate",{url});await wait(1500);
-await ev(`(()=>{const d=new Date(Date.now()-4*3600e3),k=x=>{const y=new Date(d);y.setDate(y.getDate()+x);return y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0")};
+await ev(`(()=>{const d=new Date(Date.now()-__ascend.S.dsh*3600e3),k=x=>{const y=new Date(d);y.setDate(y.getDate()+x);return y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0")};
 const s=JSON.parse(JSON.stringify(__ascend.S));Object.assign(s,{onboarded:true,seen:k(0),base:"Oct 1",baseKey:k(0),name:"Jaime",lvl:${LV},gateClears:{e:2,d:1},m:{miles:14},
 gate:${mode==="idle"?"null":`{id:"c",start:k(-3),until:k(6),run:2,failed:false,red:${mode==="red"},base:{str50:0,agi30:0,vit30:0,clear10:0,miles:0}},ap:{...s.ap,str50:4,agi30:1}`}});
 localStorage.clear();localStorage.setItem("ascend-skin",${JSON.stringify(skin||"hunter")});localStorage.setItem("ascend-v7",JSON.stringify(s))})()`);

@@ -10,7 +10,8 @@ fs.mkdirSync(outDir, { recursive: true });
 const h32 = v => { let h = 2166136261; for (let i = 0; i < v.length; i++) { h ^= v.charCodeAt(i); h = Math.imul(h, 16777619) } return (h >>> 0) / 4294967296 };
 const tierAt = r => r < .005 ? "l" : r < .025 ? "r" : r < .085 ? "u" : r < .235 ? "c" : null;
 const seedFor = (day, qid, want) => { for (let i = 0; i < 4e6; i++) { const s = "sd" + i.toString(36).padStart(5, "0"); if (tierAt(h32(s + "|" + day + "|" + qid)) === want) return s } throw new Error("no seed for " + want) };
-const dk = o => { const d = new Date(Date.now() - 4 * 3600e3); d.setDate(d.getDate() + o); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") };
+let DSH; // the app's day boundary in hours, read from the page after it loads
+const dk = o => { const d = new Date(Date.now() - DSH * 3600e3); d.setDate(d.getDate() + o); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") };
 
 const c = spawn("C:/Program Files/Google/Chrome/Application/chrome.exe",
   ["--headless=new", "--disable-gpu", `--user-data-dir=${prof}`, "--remote-debugging-port=9338", "--window-size=500,1000", "about:blank"], { stdio: "ignore" });
@@ -25,6 +26,7 @@ try {
   await s("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await s("Page.navigate", { url });
   await wait(3000); // let the service worker install and do its one reload before any capture
+  DSH = await ev("__ascend.S.dsh");
 
   const base = await ev(`(()=>{const s=JSON.parse(JSON.stringify(__ascend.S));Object.assign(s,{onboarded:true,seen:${JSON.stringify(dk(0))},base:"Oct 1",baseKey:${JSON.stringify(dk(0))},name:"Jaime",prog:${JSON.stringify(dk(-20))}});delete s.tab;delete s.test;return s})()`);
 

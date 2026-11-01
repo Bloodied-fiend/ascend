@@ -19,7 +19,7 @@ export async function runAssess({ ev, boot, check, KEY, base, wait }) {
   const S = expr => ev(`(()=>{const S=__ascend.S;return ${expr}})()`);
   const raw = async sel => { await ev(`(()=>{const e=document.querySelector(${JSON.stringify(sel)});if(e)e.click()})()`); await wait(260); };
   const shut = async () => { await ev(`(()=>{for(let i=0;i<8;i++)__ascend.closeNote(-1)})()`); await wait(200); };
-  const dk = o => ev(`(()=>{const d=new Date(Date.now()-4*3600e3);d.setDate(d.getDate()+(${o}));return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")})()`);
+  const dk = o => ev(`(()=>{const d=new Date(Date.now()-__ascend.S.dsh*3600e3);d.setDate(d.getDate()+(${o}));return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")})()`);
 
   // 1. finishing the Player Assessment records the baseline AND unlocks its trophy.
   // Regression guard for v29: the three statements after the "a lower score is honest" comment

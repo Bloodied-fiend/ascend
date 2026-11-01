@@ -12,7 +12,7 @@ export async function runStreak({ ev, boot, check, KEY, base, wait }) {
   const S = expr => ev(`(()=>{const S=__ascend.S;return ${expr}})()`);
   const raw = async sel => { await ev(`document.querySelector(${JSON.stringify(sel)}).click()`); await wait(300); };
   const shut = async () => { await ev(`(()=>{for(let i=0;i<8;i++)__ascend.closeNote(-1)})()`); await wait(200); };
-  const dk = o => ev(`(()=>{const d=new Date(Date.now()-4*3600e3);d.setDate(d.getDate()+(${o}));return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")})()`);
+  const dk = o => ev(`(()=>{const d=new Date(Date.now()-__ascend.S.dsh*3600e3);d.setDate(d.getDate()+(${o}));return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")})()`);
   const today = await dk(0), yday = await dk(-1);
   const ids = base.quests.map(q => q.id);
   const back = async (n, rest = -1) => { const h = {}; for (let i = 1; i <= n; i++) h[await dk(-i)] = i === rest ? 2 : 1; return h };

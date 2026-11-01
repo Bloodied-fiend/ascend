@@ -2,7 +2,7 @@
 export async function runTitles({ ev, boot, check, KEY, base, wait }) {
   const S = expr => ev(`(()=>{const S=__ascend.S;return ${expr}})()`);
   const raw = async sel => { await ev(`document.querySelector(${JSON.stringify(sel)}).click()`); await wait(300); };
-  const days = await ev(`(()=>{const d=new Date(Date.now()-4*3600e3),k=x=>{const y=new Date(d);y.setDate(y.getDate()+x);return y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0")};return [k(0),k(-1)]})()`);
+  const days = await ev(`(()=>{const d=new Date(Date.now()-__ascend.S.dsh*3600e3),k=x=>{const y=new Date(d);y.setDate(y.getDate()+x);return y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0")};return [k(0),k(-1)]})()`);
   // 1. real data already earned it: popup on open, Equip shows it on Home/Status
   {
     await ev(`localStorage.clear()`);

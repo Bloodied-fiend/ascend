@@ -12,7 +12,7 @@ export async function runDrops({ ev, boot, check, KEY, base, wait }) {
   const S = expr => ev(`(()=>{const S=__ascend.S;return ${expr}})()`);
   const raw = async sel => { await ev(`document.querySelector(${JSON.stringify(sel)}).click()`); await wait(300); };
   const shut = async () => { await ev(`(()=>{for(let i=0;i<6;i++)__ascend.closeNote(-1)})()`); await wait(200); };
-  const days = await ev(`(()=>{const d=new Date(Date.now()-4*3600e3),k=x=>{const y=new Date(d);y.setDate(y.getDate()+x);return y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0")};return [k(0),k(-1)]})()`);
+  const days = await ev(`(()=>{const d=new Date(Date.now()-__ascend.S.dsh*3600e3),k=x=>{const y=new Date(d);y.setDate(y.getDate()+x);return y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0")};return [k(0),k(-1)]})()`);
 
   // 1. the roll is fixed for that quest and day: toggling can't farm it, and it carries no XP
   {
