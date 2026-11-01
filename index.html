@@ -2323,6 +2323,11 @@ const BARS=[[6,"5px","var(--ab1)",-.04],[14,"12px","var(--ab2)",-.31],[23,"3px",
 const barHTML=()=>BARS.map(([y,h,c,d])=>`<b style="--y:${y}%;--h:${h};--c:${c};--d:${d}s"></b>`).join("");
 const vLabel=v=>"1."+String(v).padStart(3,"0"); // 37 -> "1.037"; a major overhaul starts the 2.x line
 const PATCH=[
+  {v:49,d:"Nov 1, 2026",lines:[
+    "Daily nudges set between 23:46 and 23:59 now arrive.",
+    "A boss you killed stays dead, even if you undo yesterday's quest.",
+    "A save that fails no longer loses your next change.",
+    "Delete my party data now stays deleted until you join a party again."]},
   {v:47,d:"Oct 24, 2026",lines:[
     "Your party can reach you. The System says when someone passes you on the board.",
     "And when somebody new joins a party you are in.",
