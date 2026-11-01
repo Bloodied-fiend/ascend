@@ -1748,7 +1748,7 @@ try{let raw=localStorage.getItem(STORE);for(const k of OLD)if(raw===null)raw=loc
 // another open copy of the app saved: take its data instead of later overwriting it with this copy's stale snapshot
 addEventListener("storage",e=>{if(e.key!==STORE||!e.newValue)return;let sv=null;try{sv=JSON.parse(e.newValue)}catch(err){return}if(sv&&sv.rev===S.rev)return;const ui={tab:S.tab,test:S.test};if(adopt(sv)){saveBlocked=false;Object.assign(S,ui);render()}});
 const snapshot=()=>({ver:VER,...Object.fromEntries(KEEP.map(k=>[k,S[k]]))});
-const save=()=>{if(saveBlocked)return;S.rev=Date.now().toString(36)+Math.random().toString(36).slice(2,8);try{localStorage.setItem(STORE,JSON.stringify(snapshot()))}catch(e){storageOK=false}};
+const save=()=>{if(saveBlocked)return;const r0=S.rev;S.rev=Date.now().toString(36)+Math.random().toString(36).slice(2,8);try{localStorage.setItem(STORE,JSON.stringify(snapshot()))}catch(e){storageOK=false;S.rev=r0}}; // a failed write keeps the old rev, so pull() does not adopt the older save over this change
 // another open copy may have saved since this one last looked (its storage event can arrive late): start every change from the latest save
 function pull(){let sv=null;try{const raw=localStorage.getItem(STORE);if(raw===null)return;sv=JSON.parse(raw)}catch(e){return}
   if(!sv||sv.rev===S.rev)return;const ui={tab:S.tab,test:S.test,cat:S.cat};if(adopt(sv)){saveBlocked=false;Object.assign(S,ui)}}
@@ -1763,7 +1763,7 @@ function rollover(){const n=now(),t=dkey(n),wk=mondayKey(n);
   const dq=todayQ();
   if(dq.length&&(!S.restDay||S.restDay!==S.day)){const lg={};for(const q of dq)lg[q.id]=S.done[q.id]?1:0;S.qlog[S.day]=lg} // rest days and unscheduled quests don't count against a quest
   const rested=S.restDay===S.day||!dq.length,missed=!rested&&!dq.every(q=>S.done[q.id]);S.hist[S.day]=rested?2:missed?0:1;S.restDay=null;gateDay(S.day,S.hist[S.day]);titleDay(S.day,S.hist[S.day],dq);
-  S.statHist[S.day]=Object.fromEntries(Object.keys(STATS).map(k=>[k,eff(k)]));{const ks=Object.keys(S.statHist).sort();for(const k of ks.slice(0,-90))delete S.statHist[k]}S.done={};S.cnt={};S.od={};S.drops={};S.rolls=0;if(S.questsNext){S.quests=S.questsNext;S.questsNext=null}
+  S.statHist[S.day]=Object.fromEntries(Object.keys(STATS).map(k=>[k,eff(k)]));{const ks=Object.keys(S.statHist).sort();for(const k of ks.slice(0,-90))delete S.statHist[k]}S.done={};S.cnt={};S.od={};S.drops={};S.rolls=0;S.bkill=null;if(S.questsNext){S.quests=S.questsNext;S.questsNext=null}
   // days the app was never opened are missed days too, each finalized once (a day already logged is never rewritten)
   let gap=0;if(S.day<t)for(const d=new Date(S.day+"T12:00");d.setDate(d.getDate()+1),dkey(d)<t&&gap<400;){const k=dkey(d);if(k in S.hist)continue;const kq=Q().filter(q=>sched(q,k));if(!kq.length){S.hist[k]=2;gateDay(k,2);continue}S.hist[k]=0;gateDay(k,0);titleDay(k,0,kq);S.qlog[k]=Object.fromEntries(kq.map(q=>[q.id,0]));gap++}
   {const ks=Object.keys(S.qlog).sort();for(const k of ks.slice(0,-30))delete S.qlog[k]}
@@ -1807,7 +1807,7 @@ function settleGate(){if(!S.gate)return false;const g=gateDef(S.gate.id);
 // ---- Party leaderboard (backend/party.mjs on Neon). Party data is sent only after the player creates or joins a party;
 // separately, every install checks in on open with name/level/XP (ping below) for the hidden admin list.
 const PARTY_API="https://br-red-haze-b7b2z47p-party.compute.c-13.us-east-1.aws.neon.tech/";
-const PKEY="ascend-party-key",PCACHE="ascend-party-cache";
+const PKEY="ascend-party-key",PCACHE="ascend-party-cache",PNOPING="ascend-no-ping"; // set by "Delete my party data", cleared by create/join
 // the key identifies this player to the server; it lives apart from progress, so backups and exports never carry it
 const partyKey=make=>{try{let k=localStorage.getItem(PKEY);if(!k&&make){const a=new Uint8Array(32);crypto.getRandomValues(a);k=[...a].map(b=>b.toString(16).padStart(2,"0")).join("");localStorage.setItem(PKEY,k)}return k}catch(e){return null}};
 const pManage=new Set();
@@ -1821,6 +1821,7 @@ async function partyCall(body,make){const k=partyKey(make);if(!k)throw new Error
   let r;try{r=await fetch(PARTY_API,{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer "+k},body:JSON.stringify({name:S.name||"Hunter",...body}),signal:AbortSignal.timeout(12000)})}
   catch(e){throw new Error("Can't reach the party server. Try again when online.")}
   const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error&&j.error!=="server"?j.error[0].toUpperCase()+j.error.slice(1)+".":"Party server error. Try again.");
+  if(body.op==="create"||body.op==="join")try{localStorage.removeItem(PNOPING)}catch(e){}
   if(seq!==pSeq)return j; // a newer call is in flight; don't let this older answer overwrite it
   if(Array.isArray(j.parties)){party={parties:j.parties,at:Date.now()};try{localStorage.setItem(PCACHE,JSON.stringify(party))}catch(e){}} // ops that are not about parties (push) must not empty the board
   if(S.tab==="quests"&&$("#ov").hidden)render(true);return j}
@@ -1831,7 +1832,7 @@ function schedSync(ms=4000){if(!partyKey(false)||!party.parties.length)return;cl
   syncT=setTimeout(()=>{const sm=pSummary(),js=JSON.stringify(sm);if(navigator.onLine===false||(js===lastSent&&ms))return; // only real changes (opening the app always refreshes)
     partyCall({op:"sync",summary:sm}).then(()=>{lastSent=js}).catch(()=>{})},ms)}
 // check-in for the hidden admin list: once per open (and on return after 15 min), silent, never blocks the app
-let pinged=0;function ping(){if(!S.onboarded||navigator.onLine===false||Date.now()-pinged<9e5)return;const k=partyKey(true);if(!k)return;pinged=Date.now();const sm=pSummary();
+let pinged=0;function ping(){if(!S.onboarded||navigator.onLine===false||Date.now()-pinged<9e5)return;try{if(localStorage.getItem(PNOPING))return}catch(e){return}const k=partyKey(true);if(!k)return;pinged=Date.now();const sm=pSummary();
   fetch(PARTY_API,{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer "+k},keepalive:true,
     body:JSON.stringify({op:"ping",name:S.name||"Hunter",summary:{lvl:sm.lvl,xp:sm.xp,tier:sm.tier,streak:sm.streak,title:sm.title}})}).catch(()=>{})}
 // hidden admin list (Jaime only): tap Guild 5 times in a row. The password is checked on the server, never here.
@@ -2645,7 +2646,7 @@ function onButton(b,d){
   if(d.pushsave){pushSave();return}
   if(d.pushtest){pushTest();return}
   if(d.pforget){notify({chip:"[ PARTY ]",tone:"danger",title:"Delete party data?",body:"Removes you from every party and deletes your data on the party server.\nYour progress on this phone is untouched.",
-      actions:[{label:"Keep"},{label:"Delete",fn:()=>partyCall({op:"forget"}).then(()=>{try{localStorage.removeItem(PKEY);localStorage.removeItem(PCACHE)}catch(e){}party={parties:[],at:0};render(true);toast("PARTY DATA DELETED")}).catch(e=>toast(e.message.toUpperCase()))}]});return}
+      actions:[{label:"Keep"},{label:"Delete",fn:()=>partyCall({op:"forget"}).then(()=>{try{localStorage.removeItem(PKEY);localStorage.removeItem(PCACHE);localStorage.setItem(PNOPING,"1")}catch(e){}party={parties:[],at:0};render(true);toast("PARTY DATA DELETED")}).catch(e=>toast(e.message.toUpperCase()))}]});return}
   if(d.tmore){showAllTitles=!showAllTitles;render(true);return}
   if(d.patch){notify(patchNote(PATCH[0],0));return}
   if(d.title){if(tEarned(d.title)){S.title=d.title;save();render(true);toast("TITLE EQUIPPED")}return}

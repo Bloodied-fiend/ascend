@@ -152,6 +152,17 @@ try {
   const [sp2] = await call(P, { op: "ping", name: "SoloTest", summary: { lvl: 0 } });
   const [, bp] = await call(P, { op: "board" });
   check("ping: a solo install checks in, bad summary rejected, and it gets no party board", sp === 200 && sp2 === 400 && bp.parties.length === 0, [sp, sp2, bp]);
+  // the nudge window wraps midnight: a 23:50 nudge is only ever hit by the 00:00 cron run (it never fired before)
+  if (DB) {
+    const { _test } = await import("./party.mjs");
+    const cases = [["2026-11-01T23:50:00Z", 0, 1430, true], ["2026-11-02T00:00:00Z", 0, 1430, true], ["2026-11-02T00:04:00Z", 0, 1430, true],
+      ["2026-11-02T00:05:00Z", 0, 1430, false], ["2026-11-01T23:45:00Z", 0, 1430, false], ["2026-11-02T05:00:00Z", -300, 1430, true],
+      ["2026-11-01T12:07:00Z", 0, 720, true], ["2026-11-01T12:20:00Z", 0, 720, false], ["2026-11-01T11:59:00Z", 0, 720, false]];
+    const got = [];
+    for (const [t, tz, nm] of cases) got.push((await db(`select ${_test.nudgeDue("$1::timestamptz")} as d from (select $2::int as tz_off, $3::int as nudge_min) x`, [t, tz, nm])).rows?.[0]?.d);
+    check("nudge window wraps midnight (23:50 is due at 00:00, and only inside its 15 minutes)",
+      got.every((d, i) => (d === true || d === "t" || d === "true") === cases[i][3]), got);
+  } else res.push("SKIP nudge window (needs DATABASE_URL)");
   if (ADMIN_PW) {
     const [sw, bw] = await call(E, { op: "admin", pw: "nope" });
     [s, b] = await call(E, { op: "admin", pw: ADMIN_PW });

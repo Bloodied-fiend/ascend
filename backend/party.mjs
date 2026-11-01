@@ -74,6 +74,9 @@ const limited = (k, max = PER_KEY_PER_MIN) => { const now = Date.now(), h = hits
 
 const asInt = (v, lo, hi, d) => (Number.isInteger(v) && v >= lo && v <= hi ? v : d);
 
+// minutes since the subscriber's chosen minute, wrapped mod 1440 so a 23:50 nudge still fires on the 00:00 run
+const nudgeDue = t => `(((extract(epoch from ${t})/60)::int + tz_off - nudge_min) % 1440 + 1440) % 1440 < 15`;
+
 // Runs every 15 minutes. A subscriber is due when their LOCAL clock has just passed their chosen
 // minute, and they have not already been sent today in their own timezone -- so one nudge a day, at
 // their time, wherever they are.
@@ -83,8 +86,7 @@ async function cronNudge() {
   const { rows } = await pool.query(
     `select key_hash, endpoint, p256dh, auth, tz_off, nudge_min from push_subs
      where enabled and nudge_min is not null
-       and (((extract(epoch from now())/60)::int + tz_off) % 1440 + 1440) % 1440 >= nudge_min
-       and (((extract(epoch from now())/60)::int + tz_off) % 1440 + 1440) % 1440 < nudge_min + 15
+       and ${nudgeDue("now()")}
        and (last_sent is null
             or date((last_sent + make_interval(mins => tz_off))) < date((now() + make_interval(mins => tz_off))))`);
   let sent = 0, dropped = 0;
@@ -316,6 +318,7 @@ async function handle(req, ip) {
   return [200, { parties: await board(me) }];
 }
 
+export const _test = { nudgeDue };
 export default {
   async fetch(req) {
     const origin = req.headers.get("origin") || "";
