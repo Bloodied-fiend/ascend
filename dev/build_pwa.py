@@ -91,7 +91,7 @@ open(f'{OUT}/manifest.webmanifest', 'w', encoding='utf-8').write('''{
 ''')
 
 open(f'{OUT}/sw.js', 'w', encoding='utf-8').write('''// Ascend service worker: serve from cache, refresh in the background (bypassing the HTTP cache).
-const V = "ascend-v50";
+const V = "ascend-v51";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", ...["e","d","c","b","a","s","nl","m"].map(b => `badges/${b}.webp`), "gates/map.webp", ...["blue","cyan","amber","pink","red"].map(c => `gates/pillar-${c}.webp`)];
 // cache: "reload" bypasses the HTTP cache (GitHub Pages max-age=600) so a new version never stores the old page
 self.addEventListener("install", e => e.waitUntil(caches.open(V).then(c => c.addAll(SHELL.map(x => new Request(x, { cache: "reload" })))).then(() => self.skipWaiting())));
@@ -139,7 +139,8 @@ self.addEventListener("fetch", e => {
 icon = re.search(r'<svg class="appicon".*?</svg>', s, re.S).group(0).replace('class="appicon" ', '')
 full_bleed = icon.replace('<rect width="1024" height="1024" rx="224"', '<rect width="1024" height="1024" rx="0"')
 maskable = full_bleed.replace('viewBox="0 0 1024 1024"', 'viewBox="-128 -128 1280 1280"').replace('<rect width="1024" height="1024" rx="0"', '<rect x="-128" y="-128" width="1280" height="1280"')
-for name, svg, size in (('icon-512', full_bleed, 512), ('icon-192', full_bleed, 192), ('maskable-512', maskable, 512)):
+# icons are only re-rendered where Chrome is installed (Jaime's Windows box); elsewhere the committed PNGs stand
+for name, svg, size in ((('icon-512', full_bleed, 512), ('icon-192', full_bleed, 192), ('maskable-512', maskable, 512)) if os.path.exists(CH) else ()):
     page = f'{OUT}/icons/_render.html'
     sized = svg.replace('<svg ', '<svg width="%d" height="%d" ' % (size, size), 1)
     open(page, 'w', encoding='utf-8').write('<!doctype html><html><body style="margin:0;background:#0c1015">' + sized + '</body></html>')
@@ -148,7 +149,7 @@ for name, svg, size in (('icon-512', full_bleed, 512), ('icon-192', full_bleed, 
     subprocess.run([CH, '--headless=new', '--disable-gpu', f'--user-data-dir={prof}', '--hide-scrollbars', '--force-device-scale-factor=1',
                     f'--window-size={size},{size}', f'--screenshot={OUT}/icons/{name}.png', f'file:///{page}'], capture_output=True, timeout=60)
     shutil.rmtree(prof, ignore_errors=True)
-os.remove(f'{OUT}/icons/_render.html')
+os.path.exists(f'{OUT}/icons/_render.html') and os.remove(f'{OUT}/icons/_render.html')
 
 open(f'{OUT}/README.md', 'w', encoding='utf-8').write('''# Ascend
 

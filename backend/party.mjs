@@ -46,7 +46,8 @@ alter table parties add column if not exists owner_id bigint references players(
 create table if not exists push_subs(key_hash text primary key, endpoint text not null, p256dh text not null, auth text not null, tz_off int not null default 0, nudge_min int, enabled boolean not null default true, created_at timestamptz not null default now(), last_sent timestamptz);
 alter table push_subs add column if not exists last_pass timestamptz;
 create table if not exists installs(key_hash text primary key, name text not null, lvl int not null, xp bigint not null, tier int not null, streak int not null, title text, ip text, first_seen timestamptz not null default now(), seen timestamptz not null default now());
-update parties set owner_id = (select player_id from members where party_id = parties.id order by joined_at, player_id limit 1) where owner_id is null;`;
+update parties set owner_id = (select player_id from members where party_id = parties.id order by joined_at, player_id limit 1) where owner_id is null;
+create table if not exists raids(player_id bigint not null references players(id) on delete cascade, wk text not null, dmg int not null, updated_at timestamptz not null default now(), primary key(player_id, wk));`;
 let ready = null;
 const init = () => (ready ??= (async () => { for (const s of SCHEMA.split(";").map(x => x.trim()).filter(Boolean)) await sql(s); })().catch(e => { ready = null; throw e; }));
 
@@ -54,17 +55,38 @@ const init = () => (ready ??= (async () => { for (const s of SCHEMA.split(";").m
 const cleanName = (v, n = 20) => (typeof v === "string" ? v.replace(/[<>\u0000-\u001f\u007f]/g, "").trim().slice(0, n).toWellFormed() : "") || "Hunter";
 const int = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
 const newCode = () => Array.from({ length: 8 }, () => CODE_ABC[randomInt(CODE_ABC.length)]).join("");
+// World Raid week = the player's local Monday (YYYY-MM-DD). Accept only weeks within a few days of now so a
+// device can't park damage on a far-future week. ponytail: like XP, the damage itself is client-reported.
+const RAID_MAX = 5000;
+const raidWk = v => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) && Math.abs(Date.parse(v + "T00:00:00Z") - Date.now()) < 9 * 864e5 ? v : null;
 
-async function board(me) {
+async function board(me, wk) {
   const { rows } = await pool.query(
     `select p.code, p.name, (p.owner_id = $1) as iown,
        json_agg(json_build_object('id', pl.id, 'name', pl.name, 'me', pl.id = $1, 'lead', pl.id = p.owner_id, 'lvl', s.lvl, 'xp', s.xp_total, 'tier', s.tier,
-         'streak', s.streak, 'gates', s.gates, 'red', s.red, 'awaken', s.awaken, 'title', s.title)
+         'streak', s.streak, 'gates', s.gates, 'red', s.red, 'awaken', s.awaken, 'title', s.title, 'rd', r.dmg)
          order by s.xp_total desc nulls last, pl.id) as members
      from members m join parties p on p.id = m.party_id
      join members m2 on m2.party_id = p.id join players pl on pl.id = m2.player_id
      left join summaries s on s.player_id = pl.id
-     where m.player_id = $1 group by p.id order by p.created_at`, [me]);
+     left join raids r on r.player_id = pl.id and r.wk = $2
+     where m.player_id = $1 group by p.id order by p.created_at`, [me, wk]);
+  return rows;
+}
+
+// World Raid guild rankings: every party's combined damage on this week's boss. Party names and sizes
+// only -- never member names or invite codes, so a ranking leaks nothing that would let a stranger join.
+// Top 25 by damage, plus any of my parties that rank lower (so you always see where you stand).
+async function guildBoard(me, wk) {
+  const { rows } = await pool.query(
+    `with t as (
+       select p.id, p.name, count(m.player_id)::int as n, coalesce(sum(r.dmg), 0)::int as dmg,
+              bool_or(m.player_id = $1) as mine
+         from parties p join members m on m.party_id = p.id
+         left join raids r on r.player_id = m.player_id and r.wk = $2
+        group by p.id),
+     ranked as (select *, rank() over (order by dmg desc, n asc, id asc)::int as rk from t where dmg > 0 or mine)
+     select rk, name, n, dmg, mine from ranked where rk <= 25 or mine order by rk`, [me, wk]);
   return rows;
 }
 
@@ -249,6 +271,11 @@ async function handle(req, ip) {
         `insert into summaries(player_id, lvl, xp_total, tier, streak, gates, red, awaken, title) values($1,$2,$3,$4,$5,$6,$7,$8,$9)
          on conflict (player_id) do update set lvl=$2, xp_total=$3, tier=$4, streak=$5, gates=$6, red=$7, awaken=$8, title=$9, updated_at=now()`,
         [me, s.lvl, s.xp, s.tier, s.streak, s.gates, s.red, s.awaken, typeof s.title === "string" ? cleanName(s.title, 40) : null]);
+      const rd = b.raid || {}, rwk = raidWk(rd.wk);
+      if (rwk && int(rd.dmg, 0, RAID_MAX)) {
+        await pool.query(`insert into raids(player_id, wk, dmg) values($1,$2,$3) on conflict (player_id, wk) do update set dmg=$3, updated_at=now()`, [me, rwk, rd.dmg]);
+        await pool.query("delete from raids where player_id = $1 and updated_at < now() - interval '60 days'", [me]);
+      }
       // only on a real crossing: no previous total means a first sync, which should not notify anyone
       if (prev && Number(prev.xp_total) < s.xp) await notifyPassed(me, Number(prev.xp_total), s.xp);
       break;
@@ -315,7 +342,8 @@ async function handle(req, ip) {
     }
     default: return [400, { error: "op" }];
   }
-  return [200, { parties: await board(me) }];
+  const wk = raidWk(b.wk);
+  return [200, { parties: await board(me, wk), guilds: wk ? await guildBoard(me, wk) : [] }];
 }
 
 export const _test = { nudgeDue };

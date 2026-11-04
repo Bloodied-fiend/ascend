@@ -7,6 +7,7 @@ import { mkdirSync, rmSync, readFileSync, writeFileSync } from "node:fs";
 rmSync("dist", { recursive: true, force: true });
 mkdirSync("dist");
 await build({ entryPoints: ["party.mjs"], bundle: true, platform: "node", target: "node24", format: "esm", minify: true, outfile: "dist/index.mjs" });
-execFileSync("powershell", ["-NoProfile", "-Command", "Compress-Archive -Path dist/index.mjs -DestinationPath dist/party.zip -Force"]);
+if (process.platform === "win32") execFileSync("powershell", ["-NoProfile", "-Command", "Compress-Archive -Path dist/index.mjs -DestinationPath dist/party.zip -Force"]);
+else execFileSync("zip", ["-j", "-q", "dist/party.zip", "dist/index.mjs"]);
 writeFileSync("dist/party.zip.b64", readFileSync("dist/party.zip").toString("base64"));
 console.log("built", readFileSync("dist/party.zip").length, "bytes");

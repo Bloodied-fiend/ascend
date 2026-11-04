@@ -14,4 +14,6 @@ DATABASE_URL=... node test_local.mjs                 # 12 checks against the rea
 FN_URL=<url> node test_local.mjs                     # same checks against the deployed function (needs ALLOW_LOCAL=1 on it)
 ```
 Deploy = Neon `deploy_function` (zip as base64). Production runs with no env vars; set `ALLOW_LOCAL=1` only while running live tests from 127.0.0.1, then clear it (`{"ALLOW_LOCAL":""}`).
+World Raid (v51): every request carries `wk` (the player's local Monday, YYYY-MM-DD; refused if more than 9 days from now). `sync` takes an optional `raid: {wk, dmg}` stored in `raids(player_id, wk, dmg)`. The board answers with each member's `rd` (damage this week) plus `guilds`: every party's combined damage this week, top 25 by damage plus any of the caller's parties ranked lower. Rankings carry party name, size and damage only, never member names or invite codes. Apps that send no `wk` get `rd: null` and `guilds: []`, so older versions keep working.
+
 Known limits (ponytail comments in code): a member can post a fake XP total; party/member caps can overshoot under simultaneous requests; the per-key limiter is per warm instance.
