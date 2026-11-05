@@ -163,6 +163,31 @@ try {
     check("nudge window wraps midnight (23:50 is due at 00:00, and only inside its 15 minutes)",
       got.every((d, i) => (d === true || d === "t" || d === "true") === cases[i][3]), got);
   } else res.push("SKIP nudge window (needs DATABASE_URL)");
+  // World Raid player rankings. A non-Monday week: real clients only ever use a Monday, so test rows stay invisible to players.
+  {
+    const d = new Date(); if (d.getUTCDay() === 1) d.setUTCDate(d.getUTCDate() + 1);
+    const TW = d.toISOString().slice(0, 10), rSolo = randomBytes(32).toString("hex"), rParty = randomBytes(32).toString("hex"); PING.push(rSolo, rParty);
+    const ping = (k, name, dmg) => call(k, { op: "ping", name, wk: TW, summary: sum(100), raid: { wk: TW, dmg } });
+    const [s1, b1] = await ping(rSolo, "RankSolo", 100);
+    const me1 = b1.ranks?.find(r => r.mine);
+    check("ranks: a solo hunter's check-in puts them on the board", s1 === 200 && me1?.name === "RankSolo" && me1?.dmg === 100, [s1, b1]);
+    check("ranks: rows carry display name and damage only", b1.ranks?.every(r => Object.keys(r).sort().join() === "dmg,mine,name,rk"), b1.ranks);
+    await call(rParty, { op: "create", name: "RankParty", party: "Rank Squad", wk: TW });
+    const [s2, b2] = await call(rParty, { op: "sync", name: "RankParty", wk: TW, summary: sum(100), raid: { wk: TW, dmg: 300 } });
+    check("ranks: sync puts the party player above the solo hunter, and the first World Raid build's guilds stays", s2 === 200 && b2.ranks?.[0]?.name === "RankParty" && b2.ranks?.[0]?.mine === true && b2.ranks?.[1]?.name === "RankSolo" && b2.ranks?.[1]?.mine === false && Array.isArray(b2.guilds) && b2.guilds.length > 0, [s2, b2]);
+    const [, b3] = await ping(rSolo, "RankSolo", 100);
+    check("ranks: the solo hunter sees the party player above them and their own row", b3.ranks?.[0]?.name === "RankParty" && b3.ranks?.[0]?.mine === false && b3.ranks?.[1]?.mine === true && b3.ranks?.[1]?.rk === 2, b3.ranks);
+    await ping(rParty, "RankParty", 300);
+    const [, b4] = await call(rParty, { op: "sync", name: "RankParty", wk: TW, summary: sum(100), raid: { wk: TW, dmg: 250 } });
+    check("ranks: an undo lowers the number, with no duplicate row from the check-in", b4.ranks?.filter(r => r.name === "RankParty").length === 1 && b4.ranks?.[0]?.dmg === 250, b4.ranks);
+    const [, b5] = await ping(rSolo, "RankSolo", 99999);
+    check("ranks: damage over the cap is ignored", b5.ranks?.find(r => r.mine)?.dmg === 100, b5.ranks);
+    const [s6, b6] = await call(rSolo, { op: "ping", name: "RankSolo", summary: sum(100) });
+    check("ranks: a check-in from an older app gets no rankings and still works", s6 === 200 && b6.ok === true && !("ranks" in b6), [s6, b6]);
+    const [s7] = await call(rSolo, { op: "forget" });
+    const [, b7] = await call(rParty, { op: "board", name: "RankParty", wk: TW });
+    check("ranks: delete my data takes a solo hunter off the board", s7 === 200 && !b7.ranks?.some(r => r.name === "RankSolo"), [s7, b7.ranks]);
+  }
   if (ADMIN_PW) {
     const [sw, bw] = await call(E, { op: "admin", pw: "nope" });
     [s, b] = await call(E, { op: "admin", pw: ADMIN_PW });
@@ -176,8 +201,7 @@ try {
 } catch (e) {
   res.push("FAIL test threw " + (e && e.stack || e));   // a throw used to be swallowed by the exit(0) in finally
 } finally {
-  for (const k of [A, B, C, E, ...KICK, ...PUSH]) await call(k, { op: "forget" });
-  if (PING.length) await db("delete from installs where key_hash = any($1::text[])", [PING.map(sha)]);
+  for (const k of [A, B, C, E, ...KICK, ...PUSH, ...PING]) await call(k, { op: "forget" });
   const [, b] = await call(A, { op: "board" });   // A re-registers on this call; forget again
   await call(A, { op: "forget" });
   console.log(res.join("\n"));

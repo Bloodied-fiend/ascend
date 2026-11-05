@@ -661,34 +661,33 @@ button{font:inherit;color:inherit}
 .wraid .wbslot video{object-fit:cover;object-position:50% 24%;display:block}
 .wraid .wbshade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,rgba(0,0,0,.35),transparent 24%,transparent 58%,rgba(0,0,0,.9))}
 .wraid .wbcap{position:absolute;left:14px;right:14px;bottom:12px;display:grid;gap:4px}
-.wraid .wbcap .systitle{margin:0;font-size:22px;text-shadow:0 2px 14px #000}
+.wraid .wbcap .systitle{margin:0;font-size:22px;color:#f4f1ea;text-shadow:0 2px 14px #000}
 .wraid .wbcap p{margin:0;font-size:13px;line-height:1.4;color:#d8d3c8;text-shadow:0 1px 8px #000}
-.wraid .wbstat{justify-self:start;font-size:10px;letter-spacing:.2em;font-weight:700;padding:3px 7px 2px;border:1px solid var(--bc);color:var(--bc);background:rgba(0,0,0,.45)}
+.wraid .wbstat{justify-self:start;font-size:10px;letter-spacing:.2em;font-weight:700;padding:3px 7px 2px;border:1px solid var(--bc);color:color-mix(in srgb,var(--bc) 60%,#fff);background:rgba(0,0,0,.45)}
 .wraid .wbdown{position:absolute;inset:0;display:grid;place-content:center;text-align:center;background:rgba(0,0,0,.55);gap:4px}
-.wraid .wbdown b{font-size:28px;letter-spacing:.18em;color:var(--bc)}.wraid .wbdown small{color:var(--ink,#e9e4da);letter-spacing:.12em;font-size:11px}
+.wraid .wbdown b{font-size:28px;letter-spacing:.18em;color:color-mix(in srgb,var(--bc) 60%,#fff)}.wraid .wbdown small{color:var(--ink,#e9e4da);letter-spacing:.12em;font-size:11px}
 .wraid .wbhp{display:flex;justify-content:space-between;font-size:12px;letter-spacing:.06em;color:var(--muted);margin-bottom:5px;font-variant-numeric:tabular-nums}
-.wraid .wbhp b{color:inherit;filter:brightness(1.6)}
+.wraid .wbhp b{color:var(--fg)}
 .wraid .wbdmg{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:7px}
-.wraid .wbdmg li{display:grid;grid-template-columns:minmax(0,1fr) 34% auto;gap:10px;align-items:center;font-size:13px;font-variant-numeric:tabular-nums}
+.wraid .wbdmg li{display:grid;grid-template-columns:minmax(0,1fr) 26% 36px;gap:10px;align-items:center;font-size:13px;font-variant-numeric:tabular-nums}
 .wraid .wbdmg li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wraid .wbdmg li span em{font-style:normal;font-size:10px;letter-spacing:.14em;color:var(--bc)}
-.wraid .wbdmg li i{height:4px;background:rgba(255,255,255,.08);position:relative;border-radius:2px;overflow:hidden}
+.wraid .wbdmg li i{height:4px;background:color-mix(in srgb,var(--fg) 10%,transparent);position:relative;border-radius:2px;overflow:hidden}
 .wraid .wbdmg li i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--w);background:var(--bc)}
 .wraid .wbdmg li.me span{color:var(--bc)}
+.wraid .wbdmg li b{text-align:right}
 .wraid.down .hpbar i{opacity:.35}
+[data-skin="daylight"] .wraid .hpbar{background:rgba(0,0,0,.06)}
 .wraid .wrank{margin-top:14px;border-top:1px solid color-mix(in srgb,var(--hl) 35%,transparent);padding-top:10px}
-.wraid .wrh,.wraid .wr0{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}
-.wraid .wr0{display:grid;margin-top:14px;border-top:1px solid color-mix(in srgb,var(--hl) 35%,transparent);padding-top:10px}
-.wraid .wrh b,.wraid .wr0 b{font-size:11px;letter-spacing:.22em;color:var(--hl)}.wraid .wrh small,.wraid .wr0 small{font-size:11px;color:var(--muted);letter-spacing:.06em}
+.wraid .wrh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}
+.wraid .wrh b{font-size:11px;letter-spacing:.22em;color:var(--hl)}.wraid .wrh small{font-size:11px;color:var(--muted);letter-spacing:.06em}
 .wraid .wrank ol{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-.wraid .wrank li{display:grid;grid-template-columns:22px minmax(0,1fr) 26% auto;gap:10px;align-items:center;font-variant-numeric:tabular-nums}
-.wraid .wrk{font-size:12px;color:var(--muted);text-align:right}
-.wraid .wrank li:nth-child(1) .wrk{color:#f2c94c}.wraid .wrank li:nth-child(2) .wrk{color:#c9d1d9}.wraid .wrank li:nth-child(3) .wrk{color:#d08a50}
-.wraid .wrn{min-width:0;display:grid}.wraid .wrn b{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wraid .wrn small{font-size:10px;letter-spacing:.1em;color:var(--muted)}
-.wraid .wrank li i{height:4px;background:rgba(255,255,255,.08);position:relative;border-radius:2px;overflow:hidden}
+.wraid .wrank li{display:grid;grid-template-columns:minmax(0,1fr) 26% 36px;gap:10px;align-items:center;font-variant-numeric:tabular-nums}
+.wraid .wrn{min-width:0;display:flex;align-items:baseline;gap:6px}.wraid .wrn b{min-width:0;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wraid .wrn small{flex:none;font-size:10px;letter-spacing:.14em;color:var(--bc)}
+.wraid .wrank li i{height:4px;background:color-mix(in srgb,var(--fg) 10%,transparent);position:relative;border-radius:2px;overflow:hidden}
 .wraid .wrank li i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--w);background:var(--bc)}
-.wraid .wrank li em{font-style:normal;font-size:13px}
-.wraid .wrank li.me .wrn b{color:var(--bc)}.wraid .wrank li.clr .wrn small{color:var(--bc)}
+.wraid .wrank li em{font-style:normal;font-size:13px;text-align:right}
+.wraid .wrank li.me .wrn b{color:var(--bc)}
 
 .bnote{margin:10px 0 0;font-size:13px;color:var(--muted);line-height:1.45}
 .boss.hit .hpbar i{animation:hit .35s}
@@ -1855,19 +1854,21 @@ async function partyCall(body,make){const k=partyKey(make);if(!k)throw new Error
   const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error&&j.error!=="server"?j.error[0].toUpperCase()+j.error.slice(1)+".":"Party server error. Try again.");
   if(body.op==="create"||body.op==="join")try{localStorage.removeItem(PNOPING)}catch(e){}
   if(seq!==pSeq)return j; // a newer call is in flight; don't let this older answer overwrite it
-  if(Array.isArray(j.parties)){party={parties:j.parties,guilds:Array.isArray(j.guilds)?j.guilds:[],at:Date.now(),wk:S.raid.wk};try{localStorage.setItem(PCACHE,JSON.stringify(party))}catch(e){}} // ops that are not about parties (push) must not empty the board
+  if(Array.isArray(j.parties)){party={parties:j.parties,ranks:Array.isArray(j.ranks)?j.ranks:party.ranks||[],rwk:S.raid.wk,at:Date.now(),wk:S.raid.wk};try{localStorage.setItem(PCACHE,JSON.stringify(party))}catch(e){}} // ops that are not about parties (push) must not empty the board
   if(S.raidPaid!==S.raid.wk&&raidState().dealt>=raidState().hp)act(()=>{}); // a teammate's hits may have finished the boss
   if(S.tab==="quests"&&$("#ov").hidden)render(true);return j}
 let syncT=null;
 // after any change (and on open), push this player's summary; debounced, silent on failure
 let lastSent="";
-function schedSync(ms=4000){if(!partyKey(false)||!party.parties.length)return;clearTimeout(syncT);
+function schedSync(ms=4000){clearTimeout(syncT);if(!partyKey(false)||!party.parties.length){syncT=setTimeout(ping,ms);return}
   syncT=setTimeout(()=>{const sm=pSummary(),rd={wk:S.raid.wk,dmg:S.raid.dmg},js=JSON.stringify([sm,rd]);if(navigator.onLine===false||(js===lastSent&&ms))return; // only real changes (opening the app always refreshes)
     partyCall({op:"sync",summary:sm,raid:rd}).then(()=>{lastSent=js}).catch(()=>{})},ms)}
 // check-in for the hidden admin list: once per open (and on return after 15 min), silent, never blocks the app
-let pinged=0;function ping(){if(!S.onboarded||navigator.onLine===false||Date.now()-pinged<9e5)return;try{if(localStorage.getItem(PNOPING))return}catch(e){return}const k=partyKey(true);if(!k)return;pinged=Date.now();const sm=pSummary();
+let pinged=0,pingDmg=null;function ping(){if(!S.onboarded||navigator.onLine===false||(Date.now()-pinged<9e5&&S.raid.dmg===pingDmg))return;try{if(localStorage.getItem(PNOPING))return}catch(e){return}const k=partyKey(true);if(!k)return;pinged=Date.now();pingDmg=S.raid.dmg;const sm=pSummary();
   fetch(PARTY_API,{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer "+k},keepalive:true,
-    body:JSON.stringify({op:"ping",name:S.name||"Hunter",summary:{lvl:sm.lvl,xp:sm.xp,tier:sm.tier,streak:sm.streak,title:sm.title}})}).catch(()=>{})}
+    body:JSON.stringify({op:"ping",name:S.name||"Hunter",wk:S.raid.wk,raid:{wk:S.raid.wk,dmg:S.raid.dmg},summary:{lvl:sm.lvl,xp:sm.xp,tier:sm.tier,streak:sm.streak,title:sm.title}})})
+    .then(r=>r.json()).then(j=>{if(!Array.isArray(j.ranks))return;party={...party,ranks:j.ranks,rwk:S.raid.wk,at:party.at||Date.now()};try{localStorage.setItem(PCACHE,JSON.stringify(party))}catch(e){}
+      if(S.tab==="quests"&&$("#ov").hidden)render(true)}).catch(()=>{})}
 // hidden admin list (Jaime only): tap Guild 5 times in a row. The password is checked on the server, never here.
 const adm={n:0,at:0};
 function adminAsk(){notify({chip:"[ SYSTEM ]",title:"Restricted",after:true,
@@ -1931,9 +1932,9 @@ async function pushTest(){
   catch(e){toast((e&&e.message||"TEST FAILED").toUpperCase())}}
 const partyNameField=()=>`<div class="qe" style="margin-top:12px;text-align:left"><label>Party name<input id="pname2" maxlength="24" placeholder="${esc((S.name||"Hunter")+"'s Party")}"></label></div>`;
 const MAXP=5; // mirrors MAX_PARTIES in backend/party.mjs; the server rejects the 6th with a 409
-const PSHARE="Shared with your party only: your name, title, level, rank, total XP, streak and Gates cleared. Never your quests or stats.";
+const PSHARE="Your party sees your title, level, rank, total XP, streak and Gates cleared. Every player sees your name and World Raid damage. Never your quests or stats.";
 function partyCard(){
-  if(!party.parties.length)return `<div class="card glowcard pjoin" style="--c:var(--hl)"><p>Compete with friends.</p><small>Only people with your invite code can see you. ${PSHARE}</small>
+  if(!party.parties.length)return `<div class="card glowcard pjoin" style="--c:var(--hl)"><p>Compete with friends.</p><small>${PSHARE}</small>
     <div class="acts"><button class="btn chamf sysbtn" data-party="create">Create party</button><button class="btn chamf ghost" data-party="join">Join with code</button></div></div>`;
   return party.parties.map((p,i)=>`<section class="sys pboard" aria-label="Party ${esc(p.name)}">
     <div class="syshead"><span class="chip">[ PARTY ]</span><button class="pcode" data-pshare="${esc(p.code)}" title="Tap to share the invite code" aria-label="Invite code ${esc(p.code)}, tap to share">${esc(p.code.slice(0,4))}-${esc(p.code.slice(4))}</button></div>
@@ -2063,17 +2064,16 @@ function raidCard(){const r=raidState(),w=r.w,hp=Math.max(0,r.hp-r.dealt),pct=hp
     ${down?`<div class="wbdown"><b>CLEARED</b><small>+${RAID_XP} XP collected</small></div>`:""}</div>
   <div class="wbhp"><span>HP <b>${hp.toLocaleString("en-US")}</b> / ${r.hp.toLocaleString("en-US")}</span><span>${pct.toFixed(0)}%</span></div>
   <div class="bar hpbar"><i style="width:${pct}%"></i></div>
-  <ol class="wbdmg">${r.rows.slice(0,8).map(x=>`<li class="${x.me?"me":""}"><span>${esc(x.name)}${x.me?" <em>YOU</em>":""}</span><i style="--w:${(x.dmg/top*100).toFixed(1)}%"></i><b>${x.dmg.toLocaleString("en-US")}</b></li>`).join("")}</ol>
-  ${guildRanks(r)}
+  ${r.solo&&playerDamage()?"":`<ol class="wbdmg">${r.rows.slice(0,8).map(x=>`<li class="${x.me?"me":""}"><span>${esc(x.name)}${x.me?" <em>YOU</em>":""}</span><i style="--w:${(x.dmg/top*100).toFixed(1)}%"></i><b>${x.dmg.toLocaleString("en-US")}</b></li>`).join("")}</ol>`}
+  ${playerDamage()}
   <p class="bnote">${STATS[w.s]} quests hit for ${RAID_HIT}, every other quest for ${RAID_OFF}, and clearing the day lands a ${RAID_CLEAR}-point crit. ${r.solo?"Solo raid: create or join a party to share the fight (HP grows with the party).":`Your party shares one HP pool. Defeat it before Monday for +${RAID_XP} XP.`}</p>
 </section>`}
-// guild rankings: every party's combined damage on this week's boss (names and sizes only, from the server).
-// My parties use my live damage so the row moves the moment I hit, before the next sync lands.
-function guildRanks(r){if(r.solo)return `<div class="wr0"><b>GUILD RANKINGS</b><small>Join or create a party to put your guild on the board.</small></div>`;
-  const G=party.wk===S.raid.wk&&Array.isArray(party.guilds)?party.guilds:[];if(!G.length)return "";
-  const mineLive=G.map(g=>g.mine&&g.name===r.party?{...g,dmg:Math.max(g.dmg,r.dealt)}:g),top=Math.max(1,...mineLive.map(g=>g.dmg));
-  return `<div class="wrank"><div class="wrh"><b>GUILD RANKINGS</b><small>${G.length>=25?"TOP 25 · ":""}THIS WEEK</small></div><ol>${mineLive.map(g=>{const hp=RAID_HP*Math.max(1,g.n),clr=g.dmg>=hp;
-    return `<li class="${g.mine?"me":""}${clr?" clr":""}"><span class="wrk">${g.rk}</span><span class="wrn"><b>${esc(g.name)}</b><small>${g.n} hunter${g.n===1?"":"s"} · ${clr?"CLEARED":Math.min(99,Math.floor(g.dmg/hp*100))+"%"}</small></span><i style="--w:${(g.dmg/top*100).toFixed(1)}%"></i><em>${g.dmg.toLocaleString("en-US")}</em></li>`}).join("")}</ol></div>`}
+// player damage: every hunter's damage on this week's boss, highest first (names and damage only, from the server).
+// My row uses my live damage, so it moves and re-sorts the moment I hit, before the next report lands.
+function playerDamage(){const G=party.rwk===S.raid.wk&&Array.isArray(party.ranks)?party.ranks:[];if(!G.length)return "";
+  const live=G.map(g=>({...g,dmg:g.mine?S.raid.dmg:Number(g.dmg)||0})).sort((x,y)=>y.dmg-x.dmg),top=Math.max(1,...live.map(g=>g.dmg));
+  return `<div class="wrank"><div class="wrh"><b>PLAYER DAMAGE</b><small>${G.some(g=>g.rk===25)?"TOP 25 · ":""}THIS WEEK</small></div><ol>${live.map(g=>
+    `<li class="${g.mine?"me":""}"><span class="wrn"><b>${esc(g.name)}</b>${g.mine?"<small>YOU</small>":""}</span><i style="--w:${(g.dmg/top*100).toFixed(1)}%"></i><em>${g.dmg.toLocaleString("en-US")}</em></li>`).join("")}</ol></div>`}
 // the boss loop lives outside the re-rendered HTML, so a re-render never restarts or reloads the video
 let wbVid=null;
 function wbMount(){const slot=screenEl.querySelector("[data-wbslot]");if(!slot)return;const id=slot.dataset.wbslot;
@@ -2282,7 +2282,7 @@ ${sh("Notifications")}<div class="card glowcard" style="--c:var(--hl);display:gr
   <button class="btn chamf sysbtn" data-pushsave="1">Save time</button>`:""}
   <div class="acts">${pushState?`<button class="btn chamf ghost" data-pushtest="1">Send test</button><button class="btn chamf ghost" data-pushoff="1">Turn off</button>`
     :`<button class="btn chamf sysbtn" data-pushon="1"${pushOK()&&Notification.permission!=="denied"?"":" disabled"}>Turn on</button>`}</div></div>
-${partyKey(false)&&party.at?`${sh("Party data")}<div class="card glowcard" style="--c:var(--danger);display:grid;gap:10px"><small style="color:var(--muted)">Your party membership and shared summary live on the party server.</small><button class="btn chamf ghost" data-pforget="1">Delete my party data</button></div>`:""}
+${partyKey(false)&&party.at?`${sh("Party data")}<div class="card glowcard" style="--c:var(--danger);display:grid;gap:10px"><small style="color:var(--muted)">Your name, raid damage, summary and any party membership live on the party server. Every player can see your name and World Raid damage.</small><button class="btn chamf ghost" data-pforget="1">Delete my party data</button></div>`:""}
 ${sh("Backup")}<div class="card glowcard" style="--c:var(--hl);display:grid;gap:10px"><small style="color:var(--muted)">Progress lives in this browser. Copy a backup now and then, or after clearing site data restore it from a .json file.</small>
 <div style="display:flex;gap:8px"><button class="btn chamf sysbtn" data-backup="1" style="flex:1">Copy backup</button><label class="btn chamf ghost" for="rfile" tabindex="0" style="flex:1">Restore file</label></div></div>
 `},
@@ -2396,6 +2396,14 @@ const BARS=[[6,"5px","var(--ab1)",-.04],[14,"12px","var(--ab2)",-.31],[23,"3px",
 const barHTML=()=>BARS.map(([y,h,c,d])=>`<b style="--y:${y}%;--h:${h};--c:${c};--d:${d}s"></b>`).join("");
 const vLabel=v=>"1."+String(v).padStart(3,"0"); // 37 -> "1.037"; a major overhaul starts the 2.x line
 const PATCH=[
+  {v:51,d:"Nov 4, 2026",lines:[
+    "World Raid is open. Find it on the Guild tab.",
+    "Five world bosses take turns, a new one each week, and every hunter fights the same one.",
+    "Quests hit for 12 if they match the boss's stat, 5 if not. Clearing the day crits for 20.",
+    "Your party shares one boss HP pool, sized to its members. Solo hunters fight alone.",
+    "Kill the boss for +300 XP once a week. Your first kill earns the World Breaker title.",
+    "The Guild tab shows the top 25 hunters' names and damage this week.",
+    "Want off the list? Go to Profile and tap Delete my party data."]},
   {v:50,d:"Nov 1, 2026",lines:[
     "Your party board refreshes every time you come back to the app.",
     "Turning on notifications no longer half-works when the server is down.",
@@ -2731,7 +2739,7 @@ function onButton(b,d){
   if(d.pushoff){pushOff();return}
   if(d.pushsave){pushSave();return}
   if(d.pushtest){pushTest();return}
-  if(d.pforget){notify({chip:"[ PARTY ]",tone:"danger",title:"Delete party data?",body:"Removes you from every party and deletes your data on the party server.\nYour progress on this phone is untouched.",
+  if(d.pforget){notify({chip:"[ PARTY ]",tone:"danger",title:"Delete party data?",body:"Removes you from every party and the World Raid damage list, and deletes your data on the party server.\nYour progress on this phone is untouched.",
       actions:[{label:"Keep"},{label:"Delete",fn:()=>partyCall({op:"forget"}).then(()=>{try{localStorage.removeItem(PKEY);localStorage.removeItem(PCACHE);localStorage.setItem(PNOPING,"1")}catch(e){}party={parties:[],at:0};render(true);toast("PARTY DATA DELETED")}).catch(e=>toast(e.message.toUpperCase()))}]});return}
   if(d.tmore){showAllTitles=!showAllTitles;render(true);return}
   if(d.patch){notify(patchNote(PATCH[0],0));return}

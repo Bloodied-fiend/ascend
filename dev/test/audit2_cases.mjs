@@ -89,4 +89,23 @@ export async function runAudit2({ ev, boot, check, KEY, base, wait, send }) {
         opened.filter(o => o === "sync").length === 1 && back === 2, JSON.stringify({ opened, back }));
     } finally { await send("Page.removeScriptToEvaluateOnNewDocument", { identifier }); await ev(`localStorage.clear()`); }
   }
+
+  // World Raid player damage, solo: the check-in carries the damage and brings back the board
+  {
+    const stub = `(()=>{window.__pings=[];window.fetch=function(u,o){if(String(u).includes("neon.tech")){const b=JSON.parse(o.body);if(b.op==="ping")window.__pings.push(b);
+      return Promise.resolve(new Response(JSON.stringify({ok:true,ranks:[{rk:1,name:"<img src=x onerror=window.__xss=1>",dmg:900,mine:false},{rk:2,name:"Me",dmg:40,mine:true}]}),{status:200,headers:{"content-type":"application/json"}}))}return Promise.reject(new Error("offline"))}})()`;
+    const { result: { identifier } } = await send("Page.addScriptToEvaluateOnNewDocument", { source: stub });
+    try {
+      await ev(`localStorage.clear();localStorage.setItem(${JSON.stringify(KEY)},${JSON.stringify(JSON.stringify(base))})`);
+      await send("Page.reload"); await wait(5000); await shut();
+      await ev(`document.querySelector('[data-t="quests"]').click()`); await wait(500); await shut();
+      const r = await ev(`(()=>{const c=document.querySelector(".wraid .wrank"),p=window.__pings[0]||{};return {n:window.__pings.length,wk:p.wk,raid:p.raid,cur:__ascend.S.raid.wk,head:c&&c.querySelector(".wrh b").textContent,
+        rows:c?[...c.querySelectorAll("li")].map(l=>[l.querySelector(".wrn b").textContent,l.className,l.querySelector("em").textContent]):[],img:!!document.querySelector(".wrank img"),xss:!!window.__xss}})()`);
+      check("solo player damage: the check-in reports this week's damage, the card shows the board, and a hostile name stays text",
+        r.n >= 1 && r.wk === r.cur && r.raid?.wk === r.cur && Number.isInteger(r.raid?.dmg) && r.head === "PLAYER DAMAGE" && r.rows.length === 2 && r.rows[0][0].startsWith("<img") && r.rows[0][2] === "900" && r.rows[1][1] === "me" && !r.img && !r.xss, JSON.stringify(r));
+      await ev(`document.querySelector('[data-t="me"]').click()`); await wait(400); await shut();
+      const del = await ev(`!!document.querySelector("[data-pforget]")`);
+      check("a solo hunter on the board can see Delete my party data", del === true, JSON.stringify({ del }));
+    } finally { await send("Page.removeScriptToEvaluateOnNewDocument", { identifier }); await ev(`localStorage.clear()`); }
+  }
 }

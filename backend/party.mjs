@@ -1,6 +1,7 @@
 // Ascend party leaderboard: one Neon Function, one JSON endpoint (POST / {op,...}).
 // Identity = an invisible per-player key the app keeps on the device; only its SHA-256 is stored here.
 // Parties are invite-code only: you see exactly the players who share a party with you.
+// The one exception is World Raid player rankings, which show display names and damage to every player.
 // Every install also checks in on open (op "ping") so Jaime's hidden admin list sees everyone, party or not.
 import { createHash, randomInt, scryptSync, timingSafeEqual } from "node:crypto";
 import { sendPush } from "./push.mjs";
@@ -47,7 +48,10 @@ create table if not exists push_subs(key_hash text primary key, endpoint text no
 alter table push_subs add column if not exists last_pass timestamptz;
 create table if not exists installs(key_hash text primary key, name text not null, lvl int not null, xp bigint not null, tier int not null, streak int not null, title text, ip text, first_seen timestamptz not null default now(), seen timestamptz not null default now());
 update parties set owner_id = (select player_id from members where party_id = parties.id order by joined_at, player_id limit 1) where owner_id is null;
-create table if not exists raids(player_id bigint not null references players(id) on delete cascade, wk text not null, dmg int not null, updated_at timestamptz not null default now(), primary key(player_id, wk));`;
+create table if not exists raids(player_id bigint not null references players(id) on delete cascade, wk text not null, dmg int not null, updated_at timestamptz not null default now(), primary key(player_id, wk));
+alter table installs add column if not exists raid_wk text;
+alter table installs add column if not exists raid_dmg int;
+alter table installs add column if not exists raid_at timestamptz;`;
 let ready = null;
 const init = () => (ready ??= (async () => { for (const s of SCHEMA.split(";").map(x => x.trim()).filter(Boolean)) await sql(s); })().catch(e => { ready = null; throw e; }));
 
@@ -87,6 +91,21 @@ async function guildBoard(me, wk) {
         group by p.id),
      ranked as (select *, rank() over (order by dmg desc, n asc, id asc)::int as rk from t where dmg > 0 or mine)
      select rk, name, n, dmg, mine from ranked where rk <= 25 or mine order by rk`, [me, wk]);
+  return rows;
+}
+
+// World Raid player rankings: every hunter's damage on this week's boss, party or solo. Display name and
+// damage only, never a key or invite code. Top 25, plus me if I rank lower. Party players report through both
+// sync (raids) and ping (installs), so the newest report wins; an undo must be able to lower the number.
+async function playerBoard(kh, wk) {
+  const { rows } = await pool.query(
+    `with t as (
+       select pl.key_hash, pl.name, r.dmg, r.updated_at as at from raids r join players pl on pl.id = r.player_id where r.wk = $2
+       union all
+       select key_hash, name, raid_dmg, raid_at from installs where raid_wk = $2),
+     latest as (select distinct on (key_hash) key_hash, name, dmg from t order by key_hash, at desc),
+     ranked as (select *, rank() over (order by dmg desc, key_hash)::int as rk from latest where dmg > 0 or key_hash = $1)
+     select rk, name, dmg, key_hash = $1 as mine from ranked where rk <= 25 or key_hash = $1 order by rk`, [kh, wk]);
   return rows;
 }
 
@@ -222,7 +241,9 @@ async function pingOp(b, kh, ip) {
     `insert into installs(key_hash, name, lvl, xp, tier, streak, title, ip) values($1,$2,$3,$4,$5,$6,$7,$8)
      on conflict (key_hash) do update set name=$2, lvl=$3, xp=$4, tier=$5, streak=$6, title=$7, seen=now()`,
     [kh, cleanName(b.name), s.lvl, s.xp, s.tier, s.streak, typeof s.title === "string" ? cleanName(s.title, 40) : null, ip]);
-  return [200, { ok: true }];
+  const rd = b.raid || {}, rwk = raidWk(rd.wk), wk = raidWk(b.wk);
+  if (rwk && int(rd.dmg, 0, RAID_MAX)) await pool.query("update installs set raid_wk = $2, raid_dmg = $3, raid_at = now() where key_hash = $1", [kh, rwk, rd.dmg]);
+  return [200, wk ? { ok: true, ranks: await playerBoard(kh, wk) } : { ok: true }]; // no wk: app versions from before the rankings
 }
 
 async function handle(req, ip) {
@@ -245,6 +266,7 @@ async function handle(req, ip) {
   let me = (await pool.query("select id from players where key_hash = $1", [kh])).rows[0]?.id;
   const name = cleanName(b.name);
   if (!me) {
+    if (b.op === "forget") await pool.query("delete from installs where key_hash = $1", [kh]); // a solo hunter has no player row, only the check-in
     if (b.op !== "create" && b.op !== "join") return [200, { parties: [] }]; // unknown key: nothing to show, nothing stored (a late sync can't resurrect a deleted player)
     if (b.op === "join") { // a wrong code must not leave a player row behind
       const code = typeof b.code === "string" ? b.code.toUpperCase().replace(/[^A-Z0-9]/g, "") : "";
@@ -343,7 +365,7 @@ async function handle(req, ip) {
     default: return [400, { error: "op" }];
   }
   const wk = raidWk(b.wk);
-  return [200, { parties: await board(me, wk), guilds: wk ? await guildBoard(me, wk) : [] }];
+  return [200, { parties: await board(me, wk), guilds: wk ? await guildBoard(me, wk) : [], ranks: wk ? await playerBoard(kh, wk) : [] }]; // guilds: the first World Raid build still reads it
 }
 
 export const _test = { nudgeDue };
