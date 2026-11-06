@@ -3,7 +3,7 @@
 // Parties are invite-code only: you see exactly the players who share a party with you.
 // The one exception is World Raid player rankings, which show display names and damage to every player.
 // Every install also checks in on open (op "ping") so Jaime's hidden admin list sees everyone, party or not.
-import { createHash, randomInt, scryptSync, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes, randomInt, scryptSync, timingSafeEqual } from "node:crypto";
 import { sendPush } from "./push.mjs";
 
 // SQL over Neon's HTTPS endpoint with plain fetch: no driver, so the deployed bundle is a few KB
@@ -15,11 +15,20 @@ async function sql(query, params = []) {
   return { rows: b.rows, rowCount: b.rowCount };
 }
 const pool = { query: sql };
+// Several statements as one transaction, which the HTTPS endpoint runs all-or-nothing.
+async function tx(queries) {
+  const r = await fetch(`https://${DB_HOST}/sql`, { method: "POST", headers: { "Neon-Connection-String": DB, "content-type": "application/json" }, body: JSON.stringify({ queries }) });
+  const b = await r.json();
+  if (!r.ok) throw new Error(b.message || "tx " + r.status);
+  return b.results;
+}
 
 const ORIGINS = (process.env.ALLOWED_ORIGINS || "https://bloodied-fiend.github.io").split(",").map(s => s.trim());
 const LOCAL = process.env.ALLOW_LOCAL === "1"; // tests from http://127.0.0.1:<port>
 const MAX_PARTIES = 5, MAX_MEMBERS = 20, NEW_PLAYERS_PER_IP_DAY = 10, PER_KEY_PER_MIN = 30;
-const OPS = new Set(["ping", "board", "sync", "create", "join", "leave", "forget", "kick", "psub", "poff", "ptest"]);
+const MAX_BODY = 512 * 1024, MAX_OP_BODY = 4096, PIN_TRIES = 5; // only bsave carries a whole save; everything else keeps the small limit
+const OPS = new Set(["ping", "board", "sync", "create", "join", "leave", "forget", "kick", "psub", "poff", "ptest", "bsave", "bpin", "brestore", "bpull"]);
+const BACKUP_OPS = new Set(["bsave", "bpin", "brestore", "bpull"]);
 // Push identity is the same device key, but deliberately NOT tied to a player row: the daily nudge
 // has to work whether or not you are in a party, and an unknown key cannot create a player.
 const PUSH_OPS = new Set(["psub", "poff", "ptest"]);
@@ -51,7 +60,11 @@ update parties set owner_id = (select player_id from members where party_id = pa
 create table if not exists raids(player_id bigint not null references players(id) on delete cascade, wk text not null, dmg int not null, updated_at timestamptz not null default now(), primary key(player_id, wk));
 alter table installs add column if not exists raid_wk text;
 alter table installs add column if not exists raid_dmg int;
-alter table installs add column if not exists raid_at timestamptz;`;
+alter table installs add column if not exists raid_at timestamptz;
+create table if not exists saves(key_hash text primary key, name_norm text not null, lvl int not null, gen bigint not null, save text not null, updated_at timestamptz not null default now(), restored_at timestamptz, prev text, prev_lvl int, prev_at timestamptz);
+create index if not exists saves_name on saves(name_norm);
+create table if not exists pins(key_hash text primary key, salt text not null, hash text not null, fails int not null default 0, locked_until timestamptz);
+create table if not exists restore_codes(code_hash text primary key, key_hash text not null, expires_at timestamptz not null);`;
 let ready = null;
 const init = () => (ready ??= (async () => { for (const s of SCHEMA.split(";").map(x => x.trim()).filter(Boolean)) await sql(s); })().catch(e => { ready = null; throw e; }));
 
@@ -221,11 +234,21 @@ async function adminOp(b, ip) {
   const pw = typeof b.pw === "string" ? b.pw.slice(0, 200) : "";
   if (!timingSafeEqual(scryptSync(pw, Buffer.from(ADMIN_SALT, "hex"), 32), Buffer.from(ADMIN_KEY, "hex"))) return [403, { error: "wrong password" }];
   await init();
+  if (b.codeFor !== undefined) { // a one-time restore code for a player with no PIN, or a forgotten one
+    const id = typeof b.codeFor === "string" && /^[a-f0-9]{16}$/.test(b.codeFor) ? b.codeFor : "";
+    const t = id && (await pool.query("select key_hash from saves where left(key_hash, 16) = $1", [id])).rows[0];
+    if (!t) return [404, { error: "no backup for that player" }];
+    const code = newCode();
+    await tx([{ query: "delete from restore_codes where key_hash = $1", params: [t.key_hash] },
+      { query: "insert into restore_codes(code_hash, key_hash, expires_at) values($1, $2, now() + interval '1 day')", params: [createHash("sha256").update(code).digest("hex"), t.key_hash] }]);
+    return [200, { code }];
+  }
   const { rows } = await pool.query(
-    `select coalesce(i.name, pl.name) as name, coalesce(i.lvl, s.lvl) as lvl, coalesce(i.xp, s.xp_total) as xp, coalesce(i.tier, s.tier) as tier,
+    `select left(coalesce(i.key_hash, pl.key_hash), 16) as id, sv.updated_at as backed, pn.key_hash is not null as pin, coalesce(i.name, pl.name) as name, coalesce(i.lvl, s.lvl) as lvl, coalesce(i.xp, s.xp_total) as xp, coalesce(i.tier, s.tier) as tier,
        coalesce(i.streak, s.streak) as streak, coalesce(i.title, s.title) as title, greatest(i.seen, s.updated_at) as seen,
        least(i.first_seen, pl.created_at) as joined, (select count(*)::int from members m where m.player_id = pl.id) as parties
      from installs i full outer join players pl on pl.key_hash = i.key_hash left join summaries s on s.player_id = pl.id
+     left join saves sv on sv.key_hash = coalesce(i.key_hash, pl.key_hash) left join pins pn on pn.key_hash = coalesce(i.key_hash, pl.key_hash)
      order by 3 desc nulls last, 1`);
   return [200, { players: rows }];
 }
@@ -246,14 +269,106 @@ async function pingOp(b, kh, ip) {
   return [200, wk ? { ok: true, ranks: await playerBoard(kh, wk) } : { ok: true }]; // no wk: app versions from before the rankings
 }
 
+const dropBackup = kh => tx([{ query: "delete from saves where key_hash = $1", params: [kh] }, { query: "delete from pins where key_hash = $1", params: [kh] }, { query: "delete from restore_codes where key_hash = $1", params: [kh] }]);
+const pinHash = (pin, salt) => scryptSync(pin, Buffer.from(salt, "hex"), 32).toString("hex");
+const nameNorm = v => cleanName(v).toLowerCase();
+
+// Which backup do these credentials open? Returns the owner's key hash, or an [status, body] refusal.
+async function restoreSource(b, ip) {
+  if (limited("rst:" + ip, 10, admHits)) return [429, { error: "too many tries, wait a minute" }];
+  if (typeof b.code === "string") {
+    const code = b.code.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const r = (await pool.query("select key_hash from restore_codes where code_hash = $1 and expires_at > now()", [createHash("sha256").update(code).digest("hex")])).rows[0];
+    return r ? r.key_hash : [403, { error: "that code is wrong or expired" }];
+  }
+  const pin = typeof b.pin === "string" && /^\d{6}$/.test(b.pin) ? b.pin : null;
+  if (!pin) return [400, { error: "enter your 6-digit PIN" }];
+  const { rows } = await pool.query(
+    `select p.key_hash, p.salt, p.hash, p.locked_until > now() as locked from pins p join saves s on s.key_hash = p.key_hash where s.name_norm = $1`, [nameNorm(b.name)]);
+  const open = rows.filter(r => !r.locked);
+  const hits = open.filter(r => timingSafeEqual(Buffer.from(pinHash(pin, r.salt), "hex"), Buffer.from(r.hash, "hex")));
+  if (hits.length > 1) return [409, { error: "that name and PIN match two players, ask for a restore code" }]; // a rename or a race can do this; guessing would hand over someone else's save
+  if (hits.length) return hits[0].key_hash;
+  if (rows.length && !open.length) return [429, { error: "too many wrong PINs, try again tomorrow or ask for a restore code" }];
+  if (open.length) await pool.query(
+    `update pins set fails = fails + 1, locked_until = case when fails + 1 >= ${PIN_TRIES} then now() + interval '1 day' else locked_until end where key_hash = any($1::text[])`, [open.map(r => r.key_hash)]);
+  return [403, { error: "that name and PIN don't match" }];
+}
+
+async function backupOp(b, kh, ip) {
+  if (b.op === "bsave") {
+    let sv = null; try { sv = typeof b.save === "string" ? JSON.parse(b.save) : null; } catch { /* rejected below */ }
+    if (!sv || !int(sv.lvl, 1, 999) || !Array.isArray(sv.quests) || !int(b.gen, 1, 1e15)) return [400, { error: "save" }];
+    // same gate as a new player: a key the IP-limited check-in has never seen stores nothing
+    const known = (await pool.query("select 1 from installs where key_hash = $1 union all select 1 from players where key_hash = $1", [kh])).rowCount;
+    if (!known) return [409, { error: "check in first" }];
+    // A level only falls when a save was erased or replaced, so that is when the better copy moves to prev.
+    const rot = `saves.prev is null or saves.prev_at < now() - interval '14 days' or (saves.lvl >= saves.prev_lvl and (saves.prev_at < now() - interval '1 day' or $3 < saves.lvl))`;
+    const r = await pool.query(
+      `insert into saves(key_hash, name_norm, lvl, gen, save) values($1,$2,$3,$4,$5)
+       on conflict (key_hash) do update set name_norm=$2, lvl=$3, gen=$4, save=$5, updated_at=now(), restored_at=null,
+         prev = case when ${rot} then saves.save else saves.prev end,
+         prev_lvl = case when ${rot} then saves.lvl else saves.prev_lvl end,
+         prev_at = case when ${rot} then saves.updated_at else saves.prev_at end
+       where $4::bigint > saves.gen returning gen`, [kh, nameNorm(sv.name), sv.lvl, b.gen, b.save]);
+    if (r.rowCount) return [200, { ok: true }];
+    return [200, { ok: false, stale: true, gen: Number((await pool.query("select gen from saves where key_hash = $1", [kh])).rows[0].gen) }]; // an older upload arrived late
+  }
+  if (b.op === "bpin") {
+    const pin = typeof b.pin === "string" && /^\d{6}$/.test(b.pin) ? b.pin : null;
+    if (!pin) return [400, { error: "a PIN is 6 digits" }];
+    const me = (await pool.query("select name_norm from saves where key_hash = $1", [kh])).rows[0];
+    if (!me) return [409, { error: "still backing up, try again in a minute" }];
+    const { rows } = await pool.query("select p.salt, p.hash from pins p join saves s on s.key_hash = p.key_hash where s.name_norm = $1 and p.key_hash <> $2", [me.name_norm, kh]);
+    // name + PIN has to pick exactly one backup. shortcut: this reveals that a same-named player uses this PIN; fine among friends, not for a public app.
+    if (rows.some(r => pinHash(pin, r.salt) === r.hash)) return [409, { error: "pick a different PIN" }];
+    const salt = randomBytes(16).toString("hex");
+    await pool.query(`insert into pins(key_hash, salt, hash) values($1,$2,$3) on conflict (key_hash) do update set salt=$2, hash=$3, fails=0, locked_until=null`, [kh, salt, pinHash(pin, salt)]);
+    return [200, { ok: true }];
+  }
+  if (b.op === "bpull") { // a restore whose answer never arrived: the transfer happened, so the save is here under this key
+    const r = (await pool.query("select s.save, p.key_hash is not null as pin from saves s left join pins p on p.key_hash = s.key_hash where s.key_hash = $1 and s.restored_at is not null", [kh])).rows[0];
+    return [200, r ? { save: r.save, pin: r.pin } : {}];
+  }
+  // brestore: without confirm it only says what was found; with confirm it moves the identity to this device
+  const src = await restoreSource(b, ip);
+  if (Array.isArray(src)) return src;
+  const f = (await pool.query("select lvl, updated_at, prev_lvl, prev_at from saves where key_hash = $1", [src])).rows[0];
+  if (!f) return [404, { error: "no backup found" }];
+  if (!b.confirm) return [200, { found: true, lvl: f.lvl, at: f.updated_at, prev_lvl: f.prev_lvl, prev_at: f.prev_at }];
+  const usePrev = b.use === "prev" && f.prev_lvl !== null;
+  if (src !== kh) {
+    const inParty = (await pool.query("select 1 from members m join players p on p.id = m.player_id where p.key_hash = $1", [kh])).rowCount;
+    if (inParty) return [409, { error: "leave your party on this phone first" }];
+  }
+  // Move everything or nothing. The lost phone's push subscription is deleted, not moved: its endpoint is that phone.
+  const q = (query, ...params) => ({ query, params });
+  await tx([
+    ...(src === kh ? [] : [
+      q("delete from players where key_hash = $1", kh), q("update players set key_hash = $1 where key_hash = $2", kh, src),
+      q("delete from installs where key_hash = $1", kh), q("update installs set key_hash = $1 where key_hash = $2", kh, src),
+      q("delete from push_subs where key_hash = $1", src),
+      q("delete from saves where key_hash = $1", kh), q("delete from pins where key_hash = $1", kh),
+      q("update pins set key_hash = $1 where key_hash = $2", kh, src)]),
+    q("update pins set fails = 0, locked_until = null where key_hash = $1", kh),
+    q("delete from restore_codes where key_hash = $1 or key_hash = $2", src, kh),
+    q(`update saves set key_hash = $1, restored_at = now(),
+         save = case when $3::boolean then prev else save end, lvl = case when $3::boolean then prev_lvl else lvl end,
+         prev = case when $3::boolean then save else prev end, prev_lvl = case when $3::boolean then lvl else prev_lvl end
+       where key_hash = $2`, kh, src, String(usePrev))]);
+  const r = (await pool.query("select s.save, p.key_hash is not null as pin from saves s left join pins p on p.key_hash = s.key_hash where s.key_hash = $1", [kh])).rows[0];
+  return [200, { save: r.save, pin: r.pin }];
+}
+
 async function handle(req, ip) {
   const key = (req.headers.get("authorization") || "").replace(/^Bearer /, "");
   if (!/^[a-f0-9]{64}$/.test(key)) return [401, { error: "key" }];
-  if (+(req.headers.get("content-length") || 0) > 4096) return [413, { error: "too large" }];
+  if (+(req.headers.get("content-length") || 0) > MAX_BODY) return [413, { error: "too large" }];
   const raw = await req.text();
-  if (raw.length > 4096) return [413, { error: "too large" }];
+  if (raw.length > MAX_BODY) return [413, { error: "too large" }];
   let b; try { b = JSON.parse(raw); } catch { return [400, { error: "json" }]; }
   if (!b || typeof b !== "object") return [400, { error: "json" }];
+  if (b.op !== "bsave" && raw.length > MAX_OP_BODY) return [413, { error: "too large" }];
   if (b.op === "ip" && LOCAL) return [200, { xff: req.headers.get("x-forwarded-for"), ip }]; // test-only: what the platform sends
   if (b.op === "admin") return adminOp(b, ip);
   if (!OPS.has(b.op)) return [400, { error: "op" }];
@@ -261,11 +376,13 @@ async function handle(req, ip) {
   await init();
   const kh = createHash("sha256").update(key).digest("hex");
   if (PUSH_OPS.has(b.op)) return pushOp(b, kh);
+  if (BACKUP_OPS.has(b.op)) return backupOp(b, kh, ip);
   if (b.op === "ping") return pingOp(b, kh, ip);
   // find or register the player (new players are rate-limited per IP)
   let me = (await pool.query("select id from players where key_hash = $1", [kh])).rows[0]?.id;
   const name = cleanName(b.name);
   if (!me) {
+    if (b.op === "forget") await dropBackup(kh);
     if (b.op === "forget") await pool.query("delete from installs where key_hash = $1", [kh]); // a solo hunter has no player row, only the check-in
     if (b.op !== "create" && b.op !== "join") return [200, { parties: [] }]; // unknown key: nothing to show, nothing stored (a late sync can't resurrect a deleted player)
     if (b.op === "join") { // a wrong code must not leave a player row behind
@@ -354,6 +471,7 @@ async function handle(req, ip) {
     case "forget": { // remove me everywhere (credential revoke); parties I leave empty go too
       const mine = (await pool.query("select party_id from members where player_id = $1", [me])).rows.map(r => r.party_id);
       await pool.query("delete from players where id = $1", [me]);
+      await dropBackup(kh);
       await pool.query("delete from installs where key_hash = $1", [kh]);   // "deletes your data on the party server" includes the check-in
       if (mine.length) {
         await pool.query("delete from parties where id = any($1::bigint[]) and not exists (select 1 from members where party_id = parties.id)", [mine]);

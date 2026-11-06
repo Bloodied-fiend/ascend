@@ -13,7 +13,7 @@ export async function runAwaken({ ev, boot, click, base, check, KEY, wait }) {
     const after = await S(`({awaken:S.awaken,str:S.stats.str,vit:S.stats.vit})`);
     check("Monarch -> Second Awakening keeps stats", before.lvl === 61 && before.str === 99 && before.awaken === 0 && after.awaken === 1 && after.str === 99 && after.vit === 80, JSON.stringify({ before, after, offer }));
   }
-  // 2. after awakening, training goes past 99; a top re-assessment keeps it, a low one is honest
+  // 2. after awakening, training goes past 99; a top re-assessment keeps it, a low one moves it down at most 10
   {
     await boot(KEY, { ...base, lvl: 61, awaken: 1, stats: { str: 120, vit: 99, agi: 99, int: 70, per: 110 }, train: { str: 0, vit: 3, agi: 0, int: 0, per: 0 } });
     await click(`[data-q="sleep"]`);
@@ -22,6 +22,6 @@ export async function runAwaken({ ev, boot, click, base, check, KEY, wait }) {
     await ev(`(()=>{__ascend.S.test.i=18;__ascend.render()})()`); await wait(200);
     await raw(`[data-save]`); await ev(`(()=>{for(let i=0;i<6;i++)__ascend.closeNote(-1)})()`);
     const r = await S(`({str:S.stats.str,vit:S.stats.vit,int:S.stats.int,per:S.stats.per})`);
-    check("past 99 by training; re-assessment keeps it at top, drops when lower", vit === 100 && r.str === 120 && r.vit < 99 && r.int === 95 && r.per === 110, JSON.stringify({ vit, r }));
+    check("past 99 by training; re-assessment keeps it at top, moves at most 10 otherwise", vit === 100 && r.str === 120 && r.vit === 90 && r.int === 80 && r.per === 110, JSON.stringify({ vit, r }));
   }
 }

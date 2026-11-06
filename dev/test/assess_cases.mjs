@@ -70,6 +70,56 @@ export async function runAssess({ ev, boot, check, KEY, base, wait }) {
       after.first === 1 && typeof after.base === "string" && after.base.length > 0 && after.baseKey === today && after.str > 0,
       JSON.stringify({ before, onRoutine, sawSave, after, today }));
   }
+  // 1b. a Re-Assessment judges the stat. Answers per stat: str 3,3,3 = 9 points (scores 57).
+  // [training-built stat, answers] -> expected: inside +-1 point keeps it, outside moves at most 10.
+  {
+    const due = await dk(-30);
+    const judge = async (stats, a) => {
+      await boot(KEY, { ...base, base: "Oct 1", baseKey: due, stats, train: { str: 0, vit: 0, agi: 0, int: 0, per: 0 } });
+      await ev(`(()=>{__ascend.S.test={i:15,a:${JSON.stringify(a)},r:null};__ascend.S.tab="test";__ascend.render();__ascend.S.test.i=18;__ascend.render()})()`); await wait(200);
+      const screen = await ev(`document.querySelector('[data-save="1"]')?.textContent`);
+      await raw(`[data-save="1"]`); await shut();
+      return { screen, ...(await S(`({...S.stats,baseKey:S.baseKey,first:S.ap.first})`)) };
+    };
+    //                 str              vit         agi         int         per
+    const a = [3, 3, 3, 4, 4, 4, 3, 3, 3, 1, 1, 1, 4, 4, 3];
+    const r = await judge({ str: 64, vit: 70, agi: 90, int: 20, per: 88 }, a);
+    const today = await dk(0);
+    check("Re-Assessment: a stat within one answer point stands, a stat outside moves at most 10",
+      r.screen === "Record result" && r.str === 64 && r.vit === 80 && r.agi === 80 && r.int === 20 && r.per === 88 && r.baseKey === today,
+      JSON.stringify(r));
+    const low = await judge({ str: 120, vit: 30, agi: 45, int: 30, per: 30 }, [4, 4, 3, 1, 1, 1, 3, 3, 1, 1, 1, 1, 1, 1, 1]);
+    check("Re-Assessment: one answer below top costs a past-99 stat 10, not the 36 the overwrite took",
+      low.str === 110 && low.vit === 30 && low.agi === 45, JSON.stringify(low));
+  }
+  // 1c. the 30-day lock: not due means no way in, even if the button's disabled attribute is removed.
+  {
+    await boot(KEY, { ...base, base: "Oct 1", baseKey: await dk(-29) });
+    await ev(`(()=>{__ascend.S.tab="stats";__ascend.render()})()`); await wait(200);
+    const locked = await ev(`document.querySelector('[data-start="1"]')?.disabled===true`);
+    const label = await ev(`document.querySelector('[data-start="1"]')?.textContent`);
+    await ev(`(()=>{const b=document.querySelector('[data-start="1"]');b.disabled=false;b.click()})()`); await wait(200);
+    const tab = await S(`S.tab`);
+    await boot(KEY, { ...base, base: "Oct 1", baseKey: await dk(-30) }); await shut();
+    await ev(`(()=>{__ascend.S.tab="stats";__ascend.render()})()`); await wait(200);
+    const open = await ev(`document.querySelector('[data-start="1"]')?.disabled===false`);
+    await raw(`[data-start="1"]`);
+    const tab30 = await S(`S.tab`);
+    check("the Re-Assessment is locked at day 29 and opens at day 30",
+      locked && tab === "stats" && /Next in 1 day ·/.test(label) && open && tab30 === "test", JSON.stringify({ locked, tab, label, open, tab30 }));
+  }
+  // 1d. a player who missed more than one update can page back to the note they skipped.
+  {
+    const v = +/const PATCH=\[\s*\{v:(\d+)/.exec(readFileSync(new URL("../ascend.html", import.meta.url), "utf8"))[1];
+    const shown = async pn => {
+      await boot(KEY, base);
+      await ev(`(()=>{addEventListener("pagehide",e=>e.stopImmediatePropagation(),true);const s=JSON.parse(localStorage.getItem(${JSON.stringify(KEY)}));s.ap.pn=${pn};localStorage.setItem(${JSON.stringify(KEY)},JSON.stringify(s));location.reload()})()`);
+      await wait(2500);
+      return ev(`document.querySelector("#sysA")?.textContent||""`);
+    };
+    const one = await shown(v - 1), two = await shown(v - 2);
+    check("the update screen offers Older only when more than one update was missed", !/Older/.test(one) && /Accept/.test(one) && /Older/.test(two), JSON.stringify({ one, two }));
+  }
   // 2. an adaptive target that moved today can't move again for a week.
   // Regression guard for v32: the cooldown `if(S.adj[q.id]&&daysSince(S.adj[q.id])<7)continue;`
   // was swallowed by the comment above it, so targets could drift every single day.

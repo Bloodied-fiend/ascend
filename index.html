@@ -365,6 +365,7 @@ button{font:inherit;color:inherit}
 .plus[disabled]{opacity:.2;cursor:default;border-color:var(--line);color:var(--muted)}
 .cta{all:unset;cursor:pointer;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;width:100%;box-sizing:border-box}
 .cta:focus-visible{outline:2px solid var(--hl)}
+.cta:disabled{cursor:default}.cta:disabled:active{transform:none}
 .cta b{display:block}.cta small{color:var(--muted);font-size:12px}
 
 /* quests + guild */
@@ -509,6 +510,7 @@ button{font:inherit;color:inherit}
 /* rank-window layout: short beams, tall only when selected/active, HUD bottom-left */
 .gmap{height:420px}
 .ghud{top:auto;bottom:8px;left:8px}
+:is([data-skin="neon"],[data-skin="ember"],[data-skin="daylight"]) .ghud{letter-spacing:.06em}
 .gpin{--tb:var(--tb0,88px);--bs:var(--bs0,.65)}
 .gpin.sel,.gpin.active{--tb:var(--tb1,116px);--bs:.85}
 .gpin .beam{transform:scaleY(var(--bs));transform-origin:50% 100%}
@@ -652,10 +654,19 @@ button{font:inherit;color:inherit}
 .qeitem .btn{min-height:32px;padding:0 10px}
 .qe{display:grid;gap:10px;text-align:left}
 .qe label{display:grid;gap:4px;font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
-.qe input,.qe select{font:inherit;font-family:var(--f-body);font-size:15px;letter-spacing:0;text-transform:none;color:var(--fg);background:var(--panel);border:1px solid var(--line);padding:9px 10px;border-radius:2px}
+.qe input,.qe select{font:inherit;font-family:var(--f-body);font-size:16px;letter-spacing:0;text-transform:none;color:var(--fg);background:var(--panel);border:1px solid var(--line);padding:9px 10px;border-radius:2px}
 .qe input:focus-visible,.qe select:focus-visible{outline:2px solid var(--hl);outline-offset:0}
 .qe2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .qe-err{margin:0;color:var(--danger);font-size:13px;min-height:1em}
+#sysX2 .qe-err:empty{display:none}
+.qe input::placeholder{color:var(--muted);opacity:1}
+:is([data-skin="daylight"],[data-skin="whiteout"]) .qe input{background:var(--panel2);border-color:var(--muted)}
+[data-skin="abyss"] .qe input{border-radius:10px}
+.sysstack #sysA{display:grid;grid-template-columns:1fr 1fr}
+.sysstack #sysA .btn{padding:0 8px}
+.sysstack #sysA .btn:first-child{grid-column:1/-1}
+:is([data-skin="daylight"],[data-skin="ember"]) .sysstack #sysA .btn{letter-spacing:.04em}
+:is([data-skin="bloodmoon"],[data-skin="abyss"]) .qe input{border-color:color-mix(in srgb,var(--muted) 45%,transparent)}
 .overlay .sys{max-height:calc(100% - 24px);overflow-y:auto}
 /* 60-day program grid */
 .pgrid{display:grid;grid-template-columns:repeat(20,1fr);gap:3px}
@@ -868,7 +879,7 @@ button{font:inherit;color:inherit}
 @media (max-width:460px){.stage{padding:0;gap:0;display:block}.pitch{display:none}.phone{width:100%;height:100dvh;min-height:0;border:0;border-radius:0}}
 .adm{max-height:52vh;overflow:auto;display:grid;gap:8px;margin-top:12px;text-align:left}
 .admr{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}
-.admr span{font-variant-numeric:tabular-nums;color:var(--hl)}.admr small{grid-column:1/-1;color:var(--muted)}
+.admr span{font-variant-numeric:tabular-nums;color:var(--hl)}.admr small{grid-column:1/-1;color:var(--muted)}.admc{grid-column:1/-1;margin-top:6px}
 
 /* ===== Theme Vault: five rank rewards. Each is a place: painted plate behind the screen, weather in front of it,
    its own frame and display face. System labels stay Barlow so the app still reads as Ascend. --f-face carries the
@@ -1018,7 +1029,7 @@ html.app .player{top:calc(18px + env(safe-area-inset-top,0px))}
     <div class="brand"><svg class="appicon" viewBox="0 0 1024 1024" role="img" aria-label="Ascend app icon"><defs><radialGradient id="aig" cx="50%" cy="0%" r="100%"><stop offset="0" stop-color="#27303a"/><stop offset="1" stop-color="#0c1015"/></radialGradient><linearGradient id="aisteel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#dfe7ee"/><stop offset=".45" stop-color="#7d8994"/><stop offset="1" stop-color="#2c343d"/></linearGradient><linearGradient id="aisteel2" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#c3ccd5"/><stop offset=".55" stop-color="#6b7682"/><stop offset="1" stop-color="#363f49"/></linearGradient><linearGradient id="ailite" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#b9c4ce"/></linearGradient><linearGradient id="aidark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b4bec8"/><stop offset="1" stop-color="#6b7682"/></linearGradient><pattern id="aihex" x="36" y="-2.3" width="56" height="97" patternUnits="userSpaceOnUse"><path d="M28 64.67L0 48.5V16.17L28 0l28 16.17v32.33zM28 64.67V97" fill="none" stroke="#62d8e6" stroke-opacity=".12" stroke-width="3"/></pattern><filter id="aishadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="18" stdDeviation="12" flood-color="#000" flood-opacity=".55"/></filter><filter id="aiglow" x="-100%" y="-100%" width="300%" height="300%"><feDropShadow dx="0" dy="0" stdDeviation="14" flood-color="#62d8e6" flood-opacity=".7"/></filter><clipPath id="ainotch"><path d="M512 452 426 720H598z"/></clipPath></defs><rect width="1024" height="1024" rx="224" fill="url(#aig)"/><g transform="matrix(0.8768 0 0 0.8768 63.05 59.55)"><path d="M512 196 846 300V560Q846 786 512 922 178 786 178 560V300z" fill="url(#aisteel)" stroke="#fff" stroke-opacity=".35" stroke-width="4"/><path d="M512 221 823 318V560Q823 770 512 897 201 770 201 560V318z" fill="url(#aisteel2)"/><path d="M512 246 800 336V560Q800 754 512 872 224 754 224 560V336z" fill="#0d1218"/><path d="M512 246 800 336V560Q800 754 512 872 224 754 224 560V336z" fill="url(#aihex)" stroke="#62d8e6" stroke-opacity=".5" stroke-width="10"/><g filter="url(#aishadow)" stroke="#0d1218" stroke-width="6" stroke-linejoin="bevel" paint-order="stroke"><path d="M512 110 322 720H426L512 452z" fill="url(#ailite)"/><path d="M512 110 702 720H598L512 452z" fill="url(#aidark)"/></g><g clip-path="url(#ainotch)"><g filter="url(#aiglow)"><path d="M512 540 548 615 512 690z" fill="#2fb8c9"/><path d="M512 540 476 615 512 690z" fill="#a8f3fb"/></g></g></g><path d="M168 268V168H268M756 168H856V268M856 756V856H756M268 856H168V756" fill="none" stroke="#62d8e6" stroke-width="24"/></svg><svg class="wordmark" viewBox="0 0 220 52" role="img" aria-label="Ascend"><path d="M3 46 L17 4 L31 46" fill="none" stroke="var(--fg)" stroke-width="6" stroke-linejoin="miter"/><path d="M17 24 l4.5 6 -4.5 6 -4.5 -6z" fill="#62d8e6" style="filter:drop-shadow(0 0 4px rgba(98,216,230,.6))"/><text x="38" y="46" font-family="Barlow Condensed,Arial Narrow,sans-serif" font-weight="700" font-size="50" letter-spacing="2" fill="var(--fg)">SCEND</text><path d="M38 50.5H118M122 50.5H216" stroke="#62d8e6"/></svg></div>
     <span class="lbl">App prototype · v2.3</span>
     <h1>Ascend. Level up your <em>actual</em> life.</h1>
-    <p>A habit tracker run by the System. Real training raises five Hunter stats, a monthly Re-Assessment keeps them honest, level-ups earn Rest Days, and a missed day assigns a Penalty Quest instead of wiping your progress. You never lose stats or levels.</p>
+    <p>A habit tracker run by the System. Real training raises five Hunter stats, a monthly Re-Assessment keeps them honest, level-ups earn Rest Days, and a missed day assigns a Penalty Quest instead of wiping your progress. You never lose levels. Stats follow the real you.</p>
     <div class="skins" role="group" aria-label="Visual direction">
       <span class="lbl">Look</span>
       <button class="skin" data-s="hunter" aria-pressed="true"><span class="sw" style="background:linear-gradient(90deg,#2b333d 40%,#1a2028 40% 60%,#f6a43a 60% 80%,#62d8e6 80%)"></span><span><b>Hunter System</b><small>Styled after Solo Leveling's System windows.</small></span></button>
@@ -1661,7 +1672,7 @@ const daysLabel=q=>!q.days?"Daily":q.days.length?q.days.map(i=>D2[i]).join(" "):
 const cleanPlayer=v=>typeof v==="string"?v.replace(/[<>\u0000-\u001f]/g,"").trim().slice(0,20).toWellFormed():""; // no half emoji
 const pName=()=>S.name||"Hunter";
 const pHandle=()=>"@"+(pName().toLowerCase().replace(/[^a-z0-9]+/g,".").replace(/^\.|\.$/g,"")||"hunter");
-const nameField=v=>`<div class="qe" style="margin-top:12px;text-align:left"><label>Player name<input id="pname" maxlength="20" autocomplete="nickname" placeholder="Hunter"></label></div>`;
+const nameField=v=>`<div class="qe" style="margin-top:12px;text-align:left"><label>Player name<input id="pname" maxlength="20" autocomplete="nickname" placeholder="Hunter" value="${esc(S.name||"")}"></label></div>`;
 function setNameFromField(){const f=$("#pname");if(f){S.name=cleanPlayer(f.value);save()}}
 function focusName(){const f=$("#pname");if(f){f.value=S.name;f.focus()}}
 const stepOf=q=>q.u==="MI"||q.u==="KM"?0.5:q.n>=20?5:1;
@@ -2033,7 +2044,7 @@ async function partyCall(body,make){const k=partyKey(make);if(!k)throw new Error
 let syncT=null;
 // after any change (and on open), push this player's summary; debounced, silent on failure
 let lastSent="";
-function schedSync(ms=4000){clearTimeout(syncT);if(!partyKey(false)||!party.parties.length){syncT=setTimeout(ping,ms);return}
+function schedSync(ms=4000){schedBackup();clearTimeout(syncT);if(!partyKey(false)||!party.parties.length){syncT=setTimeout(ping,ms);return}
   syncT=setTimeout(()=>{const sm=pSummary(),rd={wk:S.raid.wk,dmg:S.raid.dmg},js=JSON.stringify([sm,rd]);if(navigator.onLine===false||(js===lastSent&&ms))return; // only real changes (opening the app always refreshes)
     partyCall({op:"sync",summary:sm,raid:rd}).then(()=>{lastSent=js}).catch(()=>{})},ms)}
 // check-in for the hidden admin list: once per open (and on return after 15 min), silent, never blocks the app
@@ -2042,18 +2053,72 @@ let pinged=0,pingDmg=null;function ping(){if(!S.onboarded||navigator.onLine===fa
     body:JSON.stringify({op:"ping",name:S.name||"Hunter",wk:S.raid.wk,raid:{wk:S.raid.wk,dmg:S.raid.dmg},summary:{lvl:sm.lvl,xp:sm.xp,tier:sm.tier,streak:sm.streak,title:sm.title}})})
     .then(r=>r.json()).then(j=>{if(!Array.isArray(j.ranks))return;party={...party,ranks:j.ranks,rwk:S.raid.wk,at:party.at||Date.now()};try{localStorage.setItem(PCACHE,JSON.stringify(party))}catch(e){}
       if(S.tab==="quests"&&$("#ov").hidden)render(true)}).catch(()=>{})}
+// Server backup: the save as stored on this device, uploaded after changes. bk() records what the server has, so a failed upload retries and Profile can say so.
+const BKEY="ascend-backup",PINSET="ascend-pin-set",PINASK="ascend-pin-asked";
+const bk=()=>{try{return JSON.parse(localStorage.getItem(BKEY)||"{}")||{}}catch(e){return {}}};
+const bkSet=o=>{try{localStorage.setItem(BKEY,JSON.stringify({...bk(),...o}))}catch(e){}};
+const bkOff=()=>{try{return !!localStorage.getItem(PNOPING)}catch(e){return true}}; // "Delete my party data" has to stay deleted
+const hasPin=()=>{try{return !!localStorage.getItem(PINSET)}catch(e){return false}};
+async function api(body,keepalive){const k=partyKey(true);if(!k)throw new Error("no key");
+  const r=await fetch(PARTY_API,{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer "+k},keepalive:!!keepalive,body:JSON.stringify(body),...(keepalive?{}:{signal:AbortSignal.timeout(2e4)})});
+  return [r.status,await r.json().catch(()=>({}))]}
+let bkT=null,bkBusy=false;
+function schedBackup(ms=15e3){clearTimeout(bkT);bkT=setTimeout(backup,ms)}
+async function backup(leaving){const st=bk();if(bkBusy||st.pend||!S.onboarded||saveBlocked||navigator.onLine===false||bkOff())return; // a restore in flight must not be overwritten by this phone's old save
+  let raw,rev;try{raw=localStorage.getItem(STORE);rev=JSON.parse(raw).rev}catch(e){return}
+  if(!raw||rev===st.rev)return;const gen=Math.max(Date.now(),(st.gen||0)+1);bkBusy=true;
+  try{const [c,j]=await api({op:"bsave",gen,save:raw},leaving&&raw.length<6e4); // the browser only lets a small request outlive the page
+    if(c===200&&j.ok)bkSet({rev,gen,at:Date.now()});else if(j.stale){bkSet({gen:j.gen});schedBackup(1e3)}else schedBackup(6e4)}
+  catch(e){schedBackup(6e4)}finally{bkBusy=false}
+  if(S.tab==="me"&&$("#ov").hidden)render(true)}
+const bkLine=()=>{if(bkOff())return "Backup is off because you deleted your party data. Join a party or restore to turn it back on.";const st=bk();return !st.at?"Waiting for first backup.":`Backed up ${ago(st.at)}.`+(st.rev===S.rev?"":" Newer changes are waiting.")};
+const pinField=(id,label,ph)=>`<label>${label}<input id="${id}" type="text" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="${ph}"></label>`;
+function pinAsk(err){notify({chip:"[ BACKUP ]",title:hasPin()?"Change your PIN":"Set your PIN",after:true,instant:!!err,body:`6 digits. Your name (${pName()}) and this PIN restore your progress on a new phone. Don't reuse your bank PIN.`,
+  extra:`<div class="qe" style="margin-top:12px">${pinField("bpin","PIN","6 digits")}<p class="qe-err" role="alert">${esc(err||"")}</p></div>`,onOpen:()=>{const f=$("#bpin");if(f)f.focus()},
+  actions:[{label:"Save PIN",fn:()=>pinSave(($("#bpin")||{}).value||"")},{label:hasPin()?"Cancel":"Later"}]})}
+async function pinSave(pin){if(!/^\d{6}$/.test(pin))return pinAsk("A PIN is 6 digits.");
+  try{await backup();const [c,j]=await api({op:"bpin",pin});if(c!==200){if(c===409)schedBackup(1e3);return pinAsk(j.error?j.error[0].toUpperCase()+j.error.slice(1)+".":"Server error. Try again.")}
+    try{localStorage.setItem(PINSET,"1")}catch(e){}render(true);toast("PIN SAVED")}catch(e){pinAsk("Can't reach the server. Try again when online.")}}
+function pinNudge(){if(!S.onboarded||hasPin()||bkOff()||!bk().at)return;try{if(Date.now()-(+localStorage.getItem(PINASK)||0)<6048e5)return;localStorage.setItem(PINASK,String(Date.now()))}catch(e){return}pinAsk()} // weekly until set
+const backToStart=()=>{if(!S.onboarded)onboard()};
+function restoreAsk(err,name,code){notify({chip:"[ BACKUP ]",title:"Restore progress",after:true,instant:!!err,body:"Enter your player name and PIN. Forgot the PIN? Ask Jaime for a restore code.",
+  extra:`<div class="qe" style="margin-top:12px"><label>Player name<input id="rname" maxlength="20" autocomplete="off" placeholder="Hunter" value="${esc(name??S.name??"")}"></label><label>PIN or restore code<input id="rsec" type="text" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false" value="${esc(code||"")}"></label><p class="qe-err" role="alert">${esc(err||"")}</p></div>`,
+  onOpen:()=>{const f=$((name??S.name)?"#rsec":"#rname");if(f)f.focus()},actions:[{label:"Continue",fn:()=>restoreFind(($("#rname")||{}).value||"",(($("#rsec")||{}).value||"").trim())},{label:"Cancel",fn:backToStart}]})}
+const restoreCred=(name,sec)=>/^\d+$/.test(sec)?{name,pin:sec}:{code:sec};
+async function restoreFind(name,sec){if(!sec)return restoreAsk("Enter your PIN or restore code.",name);toast("SEARCHING");
+  let c,j;try{[c,j]=await api({op:"brestore",...restoreCred(name,sec)})}catch(e){return restoreAsk("Can't reach the server. Try again when online.",name)}
+  if(c!==200)return restoreAsk(j.error?j.error[0].toUpperCase()+j.error.slice(1)+".":"Server error. Try again.",name,/^\d+$/.test(sec)?"":sec);
+  const older=j.prev_lvl>j.lvl;
+  notify({chip:"[ BACKUP ]",title:`Level ${j.lvl} found`,body:`Saved ${ago(Date.parse(j.at))}.`+(older?`\nThere's also an older copy at level ${j.prev_lvl}, saved ${ago(Date.parse(j.prev_at))}.`:""),
+    warn:S.onboarded?`This replaces everything on this phone (level ${S.lvl}).`:"",
+    cls:older?"sysstack":"",actions:[...(older?[{label:`Restore level ${j.prev_lvl}`,acc:true,fn:()=>restoreDo(name,sec,"prev")}]:[]),{label:`Restore level ${j.lvl}`,acc:!older,fn:()=>restoreDo(name,sec)},{label:"Cancel",fn:backToStart}]})}
+// The server moves this player to this device before it answers. If the answer is lost, pend keeps this phone from uploading over the save until restoreResume fetches it.
+async function restoreDo(name,sec,use){bkSet({pend:Date.now()});toast("RESTORING");let c,j;
+  try{[c,j]=await api({op:"brestore",confirm:true,use,...restoreCred(name,sec)})}catch(e){toast("CONNECTION LOST · WILL RETRY");setTimeout(restoreResume,5e3);return}
+  if(c>=500||(c===200&&!j.save)){toast("CONNECTION LOST · WILL RETRY");setTimeout(restoreResume,5e3);return} // the transfer may have happened, so this phone still may not upload
+  if(c!==200){bkSet({pend:0});return restoreAsk(j.error?j.error[0].toUpperCase()+j.error.slice(1)+".":"Server error. Try again.",name)}
+  restoreApply(j)}
+function restoreApply(j){let sv=null;try{sv=JSON.parse(j.save)}catch(e){}
+  act(()=>{if(!adopt(sv)){toast("THAT BACKUP COULDN'T BE READ");return} // pend stays set: this phone's save must not replace the one on the server
+    saveBlocked=false;try{localStorage.removeItem(PNOPING);localStorage.removeItem(PCACHE);if(j.pin)localStorage.setItem(PINSET,"1")}catch(e){}
+    party={parties:[],at:0};lastSent="";pinged=0;bkSet({pend:0,rev:null,at:0});rollover();save();skinSync();render();toast("PROGRESS RESTORED");partyCall({op:"board"}).catch(()=>{});arrival()})}
+// Nothing to pull only proves the transfer failed once the original request can no longer be running.
+async function restoreResume(){const p=bk().pend;if(!p)return;let c,j;try{[c,j]=await api({op:"bpull"})}catch(e){return}if(c!==200)return;if(j.save)return restoreApply(j);if(Date.now()-p>12e4)bkSet({pend:0});else setTimeout(restoreResume,3e4)}
 // hidden admin list (Jaime only): tap Guild 5 times in a row. The password is checked on the server, never here.
 const adm={n:0,at:0};
 function adminAsk(){notify({chip:"[ SYSTEM ]",title:"Restricted",after:true,
   extra:`<div class="qe" style="margin-top:12px;text-align:left"><label>Password<input id="apw" type="password" maxlength="200" autocomplete="current-password"></label></div>`,
   onOpen:()=>{const f=$("#apw");if(f)f.focus()},actions:[{label:"Enter",fn:()=>adminOpen(($("#apw")||{}).value||"")},{label:"Cancel"}]})}
+let admPw="";
+async function adminCode(id,name){let c,j;try{[c,j]=await api({op:"admin",pw:admPw,codeFor:id})}catch(e){toast("CAN'T REACH THE SERVER");return}admPw="";
+  if(c!==200||!j.code){toast((j.error||"denied").toUpperCase());return}notify({chip:"[ ADMIN ]",title:j.code,center:true,body:`One-time restore code for ${name}.\nExpires in 24 hours.`})}
 async function adminOpen(pw){const k=partyKey(true);if(!k||!pw)return;let r,j={};
   try{r=await fetch(PARTY_API,{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer "+k},body:JSON.stringify({op:"admin",pw}),signal:AbortSignal.timeout(12000)});j=await r.json().catch(()=>({}))}
   catch(e){toast("CAN'T REACH THE SERVER");return}
   if(!r.ok){toast(r.status===403?"WRONG PASSWORD":r.status===429?"TOO MANY TRIES · WAIT A MINUTE":"DENIED");return}
-  const P=j.players||[];
-  notify({chip:"[ ADMIN ]",title:P.length+" player"+(P.length===1?"":"s"),actions:[{label:"Close"}],
-    extra:`<div class="adm">${P.map(p=>`<div class="admr"><b>${esc(p.name)}</b><span>Lv ${p.lvl??"?"} · ${(+p.xp||0).toLocaleString()} XP</span><small>${p.streak??0}d streak · ${p.parties?p.parties+(p.parties>1?" parties":" party"):"solo"} · seen ${ago(Date.parse(p.seen))}</small></div>`).join("")||"<small>No one has checked in yet.</small>"}</div>`})}
+  const P=j.players||[];admPw=pw;
+  notify({chip:"[ ADMIN ]",title:P.length+" player"+(P.length===1?"":"s"),onClose:()=>{setTimeout(()=>{if($("#ov").hidden)admPw=""},1e3)},actions:[{label:"Close"}],
+    extra:`<div class="adm">${P.map(p=>`<div class="admr"><b>${esc(p.name)}</b><span>Lv ${p.lvl??"?"} · ${(+p.xp||0).toLocaleString()} XP</span><small>${p.streak??0}d streak · ${p.parties?p.parties+(p.parties>1?" parties":" party"):"solo"} · seen ${ago(Date.parse(p.seen))} · ${p.backed?`backed up ${ago(Date.parse(p.backed))}`:"no backup"}${p.pin?" · PIN":""}</small>${p.backed?`<button class="btn chamf ghost admc" data-admcode="${esc(p.id)}" data-admname="${esc(p.name)}">Issue restore code</button>`:""}</div>`).join("")||"<small>No one has checked in yet.</small>"}</div>`})}
 const ago=t=>{const m=Math.round((Date.now()-t)/6e4);return !t?"never":m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" d ago"};
 const codeField=()=>`<div class="qe" style="margin-top:12px;text-align:left"><label>Invite code<input id="pcode" maxlength="9" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="ABCD2345"></label></div>`;
 // Web Push. The public half of the VAPID pair is meant to be public; the private half lives only in
@@ -2138,6 +2203,10 @@ const TEST=[
 // ponytail: linear map of 3–12 points onto 30–95; swap for benchmarked scoring (age/sex norms) later
 // STR/AGI curve: average answers land low, all-top answers (elite) reach 99 — Monarch-level stats should mean exceptional
 const score=(pts,k)=>k==="str"||k==="agi"?Math.round(10+89*((pts-3)/9)**1.6):Math.round(30+(pts-3)/9*65);
+// Judges a Re-Assessment: one answer point is inside the test's noise, so a stat within +-1 point of the result stands.
+// Outside that it moves toward the result, at most 10. A top result has no upper bound, so training past the test's max survives.
+// shortcut: the +-1 point and 10 come from a simulation with assumed noise; retune if real retest data ever exists.
+const reassess=(c,p,k)=>{const lo=p>3?score(p-1,k):-Infinity,hi=p<12?score(p+1,k):Infinity;return c>=lo&&c<=hi?c:c+Math.max(-10,Math.min(10,score(p,k)-c))};
 const tierOf=l=>RANK_AT.reduce((t,a,i)=>l>=a?i:t,0);
 const LAST=RANKS.length-1;
 // progress through the current rank, 0..1 (Monarch is open-ended)
@@ -2384,7 +2453,7 @@ ${sh("Stats",`+1 every ${TRAIN} sessions`)}
 <b>${eff(k)}<em class="srk">${srk(eff(k))}-RANK</em></b></div>`).join("")}</div>
 ${canAwaken()?`${sh("Awakening")}<div class="card glowcard" style="--c:var(--accent)"><button class="cta" data-awaken="1">${badge(tierOf(S.lvl),28)}<span><b>Second Awakening</b><small>Keep your stats. Raise the cap to 150.</small></span><span aria-hidden="true">→</span></button></div>`:""}
 ${sh("Assessment")}
-<div class="card glowcard" style="--c:var(--hl)"><button class="cta" data-start="1">${hex("agi",28)}<span><b>${!S.base?"Player Assessment":reDue()?"Monthly Re-Assessment due":"Monthly Re-Assessment"}</b><small>${!S.base?"15 questions · 3 min":reDue()?"Re-measure yourself. Your stats reset to the honest result.":`Next in ${30-daysSince(S.baseKey)} days · last taken ${S.base}`}</small></span><span aria-hidden="true">→</span></button></div>`},
+<div class="card${S.base&&!reDue()?"":" glowcard"}" style="--c:var(--hl)"><button class="cta" data-start="1"${S.base&&!reDue()?" disabled":""}>${hex("agi",28)}<span><b>${!S.base?"Player Assessment":reDue()?"Monthly Re-Assessment due":"Monthly Re-Assessment"}</b><small>${!S.base?"15 questions · 3 min":reDue()?"Your stats move toward the result.":`Next in ${30-daysSince(S.baseKey)} day${30-daysSince(S.baseKey)===1?"":"s"} · last taken ${S.base}`}</small></span>${S.base&&!reDue()?"":'<span aria-hidden="true">→</span>'}</button></div>`},
 
 quests(){const T=tierOf(S.lvl),G=S.gate;
 if(G&&!gateDef(selGate))selGate=G.id;
@@ -2455,9 +2524,10 @@ ${sh("Notifications")}<div class="card glowcard" style="--c:var(--hl);display:gr
   <button class="btn chamf sysbtn" data-pushsave="1">Save time</button>`:""}
   <div class="acts">${pushState?`<button class="btn chamf ghost" data-pushtest="1">Send test</button><button class="btn chamf ghost" data-pushoff="1">Turn off</button>`
     :`<button class="btn chamf sysbtn" data-pushon="1"${pushOK()&&Notification.permission!=="denied"?"":" disabled"}>Turn on</button>`}</div></div>
-${partyKey(false)&&party.at?`${sh("Party data")}<div class="card glowcard" style="--c:var(--danger);display:grid;gap:10px"><small style="color:var(--muted)">Your name, raid damage, summary and any party membership live on the party server. Every player can see your name and World Raid damage.</small><button class="btn chamf ghost" data-pforget="1">Delete my party data</button></div>`:""}
-${sh("Backup")}<div class="card glowcard" style="--c:var(--hl);display:grid;gap:10px"><small style="color:var(--muted)">Progress lives in this browser. Copy a backup now and then, or after clearing site data restore it from a .json file.</small>
-<div style="display:flex;gap:8px"><button class="btn chamf sysbtn" data-backup="1" style="flex:1">Copy backup</button><label class="btn chamf ghost" for="rfile" tabindex="0" style="flex:1">Restore file</label></div><button class="btn chamf ghost" data-demo="reset" style="justify-content:center;color:var(--danger);border-color:color-mix(in srgb,var(--danger) 50%,transparent)">Reset progress</button></div>
+${partyKey(false)&&party.at?`${sh("Party data")}<div class="card glowcard" style="--c:var(--danger);display:grid;gap:10px"><small style="color:var(--muted)">Your name, raid damage, summary, any party membership and a backup of your progress live on the Ascend server. Every player can see your name and World Raid damage.</small><button class="btn chamf ghost" data-pforget="1">Delete my party data</button></div>`:""}
+${sh("Backup")}<div class="card glowcard" style="--c:var(--hl);display:grid;gap:10px">${bkOff()?"":`<small style="color:var(--muted)">Progress backs up to the Ascend server automatically. ${hasPin()?`Restore on a new phone with the name <b style="color:var(--fg)">${esc(pName())}</b> and your PIN.`:"Set a PIN to restore it on a new phone."}</small>`}<small style="color:var(--fg)">${bkLine()}</small>
+<div style="display:flex;gap:8px"><button class="btn chamf ${hasPin()?"ghost":"sysbtn"}" data-bpin="1" style="flex:1"${bkOff()?" disabled":""}>${hasPin()?"Change PIN":"Set PIN"}</button><button class="btn chamf ghost" data-brestore="1" style="flex:1">Restore progress</button></div>
+<div style="display:flex;gap:8px"><button class="btn chamf ghost" data-backup="1" style="flex:1">Copy backup</button><label class="btn chamf ghost" for="rfile" tabindex="0" style="flex:1">Restore file</label></div><button class="btn chamf ghost" data-demo="reset" style="justify-content:center;color:var(--danger);border-color:color-mix(in srgb,var(--danger) 50%,transparent)">Reset progress</button></div>
 `},
 
 test(){const T=S.test;
@@ -2473,10 +2543,11 @@ if(T.i<TEST.length){const[k,q,opts]=TEST[T.i];return `<div class="tw">
 const r=results(),best=d=>Object.keys(r).sort((a,b)=>(r[b]-r[a])*d)[0];
 return `<h1 class="title">Results.</h1>
 <section class="sys"><div class="syshead"><span class="chip">[ ASSESSMENT COMPLETE ]</span><span class="clock">OVR ${Math.round(Object.values(r).reduce((a,b)=>a+b)/5)}</span></div>
-<div class="stack" style="gap:0">${Object.keys(STATS).map(k=>`<div class="res" style="border-top:1px solid var(--line)">${hex(k,26)}<span>${STATS[k]}<div class="bar" style="--c:var(--${k});margin-top:6px;height:4px"><i style="width:${r[k]}%"></i></div></span><b>${r[k]}</b></div>`).join("")}</div>
+<div class="stack" style="gap:0">${Object.keys(STATS).map(k=>`<div class="res" style="border-top:1px solid var(--line)">${hex(k,26)}<span>${STATS[k]}${S.base&&r[k]!==S.stats[k]?` <small style="color:var(--muted)">was ${S.stats[k]}</small>`:""}<div class="bar" style="--c:var(--${k});margin-top:6px;height:4px"><i style="width:${r[k]}%"></i></div></span><b>${r[k]}</b></div>`).join("")}</div>
+${S.base?`<p class="bnote">A result close to your stat leaves it alone. Otherwise the stat moves by 10 at most.</p>`:""}
 <p style="font-size:13px;margin:12px 0 0;color:var(--muted)">Strongest: <b style="color:var(--fg)">${STATS[best(1)]}</b>. Most room to grow: <b style="color:var(--fg)">${STATS[best(-1)]}</b>.</p>
 ${T.r?`<p class="bnote"><span class="qelbl">ROUTINE</span> Lift ${T.r.lift.map(i=>D2[i]).join(" ")||"none"} · ${({run:"Run",ruck:"Ruck",both:"Run/ruck"})[T.r.kind]} ${T.r.cardio.map(i=>D2[i]).join(" ")||"none"}</p>`:""}</section>
-<button class="primary chamf" data-save="1" style="margin-top:18px;width:100%;box-sizing:border-box">Record baseline</button>
+<button class="primary chamf" data-save="1" style="margin-top:18px;width:100%;box-sizing:border-box">${S.base?"Record result":"Record baseline"}</button>
 <button class="link" data-retake="1" style="display:block;margin:14px auto 0">Retake Player Assessment</button>`},
 };
 
@@ -2518,7 +2589,8 @@ function routineScreen(T){const s=T.i-TEST.length,R=T.r;
      <div class="stack" style="gap:10px">${HABITS.map(([k,n,_,u])=>{const h=R.h[k];u=u||h.u;return `<div class="hrow"><button type="button" class="btn chamf dchip hon" data-rh="${k}" aria-pressed="${h.on}" aria-label="${n}">${h.on?"ON":"OFF"}</button><span>${n}</span>${u==="time"?`<input class="tin" type="time" id="rh-${k}" value="${h.t}" aria-label="${n}">`:`<span class="hnum"><input class="tin" type="number" min="1" max="999" inputmode="numeric" id="rh-${k}" value="${h.n}" aria-label="${n} target"><small>${esc(u||"")}</small></span>`}</div>`}).join("")}</div>
      <p class="qe-err" id="rh-err" role="alert"></p>`;
   return `<div class="tw rt">${head}<div class="tq">${body}</div><button class="primary chamf" data-rnext="1" style="margin-top:20px">${s<RT-1?"Next":"See results"}</button></div>`}
-function results(){const r={};for(const k in STATS)r[k]=0;TEST.forEach(([k],i)=>r[k]+=S.test.a[i]);for(const k in r)r[k]=score(r[k],k);return r}
+// the stats this test would record: the first one sets the baseline (a top score keeps anything higher), later ones are judged
+function results(){const r={};for(const k in STATS)r[k]=0;TEST.forEach(([k],i)=>r[k]+=S.test.a[i]);for(const k in r)r[k]=S.base?reassess(S.stats[k],r[k],k):r[k]===12?Math.max(S.stats[k],score(12,k)):score(r[k],k);return r}
 const $=s=>document.querySelector(s),screenEl=$("#screen"),phone=$("#phone");
 function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("show"),1800)}
 function render(keep){const y=screenEl.scrollTop;
@@ -2569,6 +2641,14 @@ const BARS=[[6,"5px","var(--ab1)",-.04],[14,"12px","var(--ab2)",-.31],[23,"3px",
 const barHTML=()=>BARS.map(([y,h,c,d])=>`<b style="--y:${y}%;--h:${h};--c:${c};--d:${d}s"></b>`).join("");
 const vLabel=v=>"1."+String(v).padStart(3,"0"); // 37 -> "1.037"; a major overhaul starts the 2.x line
 const PATCH=[
+  {v:53,d:"Nov 6, 2026",lines:[
+    "Your progress now backs up to the Ascend server automatically.",
+    "Set a PIN on Profile, and your name and PIN restore everything on a new phone.",
+    "Re-Assessments now judge your stats instead of overwriting them.",
+    "A result close to your stat leaves it alone, so training isn't erased.",
+    "Otherwise the stat moves toward the result, by 10 at most.",
+    "The Re-Assessment now opens once every 30 days.",
+    "Buildings on the Gate map now spread across the land and follow its perspective."]},
   {v:52,d:"Nov 5, 2026",lines:[
     "The Theme Vault is open: five themes, one for each rank from D to S.",
     "Mistveil at D-Rank, Abyss at C, Bloodmoon at B, Monarch at A, Whiteout at S.",
@@ -2655,12 +2735,12 @@ function nextNote(){if(cerOn)return;const n=queue.shift();if(!n)return;
   T.classList.toggle("glitch",!!n.glitch);$("#sysX").innerHTML=n.after?"":(n.extra||"");$("#sysX2").innerHTML=n.after?(n.extra||""):"";
   const w=$("#sysW");w.hidden=!n.warn;w.textContent=n.warn||"";
   const acts=n.actions||[{label:"Accept"}];
-  $("#sysA").innerHTML=acts.map((a,i)=>`<button class="btn chamf ${i?'ghost':'sysbtn'}${a.acc?' acc':''}" data-act="${i}">${a.label}</button>`).join("");
+  $("#sysA").innerHTML=acts.map((a,i)=>`<button class="btn chamf ${i&&!a.acc?'ghost':'sysbtn'}${a.acc?' acc':''}" data-act="${i}">${a.label}</button>`).join("");
   noteActs=acts;
   // typewriter over an invisible full copy, so the box is sized before typing starts
   const b=$("#sysB");clearInterval(typer);
   if(!n.body)b.innerHTML="";else{b.innerHTML=`<span class="ghost" aria-hidden="true"></span><span class="out"></span>`;b.firstChild.textContent=n.body;const out=b.lastChild;
-    if(RM)out.textContent=n.body;else{let i=0;typer=setInterval(()=>{out.textContent=n.body.slice(0,++i);if(i>=n.body.length)clearInterval(typer)},18)}}
+    if(RM||n.instant)out.textContent=n.body;else{let i=0;typer=setInterval(()=>{out.textContent=n.body.slice(0,++i);if(i>=n.body.length)clearInterval(typer)},18)}}
   if(n.burst&&(queueBurst||n.chip==="[ RE-ASSESSMENT ]")){queueBurst=false;burst(n.burst)}
   ov.hidden=false;if(n.gl!==false&&sys.classList.contains("gl"))setTimeout(corrupt);if(n.onOpen)setTimeout(n.onOpen);screenEl.inert=true;$(".pitch").inert=true;$("#tabs").inert=true;$("#player").hidden=true;$("#sysA button").focus();
 }
@@ -2874,7 +2954,7 @@ function editorAct(a,b){const L=workList().map(q=>({...q}));
     else{const q=L.find(x=>x.id===qeEdit);if(!q)return;Object.assign(q,v);withDays(q,dsel);S.adj[q.id]=S.day} // what it counts as is the player's explicit choice, kept through renames
     qeEdit=null;commit(L);toast(started()?"SAVED · APPLIES TOMORROW":"QUEST SAVED")}}
 document.addEventListener("submit",e=>e.preventDefault());
-document.addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.target.id==="pname"||e.target.id==="pcode"||e.target.id==="pname2")){e.preventDefault();const b=$("#sysA [data-act='0']");if(b)b.click()}}); // Enter in the editor must not reload the page
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="rname"){e.preventDefault();const f=$("#rsec");if(f)f.focus();return}if(e.key==="Enter"&&(e.target.id==="pname"||e.target.id==="pcode"||e.target.id==="pname2"||e.target.id==="bpin"||e.target.id==="rsec")){e.preventDefault();const b=$("#sysA [data-act='0']");if(b)b.click()}}); // Enter in the editor must not reload the page
 let advancing=false;
 document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("#ov").hidden){if(qeEdit){qeEdit=null;paintEditor()}else closeNote(-1)}else toggleSheet(false)});
 document.addEventListener("click",e=>{
@@ -2924,19 +3004,20 @@ function onButton(b,d){
   if(d.pushsave){pushSave();return}
   if(d.pushtest){pushTest();return}
   if(d.pforget){notify({chip:"[ PARTY ]",tone:"danger",title:"Delete party data?",body:"Removes you from every party and the World Raid damage list, and deletes your data on the party server.\nYour progress on this phone is untouched.",
-      actions:[{label:"Keep"},{label:"Delete",fn:()=>partyCall({op:"forget"}).then(()=>{try{localStorage.removeItem(PKEY);localStorage.removeItem(PCACHE);localStorage.setItem(PNOPING,"1")}catch(e){}party={parties:[],at:0};render(true);toast("PARTY DATA DELETED")}).catch(e=>toast(e.message.toUpperCase()))}]});return}
+      actions:[{label:"Keep"},{label:"Delete",fn:()=>partyCall({op:"forget"}).then(()=>{try{localStorage.removeItem(PKEY);localStorage.removeItem(PCACHE);localStorage.removeItem(BKEY);localStorage.removeItem(PINSET);localStorage.removeItem(PINASK);localStorage.setItem(PNOPING,"1")}catch(e){}party={parties:[],at:0};render(true);toast("PARTY DATA DELETED")}).catch(e=>toast(e.message.toUpperCase()))}]});return}
   if(d.tmore){showAllTitles=!showAllTitles;render(true);return}
   if(d.patch){notify(patchNote(PATCH[0],0));return}
   if(d.title){if(tEarned(d.title)){S.title=d.title;save();render(true);toast("TITLE EQUIPPED")}return}
   if(d.penrules){penRules();return}
   if(d.awaken){if(canAwaken())offerAwakening();return}
+  if(d.start&&S.base&&!reDue())return;
   if(d.start||d.retake){S.test={i:0,a:[]};advancing=false;S.tab="test";render();return}
   if(d.a){if(advancing)return;advancing=true;const T=S.test;T.a[T.i]=+d.a;b.setAttribute("aria-pressed","true");
     setTimeout(()=>{advancing=false;if(S.test!==T||S.tab!=="test")return;T.i++;render()},RM?0:180);return}
   if(d.back){if(S.test.i)S.test.i--;else S.tab="stats";render();return}
-  if(d.save){if(S.test.r)applyRoutine(S.test.r);{const r=results();for(const k in r){const top=score(12,k);S.stats[k]=r[k]<top?r[k]:Math.max(S.stats[k],r[k])}} // a top score keeps what training built past the test's max; a lower score is honest
+  if(d.save){if(S.test.r)applyRoutine(S.test.r);const had=!!S.base;Object.assign(S.stats,results());
     S.baseKey=dkey(now());S.base=now().toLocaleDateString("en-US",{month:"short",day:"numeric"});S.ap.first=1;
-    S.tab="stats";const first=!S.onboarded;S.onboarded=true;save();render();notify({chip:"[ ASSESSMENT ]",title:"Baseline recorded.",body:`Your overall rating is ${ovr()}.\nDaily quests raise your stats from here.`});
+    S.tab="stats";const first=!S.onboarded;S.onboarded=true;save();render();notify({chip:"[ ASSESSMENT ]",title:had?"Re-Assessment recorded.":"Baseline recorded.",body:`Your overall rating is ${ovr()}.\nDaily quests raise your stats from here.`});
     if(first)notify({chip:"[ DAILY QUEST ]",title:"Set your Daily Quest.",body:"Six default quests are ready.\nKeep them, or shape them to your life.",
       actions:[{label:"Review quests",fn:()=>{S.tab="home";render();openEditor()}},{label:"Keep defaults",fn:()=>{S.tab="home";render();arrival()}}]});return}
   if(d.q){const q=Q().find(x=>x.id===d.q);if(q)setDone(q,!S.done[q.id]);return}
@@ -2968,6 +3049,9 @@ function onButton(b,d){
     list.forEach(a=>{S.claimed[a[0]]=1;xp+=a[4]});burst("var(--accent)");
     notify({chip:"[ REWARD ]",title:list.length>1?`${list.length} achievements claimed`:"Achievement claimed",body:list.map(a=>"· "+a[2]).join("\n")+`\n\nReward: +${xp} XP`});
     gainXP(xp);save();render(true);return}
+  if(d.bpin){pinAsk();return}
+  if(d.brestore){restoreAsk();return}
+  if(d.admcode){const id=d.admcode,n=d.admname;closeNote(0);adminCode(id,n);return}
   if(d.backup){const txt=JSON.stringify(snapshot());
     navigator.clipboard.writeText(txt).then(()=>toast("BACKUP COPIED · PASTE INTO A .JSON FILE")).catch(()=>toast("COPY BLOCKED · TRY ANOTHER BROWSER"));return}
   if(d.cat){S.cat=d.cat;render(true);return}
@@ -3171,12 +3255,12 @@ act(()=>{rollover();render();
   // a new player starts current: never announce a version they installed on
   pushRefresh().then(v=>{if(v)render(true)});
   if(!S.onboarded)S.ap.pn=PATCH[0].v;
-  else if((S.ap.pn||0)<PATCH[0].v){S.ap.pn=PATCH[0].v;save();notify(patchNote(PATCH[0]))}
+  else if((S.ap.pn||0)<PATCH[0].v){const missed=(S.ap.pn||0)<PATCH[1].v;S.ap.pn=PATCH[0].v;save();notify(patchNote(PATCH[0],missed?0:undefined))} // missed more than one update: offer Older
   arrival()});schedSync(1500);setTimeout(ping,3000);
 function onboard(){notify({chip:"[ SYSTEM ]",title:"You have been chosen as a Player.",center:true,
     body:"The System will assign you a Daily Quest each day.\nComplete it to grow. Fail it and a Penalty Quest follows.\n\nFirst, the System must measure you.",
-    extra:nameField(),after:true,onOpen:focusName,
-    actions:[{label:"Begin assessment",fn:()=>{setNameFromField();S.test={i:0,a:[]};S.tab="test";render()}},{label:"Later",fn:()=>{setNameFromField();S.onboarded=true;save();render();arrival()}}]})}
+    extra:nameField(),after:true,onOpen:focusName,cls:"sysstack",
+    actions:[{label:"Begin assessment",fn:()=>{setNameFromField();S.test={i:0,a:[]};S.tab="test";render()}},{label:"Restore progress",fn:()=>{setNameFromField();restoreAsk()}},{label:"Later",fn:()=>{setNameFromField();S.onboarded=true;save();render();arrival()}}]})}
 function useRest(){if(S.rest<1||restToday())return;S.rest--;S.restDay=S.day;save();render(true);
   notify({chip:"[ REST DAY ]",title:"Recovery granted.",body:"No Penalty Quest today.\nYour streak is safe. Training you still log counts."})}
 function arrival(){if(!S.onboarded)return onboard();const today=dkey(now());if(S.seen===today)return;
@@ -3191,10 +3275,11 @@ $("#rfile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)
   let sv=null;try{sv=JSON.parse(await f.text())}catch(err){}e.target.value="";
   if(!isSave(sv)){toast("THAT FILE ISN'T AN ASCEND BACKUP");return}
   act(()=>{if(!adopt(sv)){toast("THAT FILE ISN'T AN ASCEND BACKUP");return}saveBlocked=false;rollover();save();skinSync();render();toast("BACKUP RESTORED")})});
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){tick();schedSync(0);ping()}}); // 0: always fetch, so the board is fresh on return even if this player changed nothing
+restoreResume();setTimeout(pinNudge,2e4);addEventListener("online",()=>{restoreResume();schedBackup(1e3)});
+document.addEventListener("visibilitychange",()=>{if(document.hidden){backup(true);return}restoreResume();tick();schedSync(0);ping()}); // 0: always fetch, so the board is fresh on return even if this player changed nothing
 if(!storageOK)setTimeout(()=>toast("WARNING · PROGRESS CAN'T BE SAVED HERE"),1500);
 if(saveBlocked)setTimeout(()=>notify({chip:"[ WARNING ]",tone:"danger",title:"Saved progress couldn't be read.",body:"Nothing has been overwritten. A copy was kept on this device.\nRestore a backup file from Profile, or reset to start fresh."}),1200);
-window.__ascend={get S(){return S},render,closeNote,gain:n=>act(()=>{gainXP(n);save();render(true)}),th:TH,get cerOn(){return cerOn},totalXP,corrupt,partyBoard:()=>partyCall({op:"board"}),sample:()=>{S=sample();rollover();save();render()}};
+window.__ascend={backup,bk,restoreResume,get S(){return S},render,closeNote,gain:n=>act(()=>{gainXP(n);save();render(true)}),th:TH,get cerOn(){return cerOn},totalXP,corrupt,partyBoard:()=>partyCall({op:"board"}),sample:()=>{S=sample();rollover();save();render()}};
 })();
 </script>
 

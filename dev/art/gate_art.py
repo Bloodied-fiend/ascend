@@ -120,34 +120,75 @@ def render_map(W=760, H=740, SS=2):
 
     im = Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8)).resize((W, H), Image.LANCZOS)
 
-    # city blocks: small extruded towers on land, away from the pins
-    d = ImageDraw.Draw(im, "RGBA")
-    # towers only where a 30x34 css-px box clears every gate box of every tier by 12px
-    def clear(cu, cv):
-        x0, y1 = cu * 366 - 5, cv * 420
-        tb = (x0 - 12, y1 - 34 - 12, x0 + 30 + 12, y1 + 12)
-        return not any(tb[0] < g[2] and g[0] < tb[2] and tb[1] < g[3] and g[1] < tb[3] for g in GBOX)
-    cand = [(u0 / 100, v0 / 100) for v0 in range(20, 96, 2) for u0 in range(6, 95, 3)]
-    sites = []
-    for c in sorted(cand, key=lambda c: ((c[0] * 7919 + c[1] * 104729) % 1)):
-        if clear(*c) and all(abs(c[0] - s[0]) > .15 or abs(c[1] - s[1]) > .1 for s in sites): sites.append(c)
-        if len(sites) == 4: break
-    print("city sites:", sites)
-    for (cu, cv) in sites:
+    # settlements: clusters of small muted blocks in the land's own tone, plus one larger stepped landmark.
+    # Projected through the map's own camera, so their edges converge with the grid; ht = fraction of camera height.
+    AA = 4
+    def project(X, Z, ht=0):
+        return (.5 + X / (Z * FX)) * W * AA, (VH + (1 - VH) / Z * (1 - ht)) * H * AA
+    def town(cu, cv, n, landmark=False):
+        """blocks as (x0, x1, z0, z1, base height, top height), far first, so nearer ones cover them"""
         X0, Z0 = ground(cu, cv)
-        if hgt[int(cv * h), int(cu * w)] <= 0.02:  # only on land
-            continue
-        scale = 1 / Z0
-        for i in range(int(rng.integers(3, 6))):
-            ou, ov = rng.normal(0, .02), rng.normal(0, .008)
-            x0, y0 = (cu + ou) * W, (cv + ov) * H
-            bw = max(4, 20 * scale * rng.uniform(.7, 1.2)); bh = 64 * scale * rng.uniform(.5, 1.5)
-            dep = bw * .45
-            d.polygon([(x0, y0), (x0 + bw, y0), (x0 + bw, y0 - bh), (x0, y0 - bh)], fill=(40, 110, 130, 235), outline=(150, 235, 255, 220))
-            d.polygon([(x0 + bw, y0), (x0 + bw + dep, y0 - dep * .6), (x0 + bw + dep, y0 - bh - dep * .6), (x0 + bw, y0 - bh)], fill=(22, 70, 88, 210))
-            d.polygon([(x0, y0 - bh), (x0 + bw, y0 - bh), (x0 + bw + dep, y0 - bh - dep * .6), (x0 + dep, y0 - bh - dep * .6)], fill=(170, 240, 255, 200))
-            for k in range(int(bh // 7)):
-                d.point((x0 + bw * .5, y0 - 3 - k * 7), fill=(220, 250, 255, 180))
+        s = Z0 ** .7  # far towns scaled up a little so they stay readable
+        r = np.random.default_rng(int(cu * 100) * 1000 + int(cv * 100) + n)
+        step, out = .027 * s, []
+        for i in range(-n, n + 1):
+            for j in range(-n, n + 1):
+                dist = np.hypot(i, j) / (n + .5)
+                if dist > 1 or r.random() < .06 + .3 * dist or (landmark and dist < .5): continue
+                x, z = X0 + (i + r.uniform(-.2, .2)) * step, Z0 + (j + n + r.uniform(-.2, .2)) * step * .75
+                wide = 1.5 if r.random() < .15 else 1  # the odd long block breaks up the rows
+                out.append((x, x + step * wide * r.uniform(.65, 1), z, z + step * .75 * r.uniform(.65, 1), 0, (.012 + .03 * (1 - dist) ** 1.2 * r.uniform(.4, 1.2)) * s))
+        if landmark:  # stacked tiers, each resting on the one below
+            zc = Z0 + n * step * .75
+            for half, ht0, ht in ((2.0, 0, .03), (1.4, .03, .06), (.85, .06, .1), (.35, .1, .15)):
+                hw, hd = half * step, half * step * .75
+                out.append((X0 - hw, X0 + hw, zc - hd, zc + hd, ht0 * s, ht * s))
+        return sorted(out, key=lambda t: (-(t[2] + t[3]), t[4]))
+    HUD = (0, 372, 190, 420)  # the CLEARED / ACTIVE readout, bottom left
+    # gate_layout.py lists each gate as ring, short tag, tall tag. Tags and beams paint above the map and only one tier
+    # shows at a time, so a town may pass behind them; it must never sit on a gate's ground ring in any tier.
+    RINGS = [b for v in LAY.values() for b in v["boxes"][::3]]
+    def clear(cu, cv, n, landmark=False, m=4):  # on the map, every block on land, clear of the HUD and every ring by m px
+        pts = [p for (x0, x1, z0, z1, _, ht) in town(cu, cv, n, landmark) for p in (project(x0, z0), project(x1, z0), project(x0, z1), project(x1, z1), project(x0, z1, ht), project(x1, z1, ht))]
+        if not pts: return False
+        b = (min(q[0] for q in pts) / (W * AA) * 366, min(q[1] for q in pts) / (H * AA) * 420, max(q[0] for q in pts) / (W * AA) * 366, max(q[1] for q in pts) / (H * AA) * 420)
+        if b[0] < 6 or b[2] > 360 or b[3] > 414: return False
+        if any(hgt[min(h - 1, int(q[1] / (H * AA) * h)), min(w - 1, int(q[0] / (W * AA) * w))] <= .02 for q in pts[::6]): return False
+        return not any(b[0] - m < g[2] and g[0] < b[2] + m and b[1] - m < g[3] and g[1] < b[3] + m for g in RINGS + [HUD])
+    grid = [(u0 / 100, v0 / 100) for v0 in range(46, 96, 2) for u0 in range(4, 97, 2)]
+    gap = lambda c, s: np.hypot((c[0] - s[0]) * 366, (c[1] - s[1]) * 420)
+    # the one slot no ring, tag or beam touches in any tier, so the landmark is always seen
+    LANDMARK = (.57, .96, 2, True)
+    assert clear(*LANDMARK, 6), "landmark no longer fits"  # 6px: it stands right beside two rings' drawn halos
+    sites = [LANDMARK]
+    # spread: each new town is the free spot farthest from the ones already placed; larger towns first
+    for n, count, least in ((3, 5, 70), (2, 9, 50)):
+        cand = [c for c in grid if clear(*c, n)]
+        while cand and len(sites) < count:
+            best = max(cand, key=lambda c: min((gap(c, s) for s in sites), default=1e9))
+            if sites and min(gap(best, s) for s in sites) < least: break
+            sites.append((*best, n, False))
+    print("towns:", [(s[0], s[1], s[2], "landmark" if s[3] else "") for s in sites])
+    assert len(sites) >= 5, "too few towns placed"
+    over = Image.new("RGBA", (W * AA, H * AA), (0, 0, 0, 0))
+    d = ImageDraw.Draw(over)
+    # far towns first so a nearer town is never painted under a farther one
+    for (cu, cv, n, landmark) in sorted(sites, key=lambda s: s[1]):
+        blocks = town(cu, cv, n, landmark)
+        lift = lambda c: tuple(min(255, int(v * (1.15 if ground(cu, cv)[1] > 2 else 1))) for v in c) + (255,)  # far towns fade under the skin filters
+        for (x0, x1, z0, z1, ht0, ht) in blocks:  # shadows first, falling right, so no block is painted under one
+            if ht0 == 0:
+                d.polygon([project(x0, z0), project(x1 + ht * .8, z0), project(x1 + ht * .8, z1), project(x0, z1)], fill=(3, 14, 20, 130))
+        for (x0, x1, z0, z1, ht0, ht) in blocks:
+            front = [project(x0, z0, ht0), project(x1, z0, ht0), project(x1, z0, ht), project(x0, z0, ht)]
+            xs = x0 if x0 > 0 else x1  # the side facing the camera
+            side = [project(xs, z0, ht0), project(xs, z1, ht0), project(xs, z1, ht), project(xs, z0, ht)]
+            top = [project(x0, z0, ht), project(x1, z0, ht), project(x1, z1, ht), project(x0, z1, ht)]
+            d.polygon(side, fill=lift((18, 54, 66)))
+            d.polygon(front, fill=lift((30, 82, 96)))
+            d.polygon(top, fill=lift((46, 104, 118)))
+            d.line(top + top[:1], fill=(84, 158, 174, 255), width=2)
+    im = Image.alpha_composite(im.convert("RGBA"), over.resize((W, H), Image.LANCZOS)).convert("RGB")
     im = im.filter(ImageFilter.UnsharpMask(1.2, 40, 2))
     im.save(OUT / "map.webp", quality=82, method=6)
     # pin land check for the record
