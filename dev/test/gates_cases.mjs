@@ -22,8 +22,8 @@ export async function run({ ev, boot, click, base, check, KEY, DK, wait }) {
   const ids = await ev(`[...document.querySelectorAll(".gpin:not(.lock)")].map(b=>b.dataset.gsel).join()`);
   await raw(`[data-gsel="d"]`); await raw(`[data-gate="d"]`); await raw(`#sysA [data-act="0"]`);
   await ev(`(()=>{if(__ascend.S.gate)__ascend.S.gate.red=false;for(let i=0;i<4;i++)__ascend.closeNote(-1)})()`); // entry rolls a 15% Red Gate; pin it for this case
-  r = await S(`({id:S.gate&&S.gate.id,bm:S.gate&&S.gate.base.miles,until:S.gate&&S.gate.until})`);
-  check("C-Rank sees only D/C/B (3 each); entering D snapshots miles", ids === "d,d2,d3,c,c2,c3,b,b2,b3" && r.id === "d" && r.bm === 5, `${ids} ${JSON.stringify(r)}`);
+  r = await S(`({id:S.gate&&S.gate.id,bm:S.gate&&S.gate.base.miles,until:S.gate&&S.gate.until,fair:S.gate&&S.gate.fair})`);
+  check("C-Rank sees only D/C/B (3 each); entering D snapshots miles", ids === "d,d2,d3,c,c2,c3,b,b2,b3" && r.id === "d" && r.bm === 5 && r.fair === true, `${ids} ${JSON.stringify(r)}`);
 
   // 3. timed run adds miles once; re-logging the same run replaces it
   await click(`[data-t="home"]`);
@@ -74,7 +74,7 @@ export async function run({ ev, boot, click, base, check, KEY, DK, wait }) {
 
 // Red Gate cases (appended): sealed, goals x1.5 capped per day, double XP, penalty on timeout
 export async function runRed({ ev, boot, click, base, check, KEY, DK, wait }) {
-  const d = await ev(`(()=>{${DK}return [-5,-1,0,6].reduce((o,i)=>(o[i]=dk(i),o),{})})()`);
+  const d = await ev(`(()=>{${DK}return [-5,-1,0,1,2,3,4,6,13].reduce((o,i)=>(o[i]=dk(i),o),{})})()`);
   const zero = { str50: 0, agi30: 0, vit30: 0, clear10: 0, miles: 0 };
   const S = expr => ev(`(()=>{const S=__ascend.S;return ${expr}})()`);
   // 1. red D gate needs 15 miles, not 10; no retreat button; clear pays 200 XP
@@ -87,12 +87,47 @@ export async function runRed({ ev, boot, click, base, check, KEY, DK, wait }) {
   const r = await S(`({g:S.gate,lvl:S.lvl,xp:S.xp,red:S.m.red})`);
   check("red gate: sealed, 1.5x goal, double XP", !ui.leave && ui.label === "RED" && mid && r.g === null && r.lvl === 10 && r.xp === 36 && r.red === 1, JSON.stringify({ ui, mid, r }));
   // 2. red gate timing out assigns a Penalty Quest
-  await boot(KEY, { ...base, day: d[-1], penalty: null, done: Object.fromEntries(base.quests.map(q => [q.id, 1])), gate: { id: "e", start: d[-5], until: d[-1], run: 0, failed: false, red: true, base: zero } });
+  await boot(KEY, { ...base, day: d[-1], penalty: null, done: Object.fromEntries(base.quests.map(q => [q.id, 1])), gate: { id: "e", start: d[-5], until: d[-1], run: 0, failed: false, red: true, fair: true, base: zero } });
   const r2 = await S(`({g:S.gate,pen:!!S.penalty})`);
   check("red gate timeout -> Penalty Quest", r2.g === null && r2.pen, JSON.stringify(r2));
-  // 3. per-day goals are capped at the window: red B (10 nights in 14 days) -> 14, not 15
-  const cap = await ev(`(()=>{const S=__ascend.S;S.lvl=25;S.gate={id:"b",start:"${d[0]}",until:"${d[6]}",run:0,failed:false,red:true,base:${JSON.stringify(zero)}};__ascend.render();return 1})()`);
+  // 3. per-day goals leave one spare day: red B (10 nights in 14 days) -> 13, not 15
+  const cap = await ev(`(()=>{const S=__ascend.S;S.lvl=25;S.gate={id:"b",start:"${d[0]}",until:"${d[13]}",run:0,failed:false,red:true,base:${JSON.stringify(zero)}};__ascend.render();return 1})()`);
   await click(`[data-t="quests"]`); await ev(`document.querySelector('[data-gsel="b"]').click()`); await wait(300);
   const t = await ev(`document.querySelector(".gdet .gobj b")?.textContent`);
-  check("red goals capped at one per day", t === "0 / 14", t);
+  check("red goals leave one spare day", t === "0 / 13", t);
+  // 4. a red chain Gate shows its raised goal and survives a Rest Day: red E needs 4 of 5 days, and says so
+  await boot(KEY, { ...base, gate: { id: "e", start: d[0], until: d[4], run: 0, failed: false, red: true, base: zero } });
+  await click(`[data-t="quests"]`);
+  const txt = await ev(`document.querySelector(".gdet .gobj")?.textContent`);
+  check("red Gate objective text shows the raised goal", txt && txt.includes("4 days in a row") && txt.includes("0 / 4"), txt);
+  // 5. still winnable with exactly enough days: stays open
+  await boot(KEY, { ...base, gate: { id: "e", start: d[-1], until: d[3], run: 0, failed: false, red: true, base: zero } });
+  await click(`[data-t="quests"]`);
+  const open = await S(`({g:!!S.gate,pen:!!S.penalty})`);
+  check("Gate with exactly enough days left stays open", open.g && !open.pen, JSON.stringify(open));
+  // 6. one day too few: a red Gate closes now, with its Penalty Quest and tomorrow's cooldown
+  await boot(KEY, { ...base, penalty: null, gate: { id: "e", start: d[-1], until: d[2], run: 0, failed: false, red: true, fair: true, base: zero } });
+  await click(`[data-t="quests"]`);
+  const dead =await S(`({g:S.gate,pen:!!S.penalty,cd:S.gateCd,n:S.gateClears.e||0})`);
+  check("unwinnable red Gate closes early with its penalty", dead.g === null && dead.pen && dead.cd === d[1] && dead.n === 0, JSON.stringify(dead));
+  // 6b. a red Gate entered before 1.054 closes the same way with its penalty waived; the fair mark survives a reload
+  await boot(KEY, { ...base, penalty: null, gate: { id: "e", start: d[-1], until: d[2], run: 0, failed: false, red: true, base: zero } });
+  await click(`[data-t="quests"]`);
+  const old = await S(`({g:S.gate,pen:!!S.penalty,cd:S.gateCd})`);
+  await boot(KEY, { ...base, gate: { id: "e", start: d[0], until: d[4], run: 0, failed: false, red: true, fair: true, base: zero } });
+  const kept = await S(`S.gate&&S.gate.fair`);
+  check("old red Gate closes with its penalty waived; fair mark is kept", old.g === null && !old.pen && old.cd === d[1] && kept === true, JSON.stringify({ old, kept }));
+  // 7. an unwinnable normal Gate closes with no penalty; timed miles never count as unwinnable
+  await boot(KEY, { ...base, penalty: null, gate: { id: "e", start: d[-1], until: d[1], run: 0, failed: false, base: zero } });
+  await click(`[data-t="quests"]`);
+  const dead2 = await S(`({g:S.gate,pen:!!S.penalty})`);
+  await boot(KEY, { ...base, lvl: 9, m: { miles: 0 }, gate: { id: "d", start: d[-5], until: d[0], run: 0, failed: false, base: zero } });
+  await click(`[data-t="quests"]`);
+  const miles = await S(`!!S.gate`);
+  check("unwinnable normal Gate closes with no penalty; miles Gate stays open", dead2.g === null && !dead2.pen && miles, JSON.stringify({ dead2, miles }));
+  // 8. an active Gate outside the rank window keeps a pin and can be selected
+  await boot(KEY, { ...base, lvl: 33, gate: { id: "c", start: d[0], until: d[6], run: 0, failed: false, base: { ...zero, int40: 0, per100: 0, water25: 0 } } });
+  await click(`[data-t="quests"]`);
+  const far = await ev(`({pin:!!document.querySelector('.gpin.active[data-gsel="c"]'),pins:document.querySelectorAll(".gpin").length,name:document.querySelector(".gdet .systitle")?.textContent})`);
+  check("active Gate outside the rank window keeps its map pin", far.pin && far.pins === 9 && far.name === "Iron Mines", JSON.stringify(far));
 }
