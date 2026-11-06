@@ -23,6 +23,8 @@ try {
   out.push("sw=" + await ev(`navigator.serviceWorker.ready.then(r=>r.active&&r.active.state)`));
   out.push("caches=" + await ev(`caches.keys().then(k=>k.join(","))`));
   out.push("shell=" + await ev(`caches.keys().then(k=>caches.open(k[0])).then(c=>c.keys()).then(x=>x.length)`));
+  out.push("plates=" + await ev(`caches.keys().then(k=>caches.open(k[0])).then(c=>Promise.all(["mistveil","abyss","bloodmoon","monarch","whiteout"].map(t=>c.match("themes/"+t+".webp")))).then(r=>r.filter(x=>x&&x.ok).length)`));
+  if (out.at(-1) !== "plates=5") process.exitCode = 1; // SHELL dropping a plate must fail this run, not just print a number
   out.push("manifest=" + await ev(`fetch("manifest.webmanifest").then(r=>r.json()).then(m=>m.name+"/"+m.display+"/"+m.icons.length+" icons")`));
   out.push("pitchHidden=" + await ev(`getComputedStyle(document.querySelector(".pitch")).display==="none"`));
   out.push("phone=" + await ev(`(()=>{const r=document.querySelector(".phone").getBoundingClientRect();return Math.round(r.width)+"x"+Math.round(r.height)+" of "+innerWidth+"x"+innerHeight})()`));

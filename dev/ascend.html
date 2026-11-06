@@ -1,6 +1,6 @@
 <title>Ascend Habit RPG</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Barlow+Condensed:wght@500;600;700&family=Noto+Sans:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Barlow+Condensed:wght@500;600;700&family=Noto+Sans:wght@400;500;700&family=Cormorant+Garamond:ital,wght@1,600&family=Exo+2:wght@300;600&family=Grenze+Gotisch:wght@800&family=Cinzel:wght@700&family=Michroma&display=swap">
 <style>
 /* Layout: pitch + demo controls on the left, one live phone on the right; skins swap the token set. */
 :root{
@@ -67,15 +67,15 @@ button{font:inherit;color:inherit}
 .hrow input[type=time]{width:148px}
 .dchip[aria-pressed="true"],.rkind .btn[aria-pressed="true"],.hon[aria-pressed="true"]{background:var(--hl);border-color:var(--hl);color:#0c1218}
 .dchip[aria-pressed="false"],.hon[aria-pressed="false"]{background:transparent;border:1px solid var(--line);color:var(--muted)}
-[data-skin="daylight"] .dchip[aria-pressed="true"],[data-skin="daylight"] .rkind .btn[aria-pressed="true"],[data-skin="daylight"] .hon[aria-pressed="true"]{color:#fff}
+:is([data-skin="daylight"],[data-skin="whiteout"]) .dchip[aria-pressed="true"],:is([data-skin="daylight"],[data-skin="whiteout"]) .rkind .btn[aria-pressed="true"],:is([data-skin="daylight"],[data-skin="whiteout"]) .hon[aria-pressed="true"]{color:#fff}
 .hrow{grid-template-columns:64px 1fr 148px}
 .hnum{justify-content:flex-end}.hnum input{width:96px}.hnum small{width:4ch;text-align:left}
 .rt .tq{margin:32px 0 auto}
 #ov .sys::before{top:0;left:0}#ov .sys::after{bottom:0;right:0} /* popup brackets sat 6px outside a scrolling box: 6px of overflow and a scrollbar both ways */
 .rkind .btn[aria-pressed="false"]{background:transparent;border:1px solid var(--line);color:var(--muted)}
-[data-skin="daylight"] .btn.acc,[data-skin="daylight"] .primary{color:#fff}
+:is([data-skin="daylight"],[data-skin="whiteout"]) .btn.acc,:is([data-skin="daylight"],[data-skin="whiteout"]) .primary{color:#fff}
 #sysA .btn.sysbtn.acc{background:var(--accent);border-color:var(--accent);color:#16110a}
-[data-skin="daylight"] #sysA .btn.sysbtn.acc{color:#fff}
+:is([data-skin="daylight"],[data-skin="whiteout"]) #sysA .btn.sysbtn.acc{color:#fff}
 .optq{margin-top:10px;opacity:.85}
 .optsh{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--muted);padding:8px 0 4px;border-top:1px dashed var(--line)}
 .awk{display:inline-block;margin-left:6px;padding:1px 6px;font-size:10px;letter-spacing:.12em;vertical-align:middle;border:1px solid var(--accent);color:var(--accent)}
@@ -117,12 +117,12 @@ button{font:inherit;color:inherit}
 .qbar.od::after{content:"";position:absolute;left:calc(50% - 1px);top:-3px;bottom:-3px;width:2px;background:var(--fg)}
 .qrow .x abbr{text-decoration:none}
 .odx{font-style:normal;font-family:var(--f-mono);font-size:11px;color:var(--accent)}
-[data-skin="daylight"] .goal.odg{color:#b45309}
+:is([data-skin="daylight"],[data-skin="whiteout"]) .goal.odg{color:#b45309}
 .clock{white-space:nowrap}
 .syshead .btn{margin-right:8px} /* clear the window's corner bracket */
 /* (0,5,0): :has() takes the specificity of its most specific argument, so this beats .overlay .sys.center .syshead (0,4,0) despite being declared ~500 lines earlier. */
 .sys.center .syshead:has(.clock:not([hidden])){justify-content:space-between}
-[data-skin="daylight"] .clock,[data-skin="ember"] .clock,[data-skin="daylight"] .qrow .x,[data-skin="ember"] .qrow .x{letter-spacing:.02em}
+:is([data-skin="daylight"],[data-skin="whiteout"]) .clock,[data-skin="ember"] .clock,:is([data-skin="daylight"],[data-skin="whiteout"]) .qrow .x,[data-skin="ember"] .qrow .x{letter-spacing:.02em}
 .odt{font-style:normal;font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--accent)}
 .odt,.odh{display:block;margin:2px 0 0;text-align:center;white-space:nowrap}
 .odh{font-style:normal;font-family:var(--f-mono);font-size:10px;letter-spacing:.08em;color:var(--muted)}
@@ -272,7 +272,7 @@ button{font:inherit;color:inherit}
 /* streak */
 .strk{display:grid;grid-template-columns:auto auto 1fr auto;align-items:center;gap:4px 10px;margin:14px 0 0;padding:10px 12px;
   background:var(--sysbg);border:1px solid color-mix(in srgb,var(--hl) 22%,transparent);border-radius:2px;text-shadow:none}
-[data-skin="daylight"] .strk{border-color:color-mix(in srgb,var(--hl) 55%,transparent);background:color-mix(in srgb,var(--hl) 4%,var(--phone))}
+:is([data-skin="daylight"],[data-skin="whiteout"]) .strk{border-color:color-mix(in srgb,var(--hl) 55%,transparent);background:color-mix(in srgb,var(--hl) 4%,var(--phone))}
 .strk .sfl{display:grid;place-items:center}
 .strk .sn{font-family:var(--f-display);font-size:26px;font-weight:700;line-height:1;color:var(--fg);font-variant-numeric:tabular-nums}
 .strk .sl{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;color:var(--muted)}
@@ -308,7 +308,7 @@ button{font:inherit;color:inherit}
 .sp.lk rect{opacity:.7}
 .relic.none b,.relic.none small{color:var(--muted)}
 .relic.none .rrar{color:color-mix(in srgb,var(--c) 75%,var(--muted))}
-[data-skin="daylight"] .relic .hex path{fill-opacity:.18}
+:is([data-skin="daylight"],[data-skin="whiteout"]) .relic .hex path{fill-opacity:.18}
 .relnote{margin:10px 0 0;font-size:12px;color:var(--muted);line-height:1.5}
 .xpfloat{position:absolute;left:48px;top:2px;font-family:var(--f-mono);font-size:14px;font-weight:700;color:var(--hl);pointer-events:none;animation:floatup .7s ease-out forwards;text-shadow:0 0 8px var(--hl)}
 @keyframes floatup{to{transform:translateY(-18px);opacity:0}}
@@ -331,7 +331,7 @@ button{font:inherit;color:inherit}
 .sysid .ttl{color:var(--hl)}
 .tbar{display:grid;gap:3px;margin-top:8px}
 .tbar i{height:5px;background:rgba(0,0,0,.35);border:1px solid var(--line)}
-[data-skin="daylight"] .tbar i{background:rgba(0,0,0,.06)}
+:is([data-skin="daylight"],[data-skin="whiteout"]) .tbar i{background:rgba(0,0,0,.06)}
 .tbar i.on{background:var(--c);border-color:var(--c);box-shadow:0 0 6px color-mix(in srgb,var(--c) 50%,transparent)}
 .srk{display:block;font-family:var(--f-mono);font-size:11px;font-style:normal;font-weight:700;letter-spacing:.1em;color:var(--c);text-align:right;margin-top:2px}
 .sys .pts.hud b{font-size:18px;color:var(--fg);margin-left:8px}
@@ -389,12 +389,13 @@ button{font:inherit;color:inherit}
 :root{--gate:#4fb8ff;--gbreak:#ff4fd8}
 [data-skin="hunter"]{--gate:#62d8e6}
 [data-skin="ember"]{--gate:#f0a630;--gbreak:#e04fd8}
+[data-skin="mistveil"]{--gate:#9fe8cf}[data-skin="abyss"]{--gate:#36e0d0}[data-skin="bloodmoon"]{--gate:#e0b45a;--gbreak:#ff5a7a;--gland:224,120,90}[data-skin="monarch"]{--gate:#f0cb5e;--gbreak:#c79bff;--gland:199,155,255}[data-skin="whiteout"]{--gate:#4fb8ff;--gbreak:#c2189b}
 .gpin{--gk:var(--gate)}.gpin.active,.gdet.active{--gk:var(--gbreak)}.gpin.lock{--gk:#6b7785;opacity:1}
 .gmap::before{content:"";position:absolute;inset:0 0 auto;height:34%;background:linear-gradient(to bottom,transparent,rgba(var(--gland),.06) 70%,rgba(var(--gland),.14));pointer-events:none;z-index:-1}
 .gplane{inset:-42% -18% -4%;background:repeating-linear-gradient(0deg,rgba(var(--gland),.08) 0 1px,transparent 1px 24px),repeating-linear-gradient(90deg,rgba(var(--gland),.08) 0 1px,transparent 1px 24px)}
 .gplane path{fill:rgba(var(--gland),.18);stroke:rgba(var(--gland),.8);filter:drop-shadow(0 0 3px rgba(var(--gland),.6))}
 .gplane path.gin{fill:rgba(var(--gland),.10)}
-[data-skin="daylight"] .gmap{border-color:#0f2230;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+:is([data-skin="daylight"],[data-skin="whiteout"]) .gmap{border-color:#0f2230;box-shadow:0 4px 14px rgba(0,0,0,.18)}
 /* pillars: soft column brightest at the base, white-hot core, flickering flame tip */
 .gpin .beam{width:34px;height:132px;margin-left:-17px;filter:blur(6px);border-radius:0;opacity:1;
   background:radial-gradient(50% 100% at 50% 100%,var(--gk) 0,color-mix(in srgb,var(--gk) 55%,transparent) 45%,transparent 75%);
@@ -463,16 +464,21 @@ button{font:inherit;color:inherit}
 /* --- sign-off pass --- */
 :root{--gland:120,230,255}
 [data-skin="ember"]{--gland:240,180,110}
-[data-skin="daylight"] .gdet{--gk:var(--accent)}
-[data-skin="daylight"] .gdet.active{--gk:#c2189b}
+:is([data-skin="daylight"],[data-skin="whiteout"]) .gdet{--gk:var(--accent)}
+:is([data-skin="daylight"],[data-skin="whiteout"]) .gdet.active{--gk:#c2189b}
 .gpin.lock .grk{background:rgba(5,8,14,.6)}
 /* --- art pass: procedural map + flame sprites (dev/art/gate_art.py) --- */
 .gplane{inset:0;transform:none;background:#070b12 url(gates/map.webp) 0 0/100% 100% no-repeat}
 [data-skin="ember"] .gplane{filter:sepia(.7) hue-rotate(-14deg) saturate(1.5) brightness(.85)}
+[data-skin="mistveil"] .gplane{filter:saturate(.55) brightness(.85)}
+[data-skin="bloodmoon"] .gplane{filter:sepia(1) hue-rotate(-30deg) saturate(2.2) brightness(.6)}
+[data-skin="monarch"] .gplane{filter:hue-rotate(42deg) saturate(1.1) brightness(.8)}
 .gmap::before{display:none}
 .gpin{--gspr:url(gates/pillar-blue.webp)}
 [data-skin="hunter"] .gpin{--gspr:url(gates/pillar-cyan.webp)}
 [data-skin="ember"] .gpin{--gspr:url(gates/pillar-amber.webp)}
+:is([data-skin="mistveil"],[data-skin="abyss"]) .gpin{--gspr:url(gates/pillar-cyan.webp)}
+:is([data-skin="bloodmoon"],[data-skin="monarch"]) .gpin{--gspr:url(gates/pillar-amber.webp)}
 .gpin.active{--gspr:url(gates/pillar-pink.webp)}
 .gpin .beam{width:64px;height:136px;margin-left:-32px;filter:none;opacity:1;border-radius:0;-webkit-mask:none;mask:none;mix-blend-mode:screen;
   background:var(--gspr) 0 0/512px 136px no-repeat;animation:gfr .9s steps(8) var(--d) infinite;transform:none}
@@ -486,7 +492,7 @@ button{font:inherit;color:inherit}
 .gpin.red .gbrk{border-left-color:#ff2d2d;color:#ffd0cc;text-shadow:0 0 8px #ff2d2d}
 .gpin.red .ring{animation:gsel 1s ease-out infinite}
 @media (prefers-reduced-motion:reduce){.gpin.red .ring{animation:none}}
-[data-skin="daylight"] .gdet.active.red{--gk:#c41f1f}
+:is([data-skin="daylight"],[data-skin="whiteout"]) .gdet.active.red{--gk:#c41f1f}
 /* rank-window layout: short beams, tall only when selected/active, HUD bottom-left */
 .gmap{height:420px}
 .ghud{top:auto;bottom:8px;left:8px}
@@ -529,7 +535,7 @@ button{font:inherit;color:inherit}
 .bossmark .bx{width:100%;height:100%;border-radius:10px}
 .bbanner{border-radius:12px;overflow:hidden;margin:0 0 12px}
 .bbanner .bx{aspect-ratio:16/7}
-[data-skin="daylight"] .bx .vg{background:radial-gradient(ellipse at 50% 50%,transparent 58%,rgba(0,0,0,.3))}
+:is([data-skin="daylight"],[data-skin="whiteout"]) .bx .vg{background:radial-gradient(ellipse at 50% 50%,transparent 58%,rgba(0,0,0,.3))}
 
 /* trophies */
 .achhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
@@ -677,7 +683,7 @@ button{font:inherit;color:inherit}
 .wraid .wbdmg li.me span{color:var(--bc)}
 .wraid .wbdmg li b{text-align:right}
 .wraid.down .hpbar i{opacity:.35}
-[data-skin="daylight"] .wraid .hpbar{background:rgba(0,0,0,.06)}
+:is([data-skin="daylight"],[data-skin="whiteout"]) .wraid .hpbar{background:rgba(0,0,0,.06)}
 .wraid .wrank{margin-top:14px;border-top:1px solid color-mix(in srgb,var(--hl) 35%,transparent);padding-top:10px}
 .wraid .wrh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}
 .wraid .wrh b{font-size:11px;letter-spacing:.22em;color:var(--hl)}.wraid .wrh small{font-size:11px;color:var(--muted);letter-spacing:.06em}
@@ -719,7 +725,7 @@ button{font:inherit;color:inherit}
 .glist>li>span:last-child{font-family:var(--f-mono);color:var(--hl)}
 .glist .gq{display:flex;gap:8px;align-items:center}
 .glitch,.sys.gl{--ab1:#ff2a6d;--ab2:#62d8e6;--ab3:#39ff6a}
-[data-skin="daylight"] .glitch,[data-skin="daylight"] .sys.gl{--ab2:#0096b4;--ab3:#15a03c} /* 3.52:1 on white, within .1 of the magenta, so both halves carry equal weight */
+:is([data-skin="daylight"],[data-skin="whiteout"]) .glitch,:is([data-skin="daylight"],[data-skin="whiteout"]) .sys.gl{--ab2:#0096b4;--ab3:#15a03c} /* 3.52:1 on white, within .1 of the magenta, so both halves carry equal weight */
 .glitch{animation:glitch .5s steps(1) 2}
 .sys.gl{animation:sysgl 1.8s steps(1) 1}
 /* the RGB split is cyan/magenta on every skin: chromatic aberration is the colour, not a theme choice */
@@ -783,13 +789,13 @@ button{font:inherit;color:inherit}
   97%{text-shadow:none;transform:none}
   100%{text-shadow:none;transform:none}}
 .sys.pn{--pnbg:color-mix(in srgb,var(--sysbg) 80%,transparent);background:var(--pnbg);backdrop-filter:blur(10px) saturate(1.15);-webkit-backdrop-filter:blur(10px) saturate(1.15)}
-[data-skin="daylight"] .sys.pn{--pnbg:color-mix(in srgb,var(--sysbg) 92%,transparent)} /* white panel over a dark scrim greys out fast; at 80% the chip/date measure 4.05 and fail AA */
+:is([data-skin="daylight"],[data-skin="whiteout"]) .sys.pn{--pnbg:color-mix(in srgb,var(--sysbg) 92%,transparent)} /* white panel over a dark scrim greys out fast; at 80% the chip/date measure 4.05 and fail AA */
 @supports not (backdrop-filter:blur(1px)){.sys.pn{background:var(--sysbg)}} /* no blur, no translucency: unreadable without it */
 .pnscan{position:absolute;inset:0;pointer-events:none;border-radius:2px;overflow:hidden}
 .pnscan b{position:absolute;left:-12%;right:-12%;height:var(--h);top:var(--y);background:var(--c);opacity:0;
   mix-blend-mode:screen;animation:pnbar 1.8s steps(1) var(--d) 1}
-[data-skin="daylight"] .pnscan b{mix-blend-mode:multiply} /* screen on near-white is invisible */
-[data-skin="daylight"] .pnscan::after{background:repeating-linear-gradient(0deg,rgba(0,0,0,.10) 0 2px,transparent 2px 7px)} /* blue ruling on white reads as notebook paper */
+:is([data-skin="daylight"],[data-skin="whiteout"]) .pnscan b{mix-blend-mode:multiply} /* screen on near-white is invisible */
+:is([data-skin="daylight"],[data-skin="whiteout"]) .pnscan::after{background:repeating-linear-gradient(0deg,rgba(0,0,0,.10) 0 2px,transparent 2px 7px)} /* blue ruling on white reads as notebook paper */
 .pnscan{isolation:isolate} /* bound nine blended layers to this box instead of the whole stack */
 /* each bar jumps rather than slides: a datamosh band is a torn copy, not a moving object */
 @keyframes pnbar{
@@ -814,7 +820,7 @@ button{font:inherit;color:inherit}
   100%{opacity:0}}
 /* the corrupted System label: red-on-black failure text, the reference's DATA_CORRUPT register */
 .pncorrupt{--fail:var(--danger);color:var(--fail)!important;border-color:var(--fail)!important}
-[data-skin="daylight"] .pncorrupt{--fail:#a81508} /* ~5.0:1 on the light panel; --danger measures 3.70 there */
+:is([data-skin="daylight"],[data-skin="whiteout"]) .pncorrupt{--fail:#a81508} /* ~5.0:1 on the light panel; --danger measures 3.70 there */
 .pnglyph{font-family:var(--f-mono)!important;letter-spacing:.02em!important;
   display:inline-block;width:var(--pnw);overflow:hidden;white-space:nowrap;vertical-align:bottom}
 .pnscan::before{content:"";position:absolute;left:0;right:0;height:38%;
@@ -850,6 +856,136 @@ button{font:inherit;color:inherit}
 .adm{max-height:52vh;overflow:auto;display:grid;gap:8px;margin-top:12px;text-align:left}
 .admr{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}
 .admr span{font-variant-numeric:tabular-nums;color:var(--hl)}.admr small{grid-column:1/-1;color:var(--muted)}
+
+/* ===== Theme Vault: five rank rewards. Each is a place: painted plate behind the screen, weather in front of it,
+   its own frame and display face. System labels stay Barlow so the app still reads as Ascend. --f-face carries the
+   display face; --f-display stays Barlow because it also sets numerals, which blackletter and italics make hard to read. ===== */
+[data-skin="mistveil"]{--bg:#0c1211;--panel:rgba(19,27,25,.88);--panel2:rgba(30,41,38,.92);--line:#2b3936;--fg:#e6efec;--muted:#9db3ad;--accent:#9fe8cf;--hl:#9fe8cf;--danger:#ff6a5a;
+  --rar1:#7d8f8a;--rar2:#86d6b0;--rar3:#9fb6e8;--rar4:#e8dba0;--phone:#0e1513;--sysbg:rgba(12,18,17,.95);--phonebg:#080d0c;--glow:.4;--grain:0;--r:8px;--tshadow:0 1px 8px rgba(0,0,0,.9);
+  --str:#e08a7a;--vit:#7fd6a8;--agi:#8fcfe0;--int:#b7aee8;--per:#e0cf8f;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;--f-body:"Noto Sans",system-ui,sans-serif;--f-mono:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-face:"Cormorant Garamond",Georgia,serif;--fw:600;--fst:italic;--ftr:.01em;--ftsize:48px;--fssize:28px;--fup:none;--thtop:128px}
+[data-skin="abyss"]{--bg:#030c13;--panel:rgba(8,21,30,.88);--panel2:rgba(16,34,46,.92);--line:#1b3443;--fg:#dff0f7;--muted:#9ab8c8;--accent:#36e0d0;--hl:#36e0d0;--danger:#ff6a5a;
+  --rar1:#6d8c9c;--rar2:#4fd6a8;--rar3:#7fa8ff;--rar4:#ffd98a;--phone:#06121a;--sysbg:rgba(5,16,24,.95);--phonebg:#020810;--glow:.6;--grain:0;--r:16px;--tshadow:0 1px 8px rgba(0,0,0,.9);
+  --str:#ff7f6a;--vit:#4fd6a8;--agi:#36e0d0;--int:#8f9fff;--per:#ffcf6a;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;--f-body:"Noto Sans",system-ui,sans-serif;--f-mono:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-face:"Exo 2","Barlow Condensed",sans-serif;--fw:300;--fst:normal;--ftr:.1em;--ftsize:32px;--fssize:21px;--fup:uppercase;--thtop:128px}
+[data-skin="bloodmoon"]{--bg:#0b0708;--panel:rgba(21,16,15,.92);--panel2:rgba(34,26,25,.94);--line:#3d2a28;--fg:#f0e4e2;--muted:#b3a09d;--accent:#e8635b;--hl:#e8635b;--danger:#ff6a5a;
+  --rar1:#8d7d7c;--rar2:#8ab87f;--rar3:#b08ad0;--rar4:#e0b45a;--phone:#120c0c;--sysbg:rgba(14,9,9,.96);--phonebg:#070405;--glow:0;--grain:0;--r:2px;--tshadow:0 1px 8px rgba(0,0,0,.9);
+  --str:#e8574f;--vit:#8ab87f;--agi:#7fa8c4;--int:#b08ad0;--per:#e0b45a;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;--f-body:"Noto Sans",system-ui,sans-serif;--f-mono:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-face:"Grenze Gotisch",Georgia,serif;--fw:800;--fst:normal;--ftr:.01em;--ftsize:50px;--fssize:30px;--fup:none;--thtop:128px}
+[data-skin="monarch"]{--bg:#09060f;--panel:rgba(19,12,29,.9);--panel2:rgba(32,21,46,.92);--line:#3a2a52;--fg:#f4eeff;--muted:#b3a4d0;--accent:#f0cb5e;--hl:#f0cb5e;--danger:#ff6a5a;
+  --rar1:#8a7fa0;--rar2:#7fd6a0;--rar3:#c79bff;--rar4:#f0cb5e;--phone:#0f0918;--sysbg:rgba(12,8,20,.96);--phonebg:#060410;--glow:.3;--grain:0;--r:3px;--tshadow:0 1px 8px rgba(0,0,0,.9);
+  --str:#ff7a6a;--vit:#6fd6a0;--agi:#7fb8ff;--int:#c79bff;--per:#f0cb5e;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;--f-body:"Noto Sans",system-ui,sans-serif;--f-mono:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-face:"Cinzel",Georgia,serif;--fw:700;--fst:normal;--ftr:.06em;--ftsize:32px;--fssize:21px;--fup:uppercase;--thtop:128px}
+[data-skin="whiteout"]{--bg:#dae3e9;--panel:rgba(255,255,255,.92);--panel2:rgba(234,241,246,.94);--line:#bdccd6;--fg:#0d1418;--muted:#51626c;--accent:#0a6ea8;--hl:#0a6ea8;--danger:#b8231b;
+  --rar1:#5a666e;--rar2:#0a7a5c;--rar3:#5a3fd6;--rar4:#8a6200;--phone:#f4f9fc;--sysbg:rgba(255,255,255,.97);--phonebg:#f4f9fc;--glow:0;--grain:0;--r:4px;--tshadow:0 1px 8px rgba(255,255,255,.9);
+  --str:#c62d27;--vit:#0a7a5c;--agi:#0a6ea8;--int:#5a3fd6;--per:#86660a;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;--f-body:"Noto Sans",system-ui,sans-serif;--f-mono:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-face:"Michroma","Barlow Condensed",sans-serif;--fw:400;--fst:normal;--ftr:.02em;--ftsize:25px;--fssize:17px;--fup:uppercase;--thtop:128px;color-scheme:light}
+
+/* layers: plate 0 / back particles 0 / screen 1 / weather 5 / tabs 6 / player 8 / overlay 10 / fx 11 / toast 12 / ceremony 13 */
+.thback,.thpt,.thgl,.thcer{display:none;position:absolute;inset:0;pointer-events:none}
+html[data-th] .phone{isolation:isolate}
+html[data-th] :is(.thback,.thpt,.thgl){display:block;width:100%;height:100%}
+html[data-th] .thback{z-index:0;overflow:hidden}
+html[data-th] .thpt{z-index:0} /* particles landed on text; the shader weather stays in front */
+html[data-th] .thgl{z-index:5}
+html[data-th][data-skin] .screen{position:relative;z-index:1;padding-top:calc(24px + env(safe-area-inset-top,0px) + var(--thtop))} /* html.app .screen in the PWA build comes later at the same weight */
+html[data-th] .tabs{z-index:6}
+html[data-th] .toast{z-index:12}
+.thplate{position:absolute;inset:0;background:no-repeat top center/100% auto}
+.thback::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 19%,color-mix(in srgb,var(--phonebg) 72%,transparent) 36%,color-mix(in srgb,var(--phonebg) 82%,transparent))} /* the landmark stays vivid; content that scrolls below it stays readable */
+[data-skin="mistveil"] .thback{background:linear-gradient(#0f1a18,#080d0c 42%)}[data-skin="mistveil"] .thplate{background-image:url(themes/mistveil.webp)}
+[data-skin="abyss"] .thback{background:linear-gradient(#082a36,#04141e 30%,#020810 70%)}[data-skin="abyss"] .thplate{background-image:url(themes/abyss.webp)}
+[data-skin="bloodmoon"] .thback{background:linear-gradient(#1c0809,#070405 40%)}[data-skin="bloodmoon"] .thplate{background-image:url(themes/bloodmoon.webp)}
+[data-skin="monarch"] .thback{background:linear-gradient(#150b26,#060410 40%)}[data-skin="monarch"] .thplate{background-image:url(themes/monarch.webp)}
+[data-skin="whiteout"] .thback{background:linear-gradient(#e3edf4,#f4f9fc 36%,#e8f0f5)}[data-skin="whiteout"] .thplate{background-image:url(themes/whiteout.webp)}
+.thfog{display:none;position:absolute;inset:-18%;background:radial-gradient(70% 44% at 26% 70%,rgba(236,248,244,.45),transparent 74%);filter:blur(26px)}
+.phone.nogl .thgl{visibility:hidden}
+[data-skin="mistveil"] .phone.nogl .thfog{display:block} /* no WebGL, or the governor turned it off */
+.thmoon{display:none;position:absolute;overflow:hidden;left:55.74%;top:0;margin-top:5.93%;width:37.96%;aspect-ratio:1;border-radius:50%;box-shadow:0 0 60px rgba(224,81,74,.35)}
+.thmoon::after{content:"";position:absolute;inset:-2px;border-radius:50%;background:#070405;transform:translateX(130%);opacity:.92}
+[data-skin="bloodmoon"] .thmoon{display:block}
+
+/* display face */
+html[data-th] :is(.title,.systitle,.lvhero,.qtext){font-family:var(--f-face);font-weight:var(--fw);font-style:var(--fst);letter-spacing:var(--ftr);text-transform:var(--fup)}
+html[data-th] .title{font-size:var(--ftsize)}
+html[data-th] .systitle{font-size:var(--fssize)}
+html[data-th] .title small{font-family:var(--f-mono);font-style:normal;font-weight:500;letter-spacing:.1em;text-transform:none}
+
+/* frames */
+[data-skin="mistveil"] .chip{border-style:dashed}
+[data-skin="mistveil"] :is(.title,.boss .systitle){text-shadow:0 0 18px rgba(159,232,207,.4),0 1px 8px rgba(0,0,0,.9)}
+[data-skin="abyss"] .sys{border-radius:16px;box-shadow:inset 0 0 30px rgba(54,224,208,.1),0 0 0 1px rgba(54,224,208,.35),0 0 22px rgba(54,224,208,.18)}
+[data-skin="abyss"] .sys::before,[data-skin="abyss"] .sys::after{display:none}
+[data-skin="abyss"] :is(.chip,.btn){border-radius:99px;clip-path:none}
+[data-skin="abyss"] .chip{padding:3px 12px}
+[data-skin="bloodmoon"] :is(.sys,.card){box-shadow:5px 5px 0 rgba(0,0,0,.7),0 12px 26px rgba(0,0,0,.5)}
+[data-skin="bloodmoon"] .sys{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='92' height='70'%3E%3Cpath d='M92 0 69 13 75 22 57 29 63 38 43 47 61 36 55 28 73 20 67 12Z' fill='%23e0514a' opacity='.55'/%3E%3C/svg%3E") top right/36px 27px no-repeat,var(--sysbg)}
+[data-skin="bloodmoon"] .chip{background:var(--hl);color:#070405;border-color:var(--hl)}
+[data-skin="bloodmoon"] :is(.title,.boss .systitle){text-shadow:0 2px 0 #3d0d0b,0 0 22px rgba(224,81,74,.45)}
+[data-skin="monarch"] .sys{box-shadow:0 0 0 1px rgba(240,203,94,.45),0 0 0 4px rgba(240,203,94,.09),0 0 30px rgba(155,92,255,.2)}
+[data-skin="monarch"] .card{box-shadow:0 0 0 1px rgba(240,203,94,.24)}
+[data-skin="monarch"] .chip{box-shadow:0 0 12px rgba(240,203,94,.3)}
+[data-skin="monarch"] :is(.title,.boss .systitle,.lvhero){background:linear-gradient(180deg,#fff6d6,#f0cb5e 62%,#d8a93c);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
+[data-skin="monarch"] .title{filter:drop-shadow(0 1px 6px rgba(0,0,0,.95))}
+[data-skin="monarch"] .title small{-webkit-text-fill-color:var(--muted)}
+[data-skin="whiteout"] :is(.sys,.card){box-shadow:0 2px 14px rgba(30,60,80,.14),inset 0 1px 0 #fff}
+[data-skin="whiteout"] #sysA .btn.sysbtn.acc,[data-skin="whiteout"] .btn.acc{color:#fff}
+
+/* section heads can scroll over the bright top of a plate; a soft band behind them, no colour token can fix that */
+html[data-th] .sh{position:relative;isolation:isolate}
+html[data-th] .sh::before{content:"";position:absolute;inset:-8px -18px;z-index:-1;background:linear-gradient(90deg,color-mix(in srgb,var(--phonebg) 78%,transparent) 65%,transparent);
+  -webkit-mask:linear-gradient(transparent,#000 30%,#000 70%,transparent);mask:linear-gradient(transparent,#000 30%,#000 70%,transparent)}
+[data-skin="bloodmoon"] .pmore{color:var(--fg);background:rgba(7,4,5,.55)}
+html[data-th] .lvhero{overflow-wrap:anywhere}
+[data-skin="whiteout"] .lvhero{font-size:clamp(26px,9.5vw,38px)}
+html[data-th] .sys.pn .lvhero{font-family:var(--f-display);font-style:normal;font-weight:700;letter-spacing:-.01em;text-transform:none} /* a version number stays in the numeral face */
+[data-skin="abyss"] .sys{background-size:0 0,0 0,0 0,0 0,auto} /* square brackets fight the round corners */
+[data-skin="whiteout"] .bar{background:rgba(30,60,80,.14)}
+html[data-th] .wraid .wbstage{border-radius:var(--r)}
+
+#ov .sys.thun #sysB{text-wrap:balance}
+/* the Vault rows in Profile */
+.vault{display:grid;gap:8px}
+.vault .skin{grid-template-columns:44px 1fr;min-height:60px;border-radius:var(--r)}
+.vault .skin[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.vault .sw{width:44px;height:44px;border-radius:calc(var(--r) / 2);background-position:top center;background-size:cover}
+.vault .skin.lk .sw{filter:grayscale(.7) brightness(.6)}
+.vault .vn{display:block;font-size:17px;line-height:1.1}
+.vault .vs{display:block;font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;color:var(--muted);margin-top:3px;text-transform:uppercase}
+.vault .skin.lk .vn{color:var(--muted)}
+.vault .bar{margin-top:5px;height:3px}
+
+/* unlock ceremonies: 2.6s each, the queue holds until they finish */
+html[data-th] .phone.unlocking .thcer{display:block;z-index:13}
+.thcer>*{position:absolute;inset:0;opacity:0}
+.thcer .blackout{background:#000}
+.thcer .flash{background:#fff}
+.thcer .arise{display:grid;place-items:center;font-family:"Cinzel",Georgia,serif;font-weight:700;font-size:50px;letter-spacing:.3em;padding-left:.3em;color:#efe2ff;text-shadow:0 0 16px #9b5cff,0 0 44px #6a2cff,0 0 90px #4a10c0}
+.phone.unlocking :is(.screen,.tabs){animation:thDim 2.6s ease-in-out both}
+[data-skin="monarch"] .phone.unlocking :is(.screen,.tabs){animation-name:thDimDeep}
+@keyframes thDim{0%,100%{opacity:1}30%,60%{opacity:.25}}
+@keyframes thDimDeep{0%,100%{opacity:1}30%,60%{opacity:0}}
+[data-skin="abyss"] .phone.unlocking .blackout{animation:thDark 2.6s ease-out both}
+[data-skin="abyss"] .phone.unlocking .thgl{z-index:14} /* the deep lights up above the dark */
+:is([data-skin="mistveil"],[data-skin="whiteout"]) .phone.unlocking .thgl{z-index:7}
+[data-skin="bloodmoon"] .phone.unlocking .thpt{animation:thDim 2.6s ease-in-out both} /* motes read as stars in front of the eclipse */
+@keyframes thDark{0%{opacity:0}10%{opacity:.97}40%{opacity:.9}100%{opacity:0}}
+[data-skin="bloodmoon"] .phone.unlocking .thmoon{animation:thBleed 2.6s ease-in-out both}
+[data-skin="bloodmoon"] .phone.unlocking .thmoon::after{animation:thEclipse 2.6s ease-in-out both}
+@keyframes thBleed{0%{backdrop-filter:saturate(0) brightness(1.6)}55%{backdrop-filter:saturate(0) brightness(1.3)}75%{backdrop-filter:saturate(1.8) brightness(1.3)}100%{backdrop-filter:none}}
+@keyframes thEclipse{0%{transform:translateX(130%)}50%{transform:translateX(0)}100%{transform:translateX(-130%)}}
+[data-skin="bloodmoon"] .phone.unlocking .flash{background:#e0514a;animation:thFlash 2.6s ease-out both}
+[data-skin="whiteout"] .phone.unlocking .flash{animation:thFlash 2.6s ease-out both}
+[data-skin="whiteout"] .phone.unlocking .blackout{background:#0a2a40;animation:thBeat 2.6s both} /* a dark beat so the white flash lands */
+@keyframes thBeat{0%,52%{opacity:0}58%{opacity:.55}62%{opacity:0}}
+@keyframes thFlash{0%,58%{opacity:0}63%{opacity:.85}100%{opacity:0}}
+[data-skin="monarch"] .phone.unlocking .arise{animation:thArise 2.6s ease-out both}
+@keyframes thArise{0%{opacity:0;letter-spacing:.08em;transform:scale(.9)}22%{opacity:1}72%{opacity:1;letter-spacing:.42em;transform:scale(1)}100%{opacity:0;transform:scale(1.06)}}
 </style>
 
 <div class="stage">
@@ -1440,7 +1576,11 @@ button{font:inherit;color:inherit}
   <div class="phone" id="phone">
     <div class="toast" id="toast" role="status"></div>
     <div class="fx" id="fx" aria-hidden="true"></div>
+    <div class="thback" aria-hidden="true"><div class="thplate"></div><div class="thfog"></div><div class="thmoon"></div></div>
+    <canvas class="thpt" aria-hidden="true"></canvas>
     <main class="screen" id="screen"></main>
+    <canvas class="thgl" aria-hidden="true"></canvas>
+    <div class="thcer" aria-hidden="true"><div class="blackout"></div><div class="flash"></div><div class="arise">ARISE</div></div>
     <div class="pdim" id="pdim" hidden></div>
     <div class="player" id="player">
       <button class="pmore" id="pmore" aria-label="Soundtrack" aria-expanded="false"><svg class="note" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span></button>
@@ -1618,6 +1758,12 @@ function checkStreak(){if(!clearedToday())return false; // a milestone is only c
 const STK_GLYPH='<path d="M8 13.5l4-4 4 4"/><path d="M8 17.5l4-4 4 4"/>';
 const SKINS=[["hunter","Hunter System","#2b333d 40%,#1a2028 40% 60%,#f6a43a 60% 80%,#62d8e6 80%"],["neon","Neon Hex","#05070b 40%,#3478ff 40% 60%,#2fd39a 60% 80%,#8b5cff 80%"],
   ["ember","Ember Forge","#120b07 40%,#f0a630 40% 60%,#d8483a 60% 80%,#7fc77a 80%"],["daylight","Daylight","#faf9f6 40%,#1f4fd8 40% 60%,#0f9a6a 60% 80%,#d1302a 80%"]];
+// Theme Vault: rank rewards. [key, name, reward tier (1 = D ... 5 = S), what it is]
+const VAULT=[["mistveil","Mistveil",1,"Smoke rolls through a dead pine wood and across the System itself. Touch it and it parts."],
+  ["abyss","Abyss",2,"Caustic light from a surface far above ripples over everything. Tap it and the water rings."],
+  ["bloodmoon","Bloodmoon",3,"A cratered moon hangs too close over a ruined skyline. Red cloud drags across it, ash falls, embers rise."],
+  ["monarch","Monarch",4,"An empty throne under gold light. Your shadow army waits before it, and violet fire climbs the screen."],
+  ["whiteout","Whiteout",5,"A blizzard over ice peaks, and frost growing in from the edges of the glass. The one light theme you have to earn."]];
 const RANKS=[["E-Rank"],["D-Rank"],["C-Rank"],["B-Rank"],["A-Rank"],["S-Rank"],["National Level"],["Monarch"]];
 const RANK_AT=[1,9,17,25,33,41,51,61]; // first level of each rank
 const PENALTY="Penalty Quest: 50 push-ups, 2-mile walk.";
@@ -1700,7 +1846,7 @@ function fresh(){const t=now();
   quests:DEFAULT_QUESTS.map(q=>({...q})),questsNext:null,cnt:{},onboarded:false,statHist:{},
   dsh:DAY_START_H,done:{},day:dkey(t),hist:{},seen:null,penalty:null,boss:100,bossDown:false,bkill:null,bossStat:null,wk:mondayKey(t),raid:{wk:mondayKey(t),dmg:0},raidPaid:"",prog:dkey(t),
   ap:{first:0,str50:0,vit30:0,agi30:0,int40:0,per100:0,clear10:0,water25:0,lvl20:1,pn:0},claimed:{},
-  titles:{},title:"awakened",od:{},awaken:0,debt:0,rev:"",m:{miles:0},gate:null,gateCd:null,gateClears:{},tcap:{},seed:Date.now().toString(36)+Math.random().toString(36).slice(2,10),loot:{},drops:{},rolls:0,sMile:0,tab:"home",cat:"all"}}
+  thSeen:0,titles:{},title:"awakened",od:{},awaken:0,debt:0,rev:"",m:{miles:0},gate:null,gateCd:null,gateClears:{},tcap:{},seed:Date.now().toString(36)+Math.random().toString(36).slice(2,10),loot:{},drops:{},rolls:0,sMile:0,tab:"home",cat:"all"}}
 // demo data: mid-program hunter, used by "Load sample data"
 function sample(){const t=now(),h={};for(let i=1;i<=17;i++){const d=new Date(t);d.setDate(t.getDate()-i);h[dkey(d)]=1}for(const i of[wd(t)-3,9]){const d=new Date(t);d.setDate(t.getDate()-i);if(i>0)h[dkey(d)]=0}
   const pr=new Date(t);pr.setDate(pr.getDate()-17);
@@ -1709,12 +1855,14 @@ function sample(){const t=now(),h={};for(let i=1;i<=17;i++){const d=new Date(t);
   return {...fresh(),name:S.name,onboarded:true,statHist:sh,lvl:14,xp:62,rest:2,train:{str:2,vit:1,agi:3,int:0,per:2},base:"Sep 23",baseKey:dkey(pr),stats:{str:60,vit:69,agi:70,int:60,per:80},done:{sleep:2},cnt:{sleep:1},hist:h,boss:62,bossStat:"str",prog:dkey(pr),
   ap:{first:0,str50:26,vit30:29,agi30:12,int40:39,per100:64,clear10:15,water25:25,lvl20:14}}}
 let S=fresh();
-const KEEP=["dsh","runs","lvl","xp","rest","restDay","base","baseKey","stats","train","qlog","adj","adjNotes","done","day","hist","seen","penalty","ap","claimed","boss","bossDown","bossStat","wk","prog","quests","questsNext","cnt","onboarded","statHist","name","awaken","debt","rev","od","titles","title","m","gate","gateCd","gateClears","tcap","seed","loot","drops","rolls","sMile","raid","raidPaid"];
+const KEEP=["dsh","runs","lvl","xp","rest","restDay","base","baseKey","stats","train","qlog","adj","adjNotes","done","day","hist","seen","penalty","ap","claimed","boss","bossDown","bossStat","wk","prog","quests","questsNext","cnt","onboarded","statHist","name","awaken","debt","rev","od","titles","title","m","gate","gateCd","gateClears","tcap","seed","loot","drops","rolls","sMile","raid","raidPaid","thSeen"];
 function load(sv){if(!sv||typeof sv!=="object")return;
   dayStart=sv.dsh===0||sv.dsh===4?sv.dsh:4; S.dsh=dayStart; // absent => written before the midnight change, so 04:00
   const D=fresh(),num=v=>typeof v==="number"&&Number.isFinite(v),key=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v);
   for(const k of ["lvl","xp","rest","boss","debt"])if(num(sv[k]))S[k]=sv[k];S.awaken=sv.awaken===1?1:0;
   S.lvl=Math.max(1,Math.min(999,Math.round(S.lvl)));S.xp=Math.max(0,Math.min(99+8*S.lvl,Math.round(S.xp)));S.boss=Math.max(0,Math.min(100,Math.round(S.boss))); // a restored lvl of 1e308 is finite, so it passed isSave and then looped forever in totalXP/gainXP. xp is capped at xpNeed(lvl)-1 (inlined: xpNeed is in its TDZ here) so a restored 1e6 XP can't be laundered into 500 levels on the next tap
+  // Theme Vault: tiers whose ceremony has played. Absent = a save from before the vault, so its open themes arrive quietly. Capped by level so a restored lower save earns them again.
+  {const cap=RANK_AT.slice(1,6).filter(a=>S.lvl>=a).length;S.thSeen=Number.isInteger(sv.thSeen)&&sv.thSeen>=0&&sv.thSeen<=5?Math.min(sv.thSeen,cap):cap}
   S.rest=Math.max(0,Math.min(3,Math.round(S.rest)));S.debt=Math.max(0,Math.min(1e6,Math.round(S.debt))); // a ceiling matters now that totalXP subtracts it: an unbounded debt froze the published total at 0 forever
   S.rev=typeof sv.rev==="string"&&sv.rev.length<=40?sv.rev:"";
   for(const k of ["stats","train","qlog","adj","adjNotes","ap"])if(sv[k]&&typeof sv[k]==="object")for(const x in D[k])if(num(sv[k][x]))S[k][x]=sv[k][x];
@@ -1776,15 +1924,15 @@ try{let raw=localStorage.getItem(STORE);for(const k of OLD)if(raw===null)raw=loc
     if(!adopt(sv)){try{localStorage.setItem(STORE+"-unreadable-"+Date.now(),raw)}catch(e){}saveBlocked=true}}
   localStorage.setItem("ascend-probe","1");storageOK=localStorage.getItem("ascend-probe")==="1"}catch(e){storageOK=false}
 // another open copy of the app saved: take its data instead of later overwriting it with this copy's stale snapshot
-addEventListener("storage",e=>{if(e.key!==STORE||!e.newValue)return;let sv=null;try{sv=JSON.parse(e.newValue)}catch(err){return}if(sv&&sv.rev===S.rev)return;const ui={tab:S.tab,test:S.test};if(adopt(sv)){saveBlocked=false;Object.assign(S,ui);render()}});
+addEventListener("storage",e=>{if(e.key!==STORE||!e.newValue)return;let sv=null;try{sv=JSON.parse(e.newValue)}catch(err){return}if(sv&&sv.rev===S.rev)return;const ui={tab:S.tab,test:S.test};if(adopt(sv)){saveBlocked=false;Object.assign(S,ui);skinSync();render()}});
 const snapshot=()=>({ver:VER,...Object.fromEntries(KEEP.map(k=>[k,S[k]]))});
 const save=()=>{if(saveBlocked)return;const r0=S.rev;S.rev=Date.now().toString(36)+Math.random().toString(36).slice(2,8);try{localStorage.setItem(STORE,JSON.stringify(snapshot()))}catch(e){storageOK=false;S.rev=r0}}; // a failed write keeps the old rev, so pull() does not adopt the older save over this change
 // another open copy may have saved since this one last looked (its storage event can arrive late): start every change from the latest save
 function pull(){let sv=null;try{const raw=localStorage.getItem(STORE);if(raw===null)return;sv=JSON.parse(raw)}catch(e){return}
-  if(!sv||sv.rev===S.rev)return;const ui={tab:S.tab,test:S.test,cat:S.cat};if(adopt(sv)){saveBlocked=false;Object.assign(S,ui)}}
+  if(!sv||sv.rev===S.rev)return;const ui={tab:S.tab,test:S.test,cat:S.cat};if(adopt(sv)){saveBlocked=false;Object.assign(S,ui);skinSync()}}
 // every change runs read-latest -> change -> save under one cross-tab lock, so two open copies can't overwrite each other
 const LOCKS=!!(navigator.locks&&navigator.locks.request);
-function act(fn){let ran=false;const run=()=>{ran=true;pull();if(dkey(now())!==S.day){rollover();setTimeout(arrival)}fn();const w=raidCheck(),g=settleGate(),m=checkStreak(),t=checkTitles();if(w||g||m||t){save();render(true)}schedSync()};if(!LOCKS||!storageOK)return run();
+function act(fn){let ran=false;const run=()=>{ran=true;pull();if(dkey(now())!==S.day){rollover();setTimeout(arrival)}fn();const w=raidCheck(),g=settleGate(),m=checkStreak(),t=checkTitles();if(w||g||m||t){save();render(true)}themeCheck();schedSync()};if(!LOCKS||!storageOK)return run();
   navigator.locks.request("ascend-state",run).catch(e=>{if(!ran)run();else console.error(e)})} // locks refused (sandboxed frame): run unlocked
 function rollover(){const n=now(),t=dkey(n),wk=mondayKey(n);
   if(!S.bossStat)S.bossStat=weakest();
@@ -2275,7 +2423,7 @@ ${sh("System",`VERSION ${vLabel(PATCH[0].v)}`)}
 ${sh("Relics",`${lootN()} FOUND`)}
 <div class="relics">${DROPS.map(([t,name,lore,c,rar,g])=>`<div class="relic ${S.loot[t]?"":"none"}" style="--c:var(--${c})">${hex(c,32,g)}<span><small class="rrar">${rar}</small><b>${esc(name)}</b><small>${esc(S.loot[t]?lore:"Not yet found.")}</small></span>${S.loot[t]?`<span class="rn">×${S.loot[t]}</span>`:""}</div>`).join("")}</div>
 <p class="relnote">Every completed quest rolls for a relic. The roll is fixed for that quest and day, and relics are worth no XP.</p>
-${sh("Theme","SETTINGS")}<div class="themes" role="group" aria-label="Theme">${SKINS.map(([k,n,g])=>`<button class="skin" data-s="${k}" aria-pressed="${(document.documentElement.dataset.skin||"hunter")===k}"><span class="sw" style="background:linear-gradient(90deg,${g})"></span><span><b>${n}</b></span></button>`).join("")}</div>
+${sh("Theme","SETTINGS")}<div class="themes" role="group" aria-label="Theme">${SKINS.map(([k,n,g])=>`<button class="skin" data-s="${k}" aria-pressed="${(document.documentElement.dataset.skin||"hunter")===k}"><span class="sw" style="background:linear-gradient(90deg,${g})"></span><span><b>${n}</b></span></button>`).join("")}</div>${vaultList()}
 ${sh("Notifications")}<div class="card glowcard" style="--c:var(--hl);display:grid;gap:10px">
   <small style="color:var(--muted)">${pushOK()?(Notification.permission==="denied"?"Blocked in your browser settings for this site. Re-allow it there first.":"A reminder on your phone when the Daily Quest is still open."):"This browser can't show notifications."}</small>
   ${pushState?`<label class="qe" style="text-align:left;margin:0">Remind me at<input type="time" id="nudget" value="${nudgeHHMM()}"></label>
@@ -2358,7 +2506,7 @@ function render(keep){const y=screenEl.scrollTop;
   tb.querySelectorAll(".tab").forEach((b,i)=>b.setAttribute("aria-current",i===ti));tb.querySelector(".tind").style.transform=`translateX(${ti*100}%)`;
   screenEl.scrollTop=keep?y:0;slamId=null;tick();
   $("#player").classList.toggle("away",screenEl.scrollTop>24);
-  $("#player").hidden=S.tab==="test"||!$("#ov").hidden;
+  $("#player").hidden=S.tab==="test"||cerOn||!$("#ov").hidden;
   const xb=$("#xpbar");if(lvUp)playLvUp();else if(xb&&lastXP!==null&&lastXP<S.xp){xb.style.transition="none";xb.style.width=Math.min(100,lastXP/xpNeed(S.lvl)*100)+"%";xb.offsetWidth;xb.style.transition="";xb.style.width=xpPct()+"%"}
   if(S.tab==="home")lastXP=S.xp;
   bossFx(screenEl);wbMount();
@@ -2396,6 +2544,14 @@ const BARS=[[6,"5px","var(--ab1)",-.04],[14,"12px","var(--ab2)",-.31],[23,"3px",
 const barHTML=()=>BARS.map(([y,h,c,d])=>`<b style="--y:${y}%;--h:${h};--c:${c};--d:${d}s"></b>`).join("");
 const vLabel=v=>"1."+String(v).padStart(3,"0"); // 37 -> "1.037"; a major overhaul starts the 2.x line
 const PATCH=[
+  {v:52,d:"Nov 5, 2026",lines:[
+    "The Theme Vault is open: five themes, one for each rank from D to S.",
+    "Mistveil at D-Rank, Abyss at C, Bloodmoon at B, Monarch at A, Whiteout at S.",
+    "Each one is a place, with a painted scene, its own weather, frame and typeface.",
+    "Mistveil's smoke parts under your finger. Abyss ripples when you tap.",
+    "Reach a new rank and its theme unlocks with its own ceremony.",
+    "Already past a rank? Those themes are open now in Profile.",
+    "On a slower phone, the weather scales itself back so the app stays smooth."]},
   {v:51,d:"Nov 4, 2026",lines:[
     "World Raid is open. Find it on the Guild tab.",
     "Five world bosses take turns, a new one each week, and every hunter fights the same one.",
@@ -2463,8 +2619,10 @@ const patchNote=(p,i)=>({chip:"[ SYSTEM UPDATE ]",title:vLabel(p.v),hero:true,ce
     `<ul class="glist pnl">${p.lines.map(l=>`<li><span class="gq">${esc(l)}</span></li>`).join("")}</ul>`});
 const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const queue=[];let typer=null,lastFocus=null;
-function notify(n){if($("#ov").hidden)lastFocus=document.activeElement;queue.push(n);if($("#ov").hidden)nextNote()}
-function nextNote(){const n=queue.shift();if(!n)return;
+function notify(n){const idle=$("#ov").hidden&&!cerOn;if(idle)lastFocus=document.activeElement;queue.push(n);if(idle)nextNote()}
+function nextNote(){if(cerOn)return;const n=queue.shift();if(!n)return;
+  if(n.cer)return runCeremony(n.cer);
+  noteClose=n.onClose||null;
   const ov=$("#ov"),sys=ov.querySelector(".sys");
   sys.className="sys"+(n.tone==="danger"?" danger":"")+(n.center?" center":"")+(n.cls?" "+n.cls:"");sys.style.setProperty("--hl",n.hue||"");
   const T=$("#sysT");$("#sysC").textContent=n.chip||"[ NOTIFICATION ]";
@@ -2481,9 +2639,10 @@ function nextNote(){const n=queue.shift();if(!n)return;
   if(n.burst&&(queueBurst||n.chip==="[ RE-ASSESSMENT ]")){queueBurst=false;burst(n.burst)}
   ov.hidden=false;if(n.gl!==false&&sys.classList.contains("gl"))setTimeout(corrupt);if(n.onOpen)setTimeout(n.onOpen);screenEl.inert=true;$(".pitch").inert=true;$("#tabs").inert=true;$("#player").hidden=true;$("#sysA button").focus();
 }
-let noteActs=[],queueBurst=false;
-function closeNote(i=0){clearInterval(typer);$("#ov").hidden=true;screenEl.inert=false;$(".pitch").inert=false;$("#tabs").inert=false;$("#player").hidden=S.tab==="test";
+let noteActs=[],queueBurst=false,noteClose=null,cerOn=false,thPrev=null,thQ=0;
+function closeNote(i=0){if(cerOn)return;clearInterval(typer);$("#ov").hidden=true;screenEl.inert=false;$(".pitch").inert=false;$("#tabs").inert=false;$("#player").hidden=S.tab==="test"||cerOn;
   const act=noteActs[i]||{};noteActs=[];if(act.fn)act.fn();if(act.go){S.tab=act.go;render()}
+  if(noteClose){const f=noteClose;noteClose=null;f()} // runs on Escape too, which skips the button actions
   if(queue.length)return nextNote();playLvUp();if(lastFocus&&lastFocus.isConnected)lastFocus.focus()}
 
 const canAwaken=()=>!S.awaken&&tierOf(S.lvl)===LAST;
@@ -2699,7 +2858,7 @@ document.addEventListener("click",e=>{
   if(d.t==="quests"){const n=Date.now();adm.n=n-adm.at<800?adm.n+1:1;adm.at=n;if(adm.n>=5){adm.n=0;setTimeout(adminAsk,50)}}else adm.n=0;
   if(b.id==="pplay"){if(!aud.src){$("#pfile").click();return}if(aud.paused){userPaused=false;aud.play().catch(()=>{})}else{userPaused=true;aud.pause()}return}
   if(b.id==="pmore"){toggleSheet(sheet.hidden);return}
-  if(d.s){document.documentElement.dataset.skin=d.s;try{localStorage.setItem("ascend-skin",d.s)}catch(e){}document.querySelectorAll(".skin").forEach(x=>x.setAttribute("aria-pressed",x.dataset.s===d.s));return}
+  if(d.s){const v=VAULT.find(x=>x[0]===d.s);if(v&&themeTier(S.lvl)<v[2]){toast(`LOCKED · LV. ${RANK_AT[v[2]]} · ${RANKS[v[2]][0].toUpperCase()}`);return}applySkin(d.s,true);return}
   act(()=>onButton(b,d))});
 function onButton(b,d){
   if(d.act){closeNote(+d.act);return}
@@ -2797,8 +2956,192 @@ function onButton(b,d){
 screenEl.addEventListener("input",e=>{const el=e.target&&e.target.closest&&e.target.closest(".tin");if(el)tDraft[el.id.slice(4)]=el.value});
 screenEl.addEventListener("scroll",()=>{const away=screenEl.scrollTop>24&&sheet.hidden;$("#player").classList.toggle("away",away)},{passive:true});
 setInterval(tick,1000);
-let skin="hunter";try{skin=localStorage.getItem("ascend-skin")||"hunter"}catch(e){}
-document.documentElement.dataset.skin=skin;document.querySelectorAll(".skin").forEach(x=>x.setAttribute("aria-pressed",x.dataset.s===skin));
+// ===== Theme Vault =====
+const themeTier=l=>Math.min(tierOf(l),5); // ranks go on past S; the vault stops there
+const skinOK=k=>SKINS.some(x=>x[0]===k)||VAULT.some(x=>x[0]===k&&themeTier(S.lvl)>=x[2]);
+const FACE={mistveil:"Cormorant Garamond",abyss:"Exo 2",bloodmoon:"Grenze Gotisch",monarch:"Cinzel",whiteout:"Michroma"};
+function vaultList(){const L=themeTier(S.lvl),cur=document.documentElement.dataset.skin;
+  return `${sh("Theme Vault",`${L} / 5`)}<div class="vault" role="group" aria-label="Theme Vault">${VAULT.map(([k,n,t])=>{const open=L>=t,rk=RANKS[t][0],at=RANK_AT[t],from=RANK_AT[t-1],pct=open?100:Math.max(0,Math.min(100,(S.lvl-from)/(at-from)*100));
+    return `<button class="skin${open?"":" lk"}" data-s="${k}" aria-pressed="${cur===k}"${open?"":` aria-disabled="true" aria-label="${n}, locked, ${at-S.lvl} levels to ${rk}"`}>
+<span class="sw" style="background-image:url(themes/${k}.webp)"></span>
+<span><span class="vn"${open?` style="font-family:'${FACE[k]}'"`:""}>${n}</span><span class="vs">${open?`${rk} · unlocked`:`Locked · ${at-S.lvl} LV to ${rk}`}</span>${open?"":`<span class="bar" style="--c:var(--muted);display:block"><i style="width:${pct}%"></i></span>`}</span></button>`}).join("")}</div>`}
+// persist=false shows a theme without equipping it (the ceremony). A locked or unknown key becomes hunter.
+function applySkin(k,persist){if(!skinOK(k)){k="hunter";persist=true}
+  const de=document.documentElement,v=VAULT.some(x=>x[0]===k);de.dataset.skin=k;if(v)de.dataset.th="1";else delete de.dataset.th;
+  if(persist)try{localStorage.setItem("ascend-skin",k)}catch(e){}
+  document.querySelectorAll(".skin").forEach(x=>x.setAttribute("aria-pressed",x.dataset.s===k));TH.set(v?k:null)}
+// after any state change: the equipped theme must still be earned. Leaves a ceremony's preview alone.
+function skinSync(){thQ=0;if(cerOn||thPrev!==null)return;let k="hunter";try{k=localStorage.getItem("ascend-skin")||"hunter"}catch(e){}applySkin(k,false)}
+// queue every theme earned and not yet shown; runs after each change, so a boot resumes anything a reload dropped
+function themeCheck(){const L=themeTier(S.lvl);for(let t=Math.max(S.thSeen,thQ)+1;t<=L;t++){thQ=t;notify({cer:t})}}
+function runCeremony(t){const v=VAULT.find(x=>x[2]===t);if(!v||t<=S.thSeen||t>themeTier(S.lvl))return nextNote();
+  if(thPrev===null)thPrev=document.documentElement.dataset.skin||"hunter";applySkin(v[0],false);
+  const reveal=()=>{if(t<=S.thSeen||t>themeTier(S.lvl)){const b=thPrev;thPrev=null;applySkin(b||"hunter",false);screenEl.inert=false;$("#tabs").inert=false;$("#player").hidden=S.tab==="test";return nextNote()} // another tab swapped the save mid-ceremony
+    S.thSeen=t;save();queue.unshift({chip:"[ THEME UNLOCKED ]",title:v[1],hero:true,center:true,burst:"var(--accent)",
+      extra:`<div class="lvsub">Re-assessment complete · <span style="white-space:nowrap">${RANKS[t][0]}</span></div>`,body:v[3],cls:"thun",
+      actions:[{label:"Equip",acc:true,fn:()=>{thPrev=null;applySkin(v[0],true);toast(`${v[1].toUpperCase()} EQUIPPED`)}},{label:"Later"}],
+      onClose:()=>{if(thPrev!==null){const b=thPrev;thPrev=null;applySkin(b,false)}}});nextNote()};
+  if(RM)return reveal();
+  cerOn=true;screenEl.inert=true;$("#tabs").inert=true;$("#player").hidden=true;phone.classList.remove("unlocking");void phone.offsetWidth;phone.classList.add("unlocking");TH.reveal(2600);
+  setTimeout(()=>{cerOn=false;phone.classList.remove("unlocking");reveal()},2600)}
+// One WebGL context and one particle canvas, made the first time a vault theme is shown, so the free themes cost nothing.
+const TH=(()=>{
+const HEAD=`#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+uniform vec2 res;uniform float t;uniform vec3 ptr;uniform vec3 rip;uniform float rv;uniform float uik;uniform vec2 lamp;uniform sampler2D mk;
+float h(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
+float n(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.-2.*f);
+  return mix(mix(h(i),h(i+vec2(1,0)),u.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),u.x),u.y);}
+float fbm(vec2 p){float v=0.,a=.5;mat2 m=mat2(1.6,1.2,-1.2,1.6);for(int i=0;i<5;i++){v+=a*n(p);p=m*p;a*=.5;}return v;}
+float fbm3(vec2 p){float v=0.,a=.5;mat2 m=mat2(1.6,1.2,-1.2,1.6);for(int i=0;i<3;i++){v+=a*n(p);p=m*p;a*=.5;}return v;}
+float ds(float a,float b,float x){return 1.-smoothstep(b,a,x);} /* falling edge: reversed smoothstep edges are undefined in GLSL ES */
+float bump(){return smoothstep(0.,.35,rv)*(1.-smoothstep(.62,1.,rv));} /* unlock ceremony: rises, holds, falls */
+float K;
+vec4 fx();
+/* weather sits in front of the UI but thins over content (mk, a low-res map of what is on screen) so text holds; the ceremony lifts that */
+void main(){vec2 uv=gl_FragCoord.xy/res;K=texture2D(mk,uv).r;gl_FragColor=fx()*mix(1.,mix(uik,1.,bump()),K);}
+`;
+const FS={
+mistveil:`vec4 fx(){vec2 uv=gl_FragCoord.xy/res;float asp=res.x/res.y;vec2 p=uv*vec2(asp,1.)*2.2;float s=t*.06;
+  vec2 pd=(uv-ptr.xy)*vec2(asp,1.);float pl=length(pd);
+  p+=pd/(pl+.001)*ptr.z*.32*exp(-pl*5.);
+  vec2 q=vec2(fbm3(p+vec2(0.,s)),fbm3(p+vec2(5.2,1.3)-s));
+  vec2 r=vec2(fbm3(p+3.2*q+vec2(1.7,9.2)+s*1.6),fbm3(p+3.2*q+vec2(8.3,2.8)-s*1.3));
+  float d=fbm(p+2.6*r+vec2(s*2.4,-s*.6));
+  float low=.22+.95*pow(1.-uv.y,1.4);
+  float dens=smoothstep(.28,.80,d)*low;
+  dens*=mix(1.,smoothstep(.05,.32,pl),ptr.z);
+  float b=bump();dens=mix(dens,.82+.18*d,b);
+  dens=clamp(dens,0.,1.)*mix(.78,.97,b);
+  vec3 col=mix(vec3(.56,.74,.69),vec3(.97,1.,.99),smoothstep(.3,.95,d));
+  col=mix(col,col*vec3(.40,.48,.46),b);
+  float glow=exp(-length((uv-lamp)*vec2(asp,1.))*9.)*b*.9;
+  col*=mix(1.,.55,K*(1.-b)); /* dimmer over content: bright smoke over text cannot hold AA */
+  return vec4(col*dens*(1.-glow*.85)+vec3(1.,.62,.22)*glow,max(dens,glow*.6));}`,
+abyss:`float caus(vec2 p,float tt){vec2 i=p;float c=1.;for(int k=0;k<4;k++){float tk=tt*(1.-(3.5/float(k+1)));
+    i=p+vec2(cos(tk-i.x)+sin(tk+i.y),sin(tk-i.y)+cos(tk+i.x));
+    c+=1./length(vec2(1.24/sin(i.x+tk),1.24/cos(i.y+tk)));}
+  c/=4.;c=1.17-pow(c,1.4);return pow(abs(c),8.);}
+vec4 fx(){vec2 uv=gl_FragCoord.xy/res;float asp=res.x/res.y;vec2 a=uv*vec2(asp,1.);
+  vec2 rd=(uv-rip.xy)*vec2(asp,1.);float rl=length(rd);float front=rip.z*.38;
+  float env=exp(-pow((rl-front)*10.,2.))*exp(-rip.z*1.3);
+  a+=rd/(rl+.001)*sin(rl*44.-rip.z*10.)*env*.03;
+  float c=clamp(caus(a*5.6,t*.45),0.,1.4);
+  float mask=.25+.75*pow(uv.y,1.2);
+  float b=bump();
+  float v=c*mask*(1.+1.6*b)+env*.30;
+  vec3 col=mix(vec3(.18,.72,.84),vec3(.78,1.,.96),clamp(c,0.,1.));
+  float al=clamp(v*1.5,0.,mix(.5,.6,b));
+  return vec4(col*al,al);}`,
+bloodmoon:`vec4 fx(){vec2 uv=gl_FragCoord.xy/res;float asp=res.x/res.y;vec2 a=uv*vec2(asp,1.);
+  vec2 p=a*vec2(1.3,3.)+vec2(t*.035,0.);
+  float d=fbm(p+vec2(fbm3(p*1.4+vec2(0.,t*.02))*1.6,0.));
+  float zone=smoothstep(.62,.80,uv.y)*ds(1.,.86,uv.y)*.9+ds(.30,.0,uv.y)*.85+.12;
+  float b=bump();
+  float cl=smoothstep(.48,.88,d)*zone*(1.+.8*b);
+  vec3 col=mix(vec3(.30,.02,.03),vec3(.95,.32,.24),smoothstep(.5,1.,d));
+  float vg=smoothstep(.50,1.08,length((uv-vec2(.5,.55))*vec2(asp*1.1,1.)));
+  float al=clamp(cl*.55+vg*.52+b*.18,0.,.9);
+  return vec4(col*cl*.55,al);}`,
+monarch:`vec4 fx(){vec2 uv=gl_FragCoord.xy/res;float asp=res.x/res.y;vec2 a=uv*vec2(asp,1.);vec2 p=a*3.2;
+  float w=fbm3(p*1.6+vec2(0.,-t*.9));
+  float d=fbm(p+vec2(w*1.3,-t*.55));
+  float b=bump();
+  float top=.24+.80*b;
+  float f=ds(top,0.,uv.y-(d-.5)*.42);
+  f*=smoothstep(.25,.65,d)+.15*b;
+  vec3 col=mix(vec3(.16,.03,.32),vec3(.68,.38,1.),clamp(f*d*1.4,0.,1.));
+  float al=clamp(f*.80,0.,.88);
+  return vec4(col*al,al);}`,
+whiteout:`vec2 vor(vec2 x){vec2 i=floor(x),f=fract(x);float f1=8.,f2=8.;
+  for(int j=-1;j<=1;j++)for(int k=-1;k<=1;k++){vec2 g=vec2(float(k),float(j));vec2 o=vec2(h(i+g),h(i+g+19.7));
+    vec2 r=g+o-f;float dd=dot(r,r);if(dd<f1){f2=f1;f1=dd;}else if(dd<f2){f2=dd;}}
+  return vec2(sqrt(f1),sqrt(f2));}
+vec4 fx(){vec2 uv=gl_FragCoord.xy/res;float asp=res.x/res.y;vec2 a=uv*vec2(asp,1.);
+  float dx=min(a.x,asp-a.x),dy=min(uv.y,1.-uv.y);float ed=min(dx,dy);
+  ed+=(fbm3(a*5.)-.5)*.10;
+  float b=smoothstep(0.,.35,rv)*(1.-step(.63,rv)); /* frost snaps off under the flash */
+  float corner=ds(.30,.05,max(dx,dy));
+  float grow=.035+.10*corner+.015*sin(t*.35)+b*.85;
+  float m=ds(grow,grow-.07,ed);
+  m*=mix(1.,.35,smoothstep(.55,.75,uv.y)*(1.-b));
+  vec2 v=vor(a*14.+(vec2(fbm3(a*5.),fbm3(a*5.+7.))-.5)*2.4);float line=(1.-smoothstep(0.,.09,v.y-v.x))*smoothstep(.35,.7,fbm3(a*3.+2.));
+  vec2 v2=vor(a*38.+3.);float fine=1.-smoothstep(0.,.08,v2.y-v2.x);
+  float frost=m*(.30+.30*line+.55*fine);
+  vec3 col=mix(vec3(.93,.97,1.),vec3(.50,.68,.82),line*.55);
+  col=mix(col,vec3(1.),(1.-smoothstep(0.,.05,abs(ed-grow+.035)))*.8);
+  float al=clamp(frost*.85,0.,.92);
+  return vec4(col*al,al);}`};
+const UIK={mistveil:.45,abyss:.30,bloodmoon:.35,monarch:.30,whiteout:.40}; // how much weather stays over content
+const FIELDS={
+  mistveil:[{n:14,kind:"fly",color:"210,255,225",vy:[-.06,.06],vx:[-.10,.10],r:[1,1.8],glow:5,wobble:60}],
+  abyss:[{n:24,kind:"bubble",color:"190,245,255",vy:[-.55,-.18],vx:[-.05,.05],r:[1.2,3.6],glow:0,wobble:28},{n:26,kind:"dot",color:"150,240,230",vy:[-.20,-.06],vx:[-.06,.06],r:[.5,1.2],glow:4,wobble:30}],
+  bloodmoon:[{n:44,kind:"dot",color:"200,170,165",vy:[.18,.50],vx:[-.16,.04],r:[.5,1.5],glow:0,wobble:22},{n:12,kind:"dot",color:"255,140,80",vy:[-.50,-.20],vx:[-.10,.12],r:[.7,1.6],glow:5,wobble:16}],
+  monarch:[{n:28,kind:"dot",color:"245,215,130",vy:[-.28,-.08],vx:[-.06,.10],r:[.5,1.7],glow:5,wobble:26},{n:10,kind:"dot",color:"190,140,255",vy:[-.70,-.30],vx:[-.06,.06],r:[.8,1.6],glow:6,wobble:12}],
+  whiteout:[{n:46,kind:"snow",color:"255,255,255",vy:[.25,.50],vx:[-.50,-.20],r:[.6,1.1],glow:0,wobble:16,a:[.35,.6]},{n:30,kind:"snow",color:"255,255,255",vy:[.50,1],vx:[-1,-.45],r:[1.1,2],glow:0,wobble:14,a:[.55,.85]},{n:9,kind:"snow",color:"255,255,255",vy:[1.2,2],vx:[-2.2,-1.2],r:[2.6,4],glow:0,wobble:10,a:[.30,.50]}]};
+const rnd=([a,b])=>a+Math.random()*(b-a);
+let cur=null,made=false,gl=null,cv,pcv,g,lost=false,progs={},R=null,mk,mg,tex,dirty=true,mFrame=0;
+let scale=.45,gov=0,govOn=true,acc=0,cnt=0,lastRaf=0,lastTick=0,raf=0,last=0;
+let W=1,H=1,P=[];const dpr=Math.min(2,devicePixelRatio||1),t0=performance.now();
+const ptr={x:.5,y:.5,z:0,tz:0},rip={x:.5,y:.5,age:9};let rv=0,rvStart=-1,rvDur=2600,lastSec=0;
+const initGL=()=>{progs={};const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
+  tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+  for(const[a,b]of[[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR],[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE]])gl.texParameteri(gl.TEXTURE_2D,a,b);dirty=true};
+const shader=(type,src)=>{const x=gl.createShader(type);gl.shaderSource(x,src);gl.compileShader(x);if(!gl.getShaderParameter(x,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(x));return x};
+const prog=k=>{if(k in progs)return progs[k];
+  try{const p=gl.createProgram();gl.attachShader(p,shader(gl.VERTEX_SHADER,"attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}"));gl.attachShader(p,shader(gl.FRAGMENT_SHADER,HEAD+FS[k]));
+    gl.bindAttribLocation(p,0,"a");gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(p));
+    const u={};for(const nm of["res","t","ptr","rip","rv","uik","lamp","mk"])u[nm]=gl.getUniformLocation(p,nm);return progs[k]={p,u}}
+  catch(e){console.warn("weather shader failed for "+k,e);phone.classList.add("nogl");return progs[k]=null}};
+const sizeGL=()=>{const b=cv.getBoundingClientRect();cv.width=Math.max(1,b.width*scale|0);cv.height=Math.max(1,b.height*scale|0);if(gl)gl.viewport(0,0,cv.width,cv.height)};
+const sizePt=()=>{const b=pcv.getBoundingClientRect(),w=Math.max(1,b.width*dpr|0),h=Math.max(1,b.height*dpr|0);for(const p of P){p.x*=w/W;p.y*=h/H}W=pcv.width=w;H=pcv.height=h};
+// where the content is right now: panels scroll, so this follows them instead of three fixed rects
+const paintMask=()=>{const pb=phone.getBoundingClientRect();mg.fillStyle="#000";mg.fillRect(0,0,48,96);mg.fillStyle="#fff";
+  for(const el of screenEl.children){const b=el.getBoundingClientRect();if(b.bottom<pb.top||b.top>pb.bottom)continue;mg.fillRect((b.left-pb.left)/pb.width*48,(b.top-pb.top)/pb.height*96,b.width/pb.width*48,b.height/pb.height*96)}
+  gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,tex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,mk);dirty=false};
+const draw=sec=>{if(!gl||lost||!cur)return;const Q=prog(cur);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);if(!Q)return;
+  if(dirty||++mFrame%15===0)paintMask();
+  gl.useProgram(Q.p);gl.uniform2f(Q.u.res,cv.width,cv.height);gl.uniform1f(Q.u.t,sec);gl.uniform3f(Q.u.ptr,ptr.x,ptr.y,ptr.z);gl.uniform3f(Q.u.rip,rip.x,rip.y,rip.age);gl.uniform1f(Q.u.rv,rv);gl.uniform1f(Q.u.uik,UIK[cur]);gl.uniform1i(Q.u.mk,0);
+  const pb=phone.getBoundingClientRect();gl.uniform2f(Q.u.lamp,.712,1-.255*pb.width*1928/1080/pb.height);gl.drawArrays(gl.TRIANGLE_STRIP,0,4)};
+const frameGL=now=>{const sec=(now-t0)/1000+37,dt=Math.min(.1,sec-lastSec);lastSec=sec;ptr.z+=(ptr.tz-ptr.z)*Math.min(1,dt*6);ptr.tz=Math.max(0,ptr.tz-dt*.9);rip.age+=dt;
+  rv=rvStart<0?0:Math.min(1,(now-rvStart)/rvDur);if(rv>=1)rvStart=-1;draw(sec)};
+const spawn=(c,seed)=>({c,x:Math.random()*W,y:seed?Math.random()*H:(c.vy[0]<0?H+10:-10),vx:rnd(c.vx)*dpr,vy:rnd(c.vy)*dpr,r:rnd(c.r)*dpr,life:Math.random()*1000,a:c.a?rnd(c.a):.25+Math.random()*.75});
+const seed=k=>{P=(FIELDS[k]||[]).flatMap(c=>Array.from({length:c.n},()=>spawn(c,true)))};
+const paintPt=()=>{g.clearRect(0,0,W,H);for(const p of P){const c=p.c,a=c.kind==="fly"?p.a*(.35+.65*Math.abs(Math.sin(p.life/40))):p.a;
+    if(c.glow)for(const[rr,aa]of[[1,.05],[.62,.08],[.32,.12]]){g.fillStyle=`rgba(${c.color},${a*aa})`;g.beginPath();g.arc(p.x,p.y,p.r*c.glow*.8*rr,0,6.283);g.fill()}
+    if(c.kind==="bubble"){g.strokeStyle=`rgba(${c.color},${a*.7})`;g.lineWidth=dpr*.8;g.beginPath();g.arc(p.x,p.y,p.r,0,6.283);g.stroke();g.fillStyle=`rgba(255,255,255,${a*.8})`;g.beginPath();g.arc(p.x-p.r*.35,p.y-p.r*.35,p.r*.22,0,6.283);g.fill();continue}
+    const big=c.kind==="snow"&&c.r[0]>=2; // the near flakes streak along their path; round ones read as bubbles
+    if(c.kind==="snow"&&!big){g.fillStyle=`rgba(70,110,140,${a*.2})`;g.beginPath();g.arc(p.x,p.y,p.r+dpr*.7,0,6.283);g.fill()}
+    g.fillStyle=`rgba(${c.color},${a})`;g.beginPath();if(big)g.ellipse(p.x,p.y,p.r*2.2,p.r*.7,Math.atan2(p.vy,p.vx),0,6.283);else g.arc(p.x,p.y,p.r,0,6.283);g.fill()}};
+const framePt=now=>{const k=last?Math.min(3,(now-last)/16.67):1;last=now;for(const p of P){const c=p.c;p.life+=k;p.x+=(p.vx+Math.sin(p.life/c.wobble)*.22*dpr)*k;p.y+=p.vy*k;if(p.y<-14||p.y>H+14||p.x<-14||p.x>W+14)Object.assign(p,spawn(c,false))}paintPt()};
+const stepDown=()=>{gov++;if(gov===1&&gl){scale=.3;sizeGL();dirty=true}if(gov===2){if(gl){gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT)}phone.classList.add("nogl")}if(gov===3)g.clearRect(0,0,W,H)};
+const running=()=>!!cur&&!RM&&!document.hidden;
+const tick=now=>{raf=0;if(!running())return;raf=requestAnimationFrame(tick);
+  // governor reads the real time between browser frames, not the frames skipped on purpose below
+  if(lastRaf){const d=now-lastRaf;if(d<250){acc+=d;cnt++}if(acc>3000){if(govOn&&acc/cnt>40&&gov<3)stepDown();acc=0;cnt=0}}lastRaf=now;
+  if(now-lastTick<33)return;lastTick=now;if(gov<2)frameGL(now);if(gov<3)framePt(now)};
+const wake=()=>{lastRaf=0;acc=0;cnt=0;last=0;if(!raf&&running())raf=requestAnimationFrame(tick)};
+const make=()=>{made=true;cv=phone.querySelector(".thgl");pcv=phone.querySelector(".thpt");g=pcv.getContext("2d");mk=document.createElement("canvas");mk.width=48;mk.height=96;mg=mk.getContext("2d");
+  try{gl=cv.getContext("webgl",{premultipliedAlpha:true,antialias:false,alpha:true})}catch(e){gl=null}
+  if(gl){initGL();cv.addEventListener("webglcontextlost",e=>{e.preventDefault();lost=true;phone.classList.add("nogl")});cv.addEventListener("webglcontextrestored",()=>{lost=false;initGL();if(gov<2)phone.classList.remove("nogl")})}else phone.classList.add("nogl");
+  if(typeof ResizeObserver!=="undefined")new ResizeObserver(()=>{if(!cur)return;sizeGL();sizePt();dirty=true}).observe(phone);
+  screenEl.addEventListener("scroll",()=>{dirty=true},{passive:true});document.addEventListener("visibilitychange",wake);
+  const at=e=>{const b=phone.getBoundingClientRect();return[(e.clientX-b.left)/b.width,1-(e.clientY-b.top)/b.height]};
+  phone.addEventListener("pointermove",e=>{if(!cur)return;[ptr.x,ptr.y]=at(e);ptr.tz=1},{passive:true});
+  phone.addEventListener("pointerdown",e=>{if(!cur)return;[ptr.x,ptr.y]=at(e);ptr.tz=1;[rip.x,rip.y]=[ptr.x,ptr.y];rip.age=0},{passive:true})};
+return {set(k){cur=k;if(!k)return;if(!made)make();sizeGL();sizePt();seed(k);dirty=true;
+    if(gl&&!lost&&prog(k)&&gov<2)phone.classList.remove("nogl");
+    if(RM){draw(37);paintPt();return}wake()},
+  reveal(ms){if(cur&&gl&&!lost)prog(cur);rvDur=ms;rvStart=performance.now()},
+  gov(on){govOn=on;if(on===false){gov=0;scale=.45;if(made){sizeGL();dirty=true;if(cur&&gl&&!lost&&prog(cur))phone.classList.remove("nogl");wake()}}},
+  state:()=>({cur,made,gl:!!gl,gov,scale,programs:Object.keys(progs).filter(k=>progs[k]),failed:Object.keys(progs).filter(k=>!progs[k]),particles:P.length,raf:!!raf}),
+  compileAll:()=>Object.keys(FS).map(k=>[k,!!(gl&&prog(k))])};
+})();
+skinSync();
 act(()=>{rollover();render();
   // a new player starts current: never announce a version they installed on
   pushRefresh().then(v=>{if(v)render(true)});
@@ -2822,10 +3165,10 @@ function arrival(){if(!S.onboarded)return onboard();const today=dkey(now());if(S
 $("#rfile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;
   let sv=null;try{sv=JSON.parse(await f.text())}catch(err){}e.target.value="";
   if(!isSave(sv)){toast("THAT FILE ISN'T AN ASCEND BACKUP");return}
-  act(()=>{if(!adopt(sv)){toast("THAT FILE ISN'T AN ASCEND BACKUP");return}saveBlocked=false;rollover();save();render();toast("BACKUP RESTORED")})});
+  act(()=>{if(!adopt(sv)){toast("THAT FILE ISN'T AN ASCEND BACKUP");return}saveBlocked=false;rollover();save();skinSync();render();toast("BACKUP RESTORED")})});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){tick();schedSync(0);ping()}}); // 0: always fetch, so the board is fresh on return even if this player changed nothing
 if(!storageOK)setTimeout(()=>toast("WARNING · PROGRESS CAN'T BE SAVED HERE"),1500);
 if(saveBlocked)setTimeout(()=>notify({chip:"[ WARNING ]",tone:"danger",title:"Saved progress couldn't be read.",body:"Nothing has been overwritten. A copy was kept on this device.\nRestore a backup file from Profile, or reset to start fresh."}),1200);
-window.__ascend={get S(){return S},render,closeNote,totalXP,corrupt,partyBoard:()=>partyCall({op:"board"}),sample:()=>{S=sample();rollover();save();render()}};
+window.__ascend={get S(){return S},render,closeNote,gain:n=>act(()=>{gainXP(n);save();render(true)}),th:TH,get cerOn(){return cerOn},totalXP,corrupt,partyBoard:()=>partyCall({op:"board"}),sample:()=>{S=sample();rollover();save();render()}};
 })();
 </script>

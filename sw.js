@@ -1,6 +1,6 @@
 // Ascend service worker: serve from cache, refresh in the background (bypassing the HTTP cache).
-const V = "ascend-v52";
-const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", ...["e","d","c","b","a","s","nl","m"].map(b => `badges/${b}.webp`), "gates/map.webp", ...["blue","cyan","amber","pink","red"].map(c => `gates/pillar-${c}.webp`)];
+const V = "ascend-v53";
+const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", ...["e","d","c","b","a","s","nl","m"].map(b => `badges/${b}.webp`), "gates/map.webp", ...["blue","cyan","amber","pink","red"].map(c => `gates/pillar-${c}.webp`), ...["mistveil","abyss","bloodmoon","monarch","whiteout"].map(t => `themes/${t}.webp`)];
 // cache: "reload" bypasses the HTTP cache (GitHub Pages max-age=600) so a new version never stores the old page
 self.addEventListener("install", e => e.waitUntil(caches.open(V).then(c => c.addAll(SHELL.map(x => new Request(x, { cache: "reload" })))).then(() => self.skipWaiting())));
 // Notifications. The payload is encrypted by the server (RFC 8291) and arrives as JSON here, so each

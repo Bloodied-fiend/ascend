@@ -72,6 +72,11 @@ os.makedirs(f'{OUT}/badges', exist_ok=True)
 for b in ('e','d','c','b','a','s','nl','m'):
     shutil.copy(os.path.join(os.path.dirname(SRC), 'badges', b + '.webp'), f'{OUT}/badges/{b}.webp')
 
+os.makedirs(f'{OUT}/themes', exist_ok=True)
+THEME_PLATES = ("mistveil", "abyss", "bloodmoon", "monarch", "whiteout")
+for t in THEME_PLATES:
+    shutil.copy(os.path.join(os.path.dirname(SRC), 'art', 'themes', t + '.webp'), f'{OUT}/themes/{t}.webp')
+
 open(f'{OUT}/manifest.webmanifest', 'w', encoding='utf-8').write('''{
   "name": "Ascend",
   "short_name": "Ascend",
@@ -91,8 +96,8 @@ open(f'{OUT}/manifest.webmanifest', 'w', encoding='utf-8').write('''{
 ''')
 
 open(f'{OUT}/sw.js', 'w', encoding='utf-8').write('''// Ascend service worker: serve from cache, refresh in the background (bypassing the HTTP cache).
-const V = "ascend-v52";
-const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", ...["e","d","c","b","a","s","nl","m"].map(b => `badges/${b}.webp`), "gates/map.webp", ...["blue","cyan","amber","pink","red"].map(c => `gates/pillar-${c}.webp`)];
+const V = "ascend-v53";
+const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", ...["e","d","c","b","a","s","nl","m"].map(b => `badges/${b}.webp`), "gates/map.webp", ...["blue","cyan","amber","pink","red"].map(c => `gates/pillar-${c}.webp`), ...["mistveil","abyss","bloodmoon","monarch","whiteout"].map(t => `themes/${t}.webp`)];
 // cache: "reload" bypasses the HTTP cache (GitHub Pages max-age=600) so a new version never stores the old page
 self.addEventListener("install", e => e.waitUntil(caches.open(V).then(c => c.addAll(SHELL.map(x => new Request(x, { cache: "reload" })))).then(() => self.skipWaiting())));
 // Notifications. The payload is encrypted by the server (RFC 8291) and arrives as JSON here, so each
@@ -163,7 +168,7 @@ Install: open the hosted URL on the phone, then Share > Add to Home Screen (iOS)
 ''')
 GATES = ["gates/map.webp"] + ["gates/pillar-%s.webp" % c for c in ("blue","cyan","amber","pink","red")]
 BADGES = ["badges/%s.webp" % b for b in ("e","d","c","b","a","s","nl","m")]
-missing = [f for f in GATES + BADGES if not os.path.exists(os.path.join(OUT, f))]
+missing = [f for f in GATES + BADGES + ["themes/%s.webp" % t for t in THEME_PLATES] if not os.path.exists(os.path.join(OUT, f))]
 assert not missing, "service-worker SHELL lists files this build did not produce: %s -- cache.addAll() rejects as a unit, so the SW would never install" % missing
 
 print('built', os.listdir(OUT), os.listdir(f'{OUT}/icons'))
